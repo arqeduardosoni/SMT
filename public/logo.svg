@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 190" width="200" height="190">
+  <defs>
+    <linearGradient id="smtL" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7EDDF7"/>
+      <stop offset="50%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#0288D1"/>
+    </linearGradient>
+    <linearGradient id="smtR" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7EDDF7"/>
+      <stop offset="50%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#0288D1"/>
+    </linearGradient>
+    <linearGradient id="smtC" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5BCEF0"/>
+      <stop offset="100%" stop-color="#1A6BAE"/>
+    </linearGradient>
+    <linearGradient id="smtT" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#D8E4EC"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="190" fill="#040A18"/>
+  <polygon points="58,3 78,76 50,68 38,72" fill="url(#smtL)" stroke="#0F4373" stroke-width="1.2" stroke-linejoin="round"/>
+  <polygon points="78,76 92,80 86,62" fill="url(#smtC)" opacity="0.85"/>
+  <polygon points="142,3 122,76 150,68 162,72" fill="url(#smtR)" stroke="#0F4373" stroke-width="1.2" stroke-linejoin="round"/>
+  <polygon points="122,76 108,80 114,62" fill="url(#smtC)" opacity="0.85"/>
+  <text x="100" y="118" text-anchor="middle" font-family="Impact, sans-serif" font-size="56" font-weight="900" fill="url(#smtT)">SMT</text>
+  <polygon points="78,138 100,170 100,148" fill="url(#smtL)" stroke="#0F4373" stroke-width="1" stroke-linejoin="round"/>
+  <polygon points="122,138 100,170 100,148" fill="url(#smtR)" stroke="#0F4373" stroke-width="1" stroke-linejoin="round"/>
+  <polygon points="92,148 108,148 100,185" fill="url(#smtC)"/>
+</svg>
