@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "./supabase";
 
 const STYLE=`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
 *{-webkit-tap-highlight-color:transparent}
@@ -223,6 +224,34 @@ function useCount(target,duration=1300,delay=0){const[v,setV]=useState(0);useEff
 const CountUp=({target,duration,delay,decimals=0,suffix=""})=>{const v=useCount(target,duration,delay);return <>{v.toFixed(decimals)}{suffix}</>;};
 
 const mkPlayer=(o)=>({id:o.id,email:o.email,password:"demo123",name:o.name,firstName:o.firstName||o.name.split(" ")[0],lastName:o.lastName||o.name.split(" ").slice(1).join(" "),sex:o.sex||"M",birthdate:o.birthdate||"1990-01-01",club:o.club||"Club Campestre MTY",hand:o.hand||"Diestro",country:o.country||"México",state:o.state||"Nuevo León",city:o.city||"Monterrey",racket:o.racket||"Wilson Pro Staff",category:o.category||null,categoryLocked:o.categoryLocked||false,phone:o.phone||"",ranking:o.ranking,points:o.points,wins:o.wins,losses:o.losses,titles:o.titles,photo:null,avatar:ini(o.name),stats:{...DSTATS,...(o.stats||{})}});
+
+// ====== SUPABASE: traductores entre formato base de datos (snake_case) y app (camelCase) ======
+const profileToPlayer=(r)=>({
+  id:r.id, email:r.email||"", password:"",
+  name:r.name||`${r.first_name||""} ${r.last_name||""}`.trim(),
+  firstName:r.first_name||"", lastName:r.last_name||"",
+  sex:r.sex||"M", birthdate:r.birthdate||"1990-01-01",
+  club:r.club||"Club Campestre MTY", hand:r.hand||"Diestro",
+  country:r.country||"México", state:r.state||"Nuevo León", city:r.city||"Monterrey",
+  racket:r.racket||"Wilson Pro Staff", category:r.category||null,
+  categoryLocked:r.category_locked||false, phone:r.phone||"",
+  ranking:r.ranking||0, points:r.points||0, wins:r.wins||0, losses:r.losses||0, titles:r.titles||0,
+  photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
+  stats:{...DSTATS,...(r.stats||{})},
+  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false,
+});
+const playerToProfile=(p,authId)=>({
+  id:authId||p.id, auth_id:authId||p.id, email:(p.email||"").toLowerCase(),
+  name:p.name||"", first_name:p.firstName||"", last_name:p.lastName||"",
+  birthdate:p.birthdate||null, sex:p.sex||"M", phone:p.phone||"",
+  category:p.category||null, category_locked:p.categoryLocked||false,
+  city:p.city||"", state:p.state||"", country:p.country||"México", club:p.club||"",
+  photo_url:p.photo||null, avatar:p.avatar||ini(p.name||""),
+  ranking:p.ranking||0, points:p.points||0, wins:p.wins||0, losses:p.losses||0, titles:p.titles||0,
+  hand:p.hand||"Diestro", racket:p.racket||"Wilson Pro Staff", stats:p.stats||{},
+  require_password_change:p.requirePasswordChange||false,
+  privacy_accepted_at:p.privacyAcceptedAt?new Date(p.privacyAcceptedAt).toISOString():new Date().toISOString(),
+});
 
 const DEMO_P=[
   mkPlayer({id:"d1",email:"carlos@smt.mx",name:"Carlos Ramírez",ranking:2,points:2100,wins:45,losses:12,titles:3,racket:"Babolat Pure Aero",category:"Abierta",categoryLocked:true,phone:"+528112345678",stats:{serve:9.1,return:8.6,forehand:9.1,backhand:8.8,aces:22,doubleFaults:8,bpWon:18,bpTotal:28,setsDropped:1,gamesLost:19,winners:87,unforcedErrors:34}}),
@@ -457,7 +486,8 @@ function MIns({data,onClose}){
 }
 
 export default function App(){
-  const [accounts,setAccounts]=useState([...DEMO_P]);
+  const [accounts,setAccounts]=useState([]);
+  const [authLoading,setAuthLoading]=useState(true);
   const [adminPass,setAdminPass]=useState(ADMIN_PASS);
   const [tournaments,setTournaments]=useState(DEMO_T);
   const [user,setUser]=useState(null);
@@ -497,6 +527,8 @@ export default function App(){
   const [deleteTId,setDeleteTId]=useState(null);
   const [showProfileEdit,setShowProfileEdit]=useState(false);
   const [editProfile,setEditProfile]=useState(null);
+  const [showDeleteAccount,setShowDeleteAccount]=useState(false);
+  const [deleteConfirmText,setDeleteConfirmText]=useState("");
   const [editAsAdmin,setEditAsAdmin]=useState(false);
   const [showChangePass,setShowChangePass]=useState(false);
   const [passForm,setPassForm]=useState({old:"",new:""});
@@ -557,6 +589,38 @@ export default function App(){
   const getT=()=>tournaments.find(t=>t.id===selT?.id);
   useEffect(()=>{if("speechSynthesis" in window) window.speechSynthesis.getVoices();},[]);
 
+  // ====== SUPABASE: cargar usuarios y restaurar sesión al abrir la app ======
+  const loadAllAccounts=async()=>{
+    try{
+      const {data,error}=await supabase.from("profiles").select("*");
+      if(error){console.error("Error cargando perfiles:",error.message);return;}
+      if(data) setAccounts(data.map(profileToPlayer));
+    }catch(e){console.error("Error cargando perfiles:",e);}
+  };
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      await loadAllAccounts();
+      try{
+        const {data:{session}}=await supabase.auth.getSession();
+        if(session?.user&&active){
+          const {data:prof}=await supabase.from("profiles").select("*").eq("auth_id",session.user.id).single();
+          if(prof&&active){
+            const p=profileToPlayer(prof);
+            if(p.isBanned){await supabase.auth.signOut();}
+            else{setUser(p);setIsAdmin(false);setScreen("home");}
+          }
+        }
+      }catch(e){console.error("Error restaurando sesión:",e);}
+      if(active)setAuthLoading(false);
+    })();
+    // Mantener la sesión sincronizada
+    const {data:sub}=supabase.auth.onAuthStateChange((_event,session)=>{
+      if(!session){/* sesión cerrada */}
+    });
+    return()=>{active=false;sub?.subscription?.unsubscribe?.();};
+  },[]);
+
   const updateEverywhere=(u)=>{
     setAccounts(prev=>prev.map(a=>a.id===u.id?u:a));
     setTournaments(prev=>prev.map(t=>({...t,players:t.players.map(p=>p.id===u.id?u:p),pendingPlayers:t.pendingPlayers.map(p=>p.id===u.id?u:p),groups:t.groups.map(g=>({...g,players:g.players.map(p=>p.id===u.id?u:p),matches:g.matches.map(m=>({...m,p1:m.p1?.id===u.id?u:m.p1,p2:m.p2?.id===u.id?u:m.p2,winner:m.winner?.id===u.id?u:m.winner}))})),rounds:t.rounds.map(r=>r.map(m=>({...m,p1:m.p1?.id===u.id?u:m.p1,p2:m.p2?.id===u.id?u:m.p2,winner:m.winner?.id===u.id?u:m.winner})))})));
@@ -566,8 +630,54 @@ export default function App(){
   const updateAccount=(u)=>updateEverywhere(u);
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
 
-  const doLogin=()=>{setAuthErr("");if(authMode==="player-login"){const a=accounts.find(x=>x.email.toLowerCase()===authForm.email.toLowerCase());if(!a)return setAuthErr("Cuenta no encontrada");if(a.password!==authForm.password)return setAuthErr("Contraseña incorrecta");if(bannedUsers.includes(a.id))return setAuthErr("⛔ Tu cuenta ha sido suspendida por subir contenido inapropiado.");setUser(a);setIsAdmin(false);if(a.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("🔐 Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();}else if(authMode==="admin-login"){if(authForm.password!==adminPass)return setAuthErr("Contraseña incorrecta");setIsAdmin(true);setUser({id:"admin",name:"Administrador SMT",firstName:"Admin",lastName:"SMT",avatar:"AD",photo:null,email:"smt.tennismx@gmail.com"});setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();}};
-  const doRegister=()=>{setAuthErr("");if(!authForm.email.trim()||!authForm.password||!authForm.name.trim())return setAuthErr("Completa todos los campos");if(!authForm.birthdate)return setAuthErr("La fecha de nacimiento es obligatoria");if(authForm.password.length<8)return setAuthErr("Contraseña mínimo 8 caracteres");if(!/[A-Z]/.test(authForm.password)||!/[0-9]/.test(authForm.password))return setAuthErr("La contraseña debe incluir mayúscula y número");if(!acceptedPrivacy)return setAuthErr("Debes aceptar el Aviso de Privacidad para crear tu cuenta");if(accounts.find(a=>a.email.toLowerCase()===authForm.email.toLowerCase()))return setAuthErr("Email ya registrado");const n=mkPlayer({id:`p-${Date.now()}`,email:authForm.email.trim().toLowerCase(),name:authForm.name.trim(),birthdate:authForm.birthdate,ranking:accounts.length+1,points:0,wins:0,losses:0,titles:0,privacyAcceptedAt:Date.now()});n.password=authForm.password;setAccounts(prev=>[...prev,n]);setUser(n);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();};
+  const doLogin=async()=>{setAuthErr("");
+    if(authMode==="player-login"){
+      const email=authForm.email.trim().toLowerCase();
+      if(!email||!authForm.password)return setAuthErr("Completa email y contraseña");
+      setAuthErr("Entrando...");
+      try{
+        const {data,error}=await supabase.auth.signInWithPassword({email,password:authForm.password});
+        if(error){setAuthErr(error.message.includes("Invalid")?"Email o contraseña incorrectos":error.message);return;}
+        const {data:prof,error:pErr}=await supabase.from("profiles").select("*").eq("auth_id",data.user.id).single();
+        if(pErr||!prof){setAuthErr("No se encontró tu perfil. Contacta al administrador.");return;}
+        const p=profileToPlayer(prof);
+        if(p.isBanned){await supabase.auth.signOut();setAuthErr("⛔ Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
+        setAuthErr("");setUser(p);setIsAdmin(false);
+        if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("🔐 Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
+        setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();
+      }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
+    }else if(authMode==="admin-login"){
+      if(authForm.password!==adminPass)return setAuthErr("Contraseña incorrecta");
+      setIsAdmin(true);setUser({id:"admin",name:"Administrador SMT",firstName:"Admin",lastName:"SMT",avatar:"AD",photo:null,email:"smt.tennismx@gmail.com"});setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();
+    }
+  };
+  const doRegister=async()=>{setAuthErr("");
+    if(!authForm.email.trim()||!authForm.password||!authForm.name.trim())return setAuthErr("Completa todos los campos");
+    if(!authForm.birthdate)return setAuthErr("La fecha de nacimiento es obligatoria");
+    if(authForm.password.length<8)return setAuthErr("Contraseña mínimo 8 caracteres");
+    if(!/[A-Z]/.test(authForm.password)||!/[0-9]/.test(authForm.password))return setAuthErr("La contraseña debe incluir mayúscula y número");
+    if(!acceptedPrivacy)return setAuthErr("Debes aceptar el Aviso de Privacidad para crear tu cuenta");
+    const email=authForm.email.trim().toLowerCase();
+    setAuthErr("Creando tu cuenta...");
+    try{
+      const {data,error}=await supabase.auth.signUp({email,password:authForm.password});
+      if(error){
+        if(error.message.toLowerCase().includes("already")||error.message.toLowerCase().includes("registered"))setAuthErr("Este email ya está registrado");
+        else setAuthErr(error.message);
+        return;
+      }
+      if(!data.user){setAuthErr("No se pudo crear la cuenta. Intenta de nuevo.");return;}
+      const newPlayer=mkPlayer({id:data.user.id,email,name:authForm.name.trim(),birthdate:authForm.birthdate,ranking:accounts.length+1,points:0,wins:0,losses:0,titles:0});
+      newPlayer.privacyAcceptedAt=Date.now();
+      const row=playerToProfile(newPlayer,data.user.id);
+      const {error:insErr}=await supabase.from("profiles").insert(row);
+      if(insErr){console.error("Error guardando perfil:",insErr.message);setAuthErr("Error al guardar tu perfil: "+insErr.message);return;}
+      setAuthErr("");
+      const p=profileToPlayer(row);
+      setAccounts(prev=>[...prev.filter(a=>a.id!==p.id),p]);
+      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();
+    }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
+  };
   // Generar contraseña temporal aleatoria segura
   const generateTempPassword=()=>{
     const upper="ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -633,7 +743,32 @@ export default function App(){
       setPasswordResetRequests(prev=>prev.map(x=>x.id===rid?{...x,status:"rejected"}:x));
     }
   };
-  const doLogout=()=>{setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
+  const doLogout=async()=>{try{if(!isAdmin)await supabase.auth.signOut();}catch(e){}setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
+  const doDeleteAccount=async()=>{
+    if(!user)return;
+    const uid=user.id;
+    try{
+      // Borrar el perfil de la base de datos
+      await supabase.from("profiles").delete().eq("auth_id",uid);
+      // Borrar la cuenta de autenticación (función creada en Supabase)
+      await supabase.rpc("delete_own_account");
+      await supabase.auth.signOut();
+    }catch(e){console.error("Error eliminando cuenta:",e);}
+    // Limpiar datos locales asociados
+    setAccounts(prev=>prev.filter(a=>a.id!==uid));
+    setTournaments(prev=>prev.map(t=>({...t,players:t.players.filter(p=>p.id!==uid),pendingPlayers:t.pendingPlayers.filter(p=>p.id!==uid)})));
+    setMarketplace(prev=>prev.filter(m=>m.sellerId!==uid&&m.ownerId!==uid));
+    setMatchRequests(prev=>prev.filter(r=>r.fromId!==uid&&r.toId!==uid));
+    setCategoryRequests(prev=>prev.filter(r=>r.playerId!==uid));
+    setStatRequests(prev=>prev.filter(r=>r.playerId!==uid));
+    setCoachApplications(prev=>prev.filter(r=>r.userId!==uid&&r.playerId!==uid));
+    setCoachRequests(prev=>prev.filter(r=>r.fromId!==uid&&r.coachId!==uid));
+    setMedia(prev=>prev.filter(m=>m.userId!==uid&&m.authorId!==uid));
+    setShowDeleteAccount(false);
+    setDeleteConfirmText("");
+    setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});
+    setTimeout(()=>alert("Tu cuenta y todos tus datos han sido eliminados permanentemente."),300);
+  };
 
   const reqReg=(tid)=>{const t=tournaments.find(x=>x.id===tid);if(!t)return;if(t.players.find(p=>p.id===user.id)||t.pendingPlayers.find(p=>p.id===user.id))return;if(t.players.length+t.pendingPlayers.length>=parseInt(t.maxPlayers))return;const userIsMinor=isMinor(user.birthdate);if(!isAdmin&&userIsMinor&&!t.forMinors){alert("Este torneo es para mayores de edad. No puedes inscribirte.");return;}if(!isAdmin&&!userIsMinor&&t.forMinors){alert("Este torneo es exclusivo para menores de edad.");return;}if(t.gender&&t.gender!=="Mixed"&&user.sex&&user.sex!==t.gender){alert(`Este torneo es exclusivo para categoría ${t.gender==="M"?"masculino ♂":"femenino ♀"}.`);return;}if(!isAdmin&&t.category){if(!user.category){alert("Debes seleccionar tu categoría en tu perfil antes de inscribirte a torneos.");return;}const userCatIdx=CATS.indexOf(user.category),tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx){alert(`No puedes inscribirte a torneos de categoría inferior. Tu categoría es ${user.category}, este torneo es ${t.category}.`);return;}}if(isAdmin)setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,user]}:x));else setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:[...x.pendingPlayers,user]}:x));};
   const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));};
@@ -727,6 +862,13 @@ export default function App(){
       }
     }
     if(editAsAdmin)updateAccount(u);else updateUser(u);
+    // Guardar cambios en Supabase
+    (async()=>{try{
+      const row=playerToProfile(u,u.id);
+      delete row.created_at;
+      const {error}=await supabase.from("profiles").update(row).eq("auth_id",u.id);
+      if(error)console.error("Error actualizando perfil:",error.message);
+    }catch(e){console.error("Error actualizando perfil:",e);}})();
     setShowProfileEdit(false);setEditAsAdmin(false);
   };
 
@@ -1294,11 +1436,23 @@ export default function App(){
         </div>
         {isMe&&<div style={{padding:"24px 16px 16px"}}>
           <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"15px 18px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
+          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"13px 18px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  Eliminar mi cuenta</button>
         </div>}
         <div style={{height:32}}/>
         <TabSpacer/>
 
-        {showProfileEdit&&editProfile&&<Modal onClose={()=>{setShowProfileEdit(false);setEditAsAdmin(false);}} large>
+        {showDeleteAccount&&<Modal onClose={()=>{setShowDeleteAccount(false);setDeleteConfirmText("");}} center>
+          <div style={{textAlign:"center",marginBottom:8}}>
+            <div style={{fontSize:40,marginBottom:6}}>⚠️</div>
+            <T size={22}>ELIMINAR CUENTA</T>
+          </div>
+          <Sub style={{textAlign:"center",fontSize:14,lineHeight:1.5,marginBottom:16}}>Esta acción es permanente y no se puede deshacer. Se eliminarán tu perfil, estadísticas, inscripciones a torneos, publicaciones del marketplace y todos tus datos.</Sub>
+          <FL>Para confirmar, escribe <b style={{color:C.text}}>ELIMINAR</b></FL>
+          <TI type="text" value={deleteConfirmText} onChange={e=>setDeleteConfirmText(e.target.value)} placeholder="ELIMINAR"/>
+          <button onClick={doDeleteAccount} disabled={deleteConfirmText.trim().toUpperCase()!=="ELIMINAR"} className="btn-press" style={{width:"100%",marginTop:18,background:deleteConfirmText.trim().toUpperCase()==="ELIMINAR"?C.red:"rgba(255,59,48,0.25)",border:"none",color:"#fff",padding:"15px 18px",fontFamily:F.ios,fontSize:16,fontWeight:700,cursor:deleteConfirmText.trim().toUpperCase()==="ELIMINAR"?"pointer":"not-allowed",borderRadius:14,opacity:deleteConfirmText.trim().toUpperCase()==="ELIMINAR"?1:0.6}}>Eliminar mi cuenta permanentemente</button>
+          <button onClick={()=>{setShowDeleteAccount(false);setDeleteConfirmText("");}} className="btn-press" style={{width:"100%",marginTop:10,background:"transparent",border:`1px solid ${C.borderS}`,color:C.text,padding:"13px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cancelar</button>
+        </Modal>}
+        {showProfileEdit&&editProfile&&<Modal onClose={()=>{setShowProfileEdit(false);setEditAsAdmin(false);}} large center>
           <T size={24} style={{textAlign:"center",marginBottom:8}}>EDITAR PERFIL</T>
           {editAsAdmin&&<div style={{textAlign:"center",marginBottom:18,color:C.amber,fontFamily:F.bc,letterSpacing:"0.2em",textTransform:"uppercase",fontSize:11,fontWeight:600}}>MODO ADMIN</div>}
           {!editAsAdmin&&<div style={{height:14}}/>}
