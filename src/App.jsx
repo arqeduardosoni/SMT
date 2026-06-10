@@ -42,8 +42,19 @@ select option:checked{background-color:#0288D1 !important;color:#FFFFFF !importa
 @keyframes auroraA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8%,-6%) scale(1.15)}66%{transform:translate(-10%,10%) scale(0.95)}}
 @keyframes auroraB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-12%,8%) scale(0.9)}66%{transform:translate(8%,-10%) scale(1.2)}}
 @keyframes auroraC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(15%,12%) scale(1.1)}}
-.btn-press:active{transform:scale(0.96);transition:transform 0.08s}
-.tap-row:active{background:rgba(255,255,255,0.04)}`;
+.btn-press:active{transform:scale(0.96);filter:brightness(0.78);transition:transform 0.08s,filter 0.08s}
+.tap-row:active{background:rgba(255,255,255,0.04);filter:brightness(0.85)}
+button{transition:transform 0.1s ease,filter 0.1s ease}
+button:active{transform:scale(0.96);filter:brightness(0.78)}
+.tab-btn{transition:transform 0.15s ease,filter 0.15s ease}
+.tab-btn:active{transform:scale(0.88);filter:brightness(0.78)}
+@media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
+.screen-fade{animation:scrFade 0.4s ease}
+@keyframes scrFade{from{opacity:0}to{opacity:1}}
+html,body{background:#040A18;margin:0}
+@media(min-width:768px){
+  #root{max-width:720px;margin:0 auto;border-left:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);min-height:100vh;box-shadow:0 0 80px rgba(0,0,0,0.5)}
+}`;
 
 const F={ios:`-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",sans-serif`,bn:`'Bebas Neue',sans-serif`,bc:`'Barlow Condensed',sans-serif`};
 const C_MEN={cyan:"#4FC3F7",cyanBright:"#29B6F6",cyanDeep:"#0288D1",cyanDim:"rgba(79,195,247,0.15)",cyanBdr:"rgba(79,195,247,0.32)",gold:"#C9A84C",goldDim:"rgba(201,168,76,0.15)",goldBdr:"rgba(201,168,76,0.35)",navy:"#0A1B3D",navyDeep:"#061226",navyDarker:"#040A18",surface:"#0A1B3D",surface2:"#0D2148",surface3:"#163068",bg:"#040A18",text:"#F0EDE8",muted:"rgba(240,237,232,0.45)",borderS:"rgba(255,255,255,0.06)",iosField:"rgba(118,118,128,0.18)",green:"#34C759",red:"#FF3B30",amber:"#FF9F0A"};
@@ -513,6 +524,31 @@ export default function App(){
   const [welcomeAnim,setWelcomeAnim]=useState(false);
   const [selT,setSelT]=useState(null);
   const [viewP,setViewP]=useState(null);
+  // ===== SOCIAL (grupos + chat) =====
+  const [myGroups,setMyGroups]=useState([]);
+  const [discoverGroups,setDiscoverGroups]=useState([]);
+  const [socialTab,setSocialTab]=useState("mine"); // mine | discover
+  const [socialLoading,setSocialLoading]=useState(false);
+  const [activeGroup,setActiveGroup]=useState(null);
+  const [groupMsgs,setGroupMsgs]=useState([]);
+  const [chatInput,setChatInput]=useState("");
+  const [chatSending,setChatSending]=useState(false);
+  const [showCreateGroup,setShowCreateGroup]=useState(false);
+  const [newGroup,setNewGroup]=useState({name:"",description:"",isPublic:true});
+  const [creatingGroup,setCreatingGroup]=useState(false);
+  const [inviteGroup,setInviteGroup]=useState(null); // grupo cuyo link de invitación se muestra
+  const [inviteCopied,setInviteCopied]=useState(false);
+  const [pendingJoinCode,setPendingJoinCode]=useState(null);
+  const [groupMembers,setGroupMembers]=useState([]);
+  const [showGroupInfo,setShowGroupInfo]=useState(false);
+  const [replyingTo,setReplyingTo]=useState(null); // mensaje al que estoy respondiendo
+  const [reactPickerFor,setReactPickerFor]=useState(null); // id del mensaje con el picker de reacciones abierto
+  const [notifications,setNotifications]=useState([]);
+  const [showNotifs,setShowNotifs]=useState(false);
+  const [sb,setSb]=useState(null);          // estado del partido en el marcador
+  const [sbHist,setSbHist]=useState([]);     // historial para deshacer
+  const [sbP1,setSbP1]=useState("");
+  const [sbP2,setSbP2]=useState("");
   const [tab,setTab]=useState("draw");
   const [subData,setSubData]=useState(null);
   const [subStep,setSubStep]=useState("pick");
@@ -872,6 +908,294 @@ export default function App(){
     setShowProfileEdit(false);setEditAsAdmin(false);
   };
 
+  // ====================== SOCIAL: funciones ======================
+  const buildInviteUrl=(g)=>`https://smt-green.vercel.app/?join=${g.invite_code}`;
+
+  const loadSocial=async()=>{
+    if(!user||isAdmin)return;
+    setSocialLoading(true);
+    try{
+      const {data:mem}=await supabase.from("group_members").select("group_id").eq("user_id",user.id);
+      const myIds=(mem||[]).map(m=>m.group_id);
+      let mine=[];
+      if(myIds.length){
+        const {data:gs}=await supabase.from("groups").select("*").in("id",myIds).order("created_at",{ascending:false});
+        mine=gs||[];
+      }
+      setMyGroups(mine);
+      const {data:pub}=await supabase.from("groups").select("*").eq("is_public",true).order("created_at",{ascending:false});
+      setDiscoverGroups((pub||[]).filter(g=>!myIds.includes(g.id)));
+    }catch(e){console.error("loadSocial",e);}
+    setSocialLoading(false);
+  };
+
+  const openGroup=async(g)=>{
+    setActiveGroup(g);setGroupMsgs([]);setGroupMembers([]);setScreen("group-chat");
+    try{
+      const {data:msgs}=await supabase.from("group_messages").select("*").eq("group_id",g.id).order("created_at",{ascending:true}).limit(300);
+      setGroupMsgs(msgs||[]);
+      const {data:mem}=await supabase.from("group_members").select("*").eq("group_id",g.id);
+      setGroupMembers(mem||[]);
+    }catch(e){console.error("openGroup",e);}
+  };
+
+  const createGroupFn=async()=>{
+    if(!newGroup.name.trim()){alert("Ponle un nombre a tu grupo 🎾");return;}
+    setCreatingGroup(true);
+    try{
+      const code=newGroup.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"").slice(0,12)+"-"+Math.random().toString(36).slice(2,6);
+      const colors=["#1B4FD8","#7c3aed","#0288D1","#16a34a","#d97706","#db2777","#0891b2"];
+      const color=colors[Math.floor(Math.random()*colors.length)];
+      const {data:g,error}=await supabase.from("groups").insert({name:newGroup.name.trim(),description:newGroup.description.trim(),is_public:newGroup.isPublic,invite_code:code,avatar_color:color,created_by:user.id}).select().single();
+      if(error)throw error;
+      await supabase.from("group_members").insert({group_id:g.id,user_id:user.id,role:"admin"});
+      setShowCreateGroup(false);setNewGroup({name:"",description:"",isPublic:true});
+      await loadSocial();
+      openGroup(g);
+    }catch(e){console.error("createGroup",e);alert("No se pudo crear el grupo: "+(e.message||e));}
+    setCreatingGroup(false);
+  };
+
+  // ==================== MARCADOR EN VIVO (motor de tenis) ====================
+  const sbNewMatch=(p1,p2)=>({p1:p1||"Jugador 1",p2:p2||"Jugador 2",sets:[],games:[0,0],points:[0,0],tiebreak:false,tb:[0,0],matchTiebreak:false,mtb:[0,0],winner:null});
+  const sbSetsWon=(st)=>[st.sets.filter(x=>x[0]>x[1]).length,st.sets.filter(x=>x[1]>x[0]).length];
+  const sbFinalizeSet=(st,w)=>{
+    st.sets=[...st.sets,[st.games[0],st.games[1]]];
+    st.games=[0,0];st.points=[0,0];st.tiebreak=false;st.tb=[0,0];
+    const sw=sbSetsWon(st);
+    if(sw[0]>=2){st.winner=0;return;}
+    if(sw[1]>=2){st.winner=1;return;}
+    if(sw[0]===1&&sw[1]===1){st.matchTiebreak=true;st.mtb=[0,0];}
+  };
+  const sbAddPoint=(prev,who)=>{
+    if(!prev||prev.winner!=null)return prev;
+    const st=JSON.parse(JSON.stringify(prev));
+    const opp=who===0?1:0;
+    if(st.matchTiebreak){
+      st.mtb[who]++;
+      if(st.mtb[who]>=7&&st.mtb[who]-st.mtb[opp]>=2){st.sets=[...st.sets,[st.mtb[0],st.mtb[1]]];st.winner=who;}
+      return st;
+    }
+    if(st.tiebreak){
+      st.tb[who]++;
+      if(st.tb[who]>=7&&st.tb[who]-st.tb[opp]>=2){st.games[who]++;sbFinalizeSet(st,who);}
+      return st;
+    }
+    st.points[who]++;
+    const a=st.points[who],b=st.points[opp];
+    if(a>=4&&a-b>=2){
+      st.games[who]++;st.points=[0,0];
+      if(st.games[who]>=6&&st.games[who]-st.games[opp]>=2){sbFinalizeSet(st,who);}
+      else if(st.games[0]===6&&st.games[1]===6){st.tiebreak=true;st.tb=[0,0];}
+    }
+    return st;
+  };
+  const sbPtLabel=(st,who)=>{
+    const opp=who===0?1:0;
+    if(st.matchTiebreak)return String(st.mtb[who]);
+    if(st.tiebreak)return String(st.tb[who]);
+    const a=st.points[who],b=st.points[opp];
+    if(a>=3&&b>=3){if(a===b)return "40";if(a>b)return "AD";return "40";}
+    return ["0","15","30","40"][Math.min(a,3)];
+  };
+  const sbPoint=(who)=>{setSbHist(h=>[...h,sb]);setSb(p=>sbAddPoint(p,who));};
+  const sbUndo=()=>{setSbHist(h=>{if(!h.length)return h;setSb(h[h.length-1]);return h.slice(0,-1);});};
+  const sbStart=()=>{setSb(sbNewMatch(sbP1.trim(),sbP2.trim()));setSbHist([]);};
+  const sbReset=()=>{setSb(null);setSbHist([]);setSbP1("");setSbP2("");};
+
+  // ==================== NOTIFICACIONES ====================
+  const notifTime=(iso)=>{
+    try{
+      const d=new Date(iso),now=new Date(),s=Math.floor((now-d)/1000);
+      if(s<60)return "hace un momento";
+      if(s<3600)return `hace ${Math.floor(s/60)} min`;
+      if(s<86400)return `hace ${Math.floor(s/3600)} h`;
+      if(s<604800)return `hace ${Math.floor(s/86400)} d`;
+      return d.toLocaleDateString("es-MX",{day:"numeric",month:"short"});
+    }catch(e){return "";}
+  };
+  const createNotif=async(toUserId,{type,title,body,link})=>{
+    if(!toUserId)return;
+    try{ await supabase.from("notifications").insert({user_id:toUserId,type,title,body,link}); }
+    catch(e){console.error("notif",e);}
+  };
+
+  const loadNotifications=async()=>{
+    if(!user||isAdmin)return;
+    try{
+      const {data}=await supabase.from("notifications").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
+      setNotifications(data||[]);
+    }catch(e){console.error("loadNotifs",e);}
+  };
+
+  const markNotifsRead=async()=>{
+    const unread=notifications.filter(n=>!n.read).map(n=>n.id);
+    if(!unread.length)return;
+    setNotifications(prev=>prev.map(n=>({...n,read:true})));
+    try{ await supabase.from("notifications").update({read:true}).in("id",unread); }catch(e){console.error("markRead",e);}
+  };
+
+  const openNotif=(n)=>{
+    setShowNotifs(false);
+    if(n.link==="social")setScreen("social");
+    else if(n.link==="home")setScreen("home");
+    else if(n.link)setScreen(n.link);
+  };
+
+  // Carga notificaciones al iniciar sesión + tiempo real
+  useEffect(()=>{
+    if(!user||isAdmin)return;
+    loadNotifications();
+    const ch=supabase.channel(`notif-${user.id}`)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:`user_id=eq.${user.id}`},(payload)=>{
+        setNotifications(prev=>prev.some(n=>n.id===payload.new.id)?prev:[payload.new,...prev]);
+      })
+      .subscribe();
+    return ()=>{try{supabase.removeChannel(ch);}catch(e){}};
+    /* eslint-disable-next-line */
+  },[user?.id,isAdmin]);
+
+  const joinGroupByObj=async(g)=>{
+    try{
+      const {error}=await supabase.from("group_members").insert({group_id:g.id,user_id:user.id,role:"member"});
+      if(error&&!(error.message||"").toLowerCase().includes("duplicate"))throw error;
+      // Notifica al creador del grupo que alguien se unió (si no soy yo el creador)
+      if(g.created_by&&g.created_by!==user.id){
+        createNotif(g.created_by,{type:"group_join",title:"Nuevo miembro 👥",body:`${user.name} se unió a tu grupo "${g.name}"`,link:"social"});
+      }
+      await loadSocial();
+      openGroup(g);
+    }catch(e){console.error("join",e);alert("No se pudo unir al grupo: "+(e.message||e));}
+  };
+
+  const joinByCode=async(code)=>{
+    try{
+      const {data:g}=await supabase.from("groups").select("*").eq("invite_code",code).maybeSingle();
+      if(!g){alert("Ese link de invitación no es válido o el grupo ya no existe.");return;}
+      await joinGroupByObj(g);
+    }catch(e){console.error("joinByCode",e);}
+  };
+
+  const leaveGroupFn=async(g)=>{
+    if(!window.confirm(`¿Salir del grupo "${g.name}"?`))return;
+    try{
+      await supabase.from("group_members").delete().eq("group_id",g.id).eq("user_id",user.id);
+      setShowGroupInfo(false);setActiveGroup(null);setScreen("social");
+      await loadSocial();
+    }catch(e){console.error("leave",e);}
+  };
+
+  const deleteGroupFn=async(g)=>{
+    if(g.created_by!==user.id)return;
+    if(!window.confirm(`¿Eliminar el grupo "${g.name}"? Se borrarán todos sus mensajes. Esto no se puede deshacer.`))return;
+    try{
+      await supabase.from("groups").delete().eq("id",g.id);
+      setShowGroupInfo(false);setActiveGroup(null);setScreen("social");
+      await loadSocial();
+    }catch(e){console.error("delete",e);}
+  };
+
+  const uploadMedia=async(file)=>{
+    const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+    const path=`${user.id}/${Date.now()}-${Math.random().toString(36).slice(2,6)}.${ext}`;
+    const {error}=await supabase.storage.from("group-media").upload(path,file,{cacheControl:"3600",upsert:false});
+    if(error)throw error;
+    const {data}=supabase.storage.from("group-media").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const replyFields=()=>{
+    if(!replyingTo)return {};
+    return {reply_to_id:replyingTo.id,reply_to_name:replyingTo.sender_name||"Miembro",reply_to_text:replyingTo.text||(replyingTo.media_type==="video"?"🎥 Video":"📷 Foto")};
+  };
+
+  const sendMsg=async()=>{
+    if(!chatInput.trim()||!activeGroup||chatSending)return;
+    const txt=chatInput.trim();setChatInput("");setChatSending(true);
+    const rf=replyFields();setReplyingTo(null);
+    try{
+      const {error}=await supabase.from("group_messages").insert({group_id:activeGroup.id,user_id:user.id,sender_name:user.name,text:txt,...rf});
+      if(error)throw error;
+    }catch(e){console.error("send",e);alert("No se pudo enviar el mensaje");setChatInput(txt);}
+    setChatSending(false);
+  };
+
+  const sendMedia=async(file)=>{
+    if(!file||!activeGroup||chatSending)return;
+    const isVideo=(file.type||"").startsWith("video");
+    if(file.size>25*1024*1024){alert("El archivo es muy grande (máximo 25 MB).");return;}
+    setChatSending(true);
+    const rf=replyFields();setReplyingTo(null);
+    try{
+      const url=await uploadMedia(file);
+      const {error}=await supabase.from("group_messages").insert({group_id:activeGroup.id,user_id:user.id,sender_name:user.name,media_url:url,media_type:isVideo?"video":"image",...rf});
+      if(error)throw error;
+    }catch(e){console.error("sendMedia",e);alert("No se pudo subir el archivo: "+(e.message||e));}
+    setChatSending(false);
+  };
+
+  const toggleReaction=async(m,emoji)=>{
+    if(!user)return;
+    const r={...(m.reactions||{})};
+    const arr=r[emoji]?[...r[emoji]]:[];
+    const i=arr.indexOf(user.id);
+    if(i>=0)arr.splice(i,1); else arr.push(user.id);
+    if(arr.length)r[emoji]=arr; else delete r[emoji];
+    setGroupMsgs(prev=>prev.map(x=>x.id===m.id?{...x,reactions:r}:x));
+    setReactPickerFor(null);
+    try{ await supabase.from("group_messages").update({reactions:r}).eq("id",m.id); }
+    catch(e){console.error("react",e);}
+  };
+
+
+  const shareInviteWhatsApp=(g)=>{
+    const url=buildInviteUrl(g);
+    const text=`¡Únete a mi grupo "${g.name}" en SMT (Sociedad Mexicana de Tenis)! 🎾\n\n${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+  };
+
+  const copyInvite=(g)=>{
+    const url=buildInviteUrl(g);
+    try{navigator.clipboard.writeText(url);setInviteCopied(true);setTimeout(()=>setInviteCopied(false),2000);}catch(e){alert("Copia este link: "+url);}
+  };
+
+  // Carga grupos al entrar a la pestaña Social
+  useEffect(()=>{ if(screen==="social"&&user&&!isAdmin) loadSocial(); /* eslint-disable-next-line */ },[screen]);
+
+  // Tiempo real: mensajes nuevos del grupo activo
+  useEffect(()=>{
+    if(!activeGroup)return;
+    const ch=supabase.channel(`grp-${activeGroup.id}`)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"group_messages",filter:`group_id=eq.${activeGroup.id}`},(payload)=>{
+        setGroupMsgs(prev=>prev.some(m=>m.id===payload.new.id)?prev:[...prev,payload.new]);
+      })
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"group_messages",filter:`group_id=eq.${activeGroup.id}`},(payload)=>{
+        setGroupMsgs(prev=>prev.map(m=>m.id===payload.new.id?{...m,...payload.new}:m));
+      })
+      .subscribe();
+    return ()=>{try{supabase.removeChannel(ch);}catch(e){}};
+  },[activeGroup]);
+
+  // Detecta link de invitación en la URL (?join=CODE)
+  useEffect(()=>{
+    try{
+      const params=new URLSearchParams(window.location.search);
+      const code=params.get("join");
+      if(code){setPendingJoinCode(code);window.history.replaceState({},"",window.location.pathname);}
+    }catch(e){}
+  },[]);
+
+  // Procesa la invitación pendiente cuando el usuario ya inició sesión
+  useEffect(()=>{
+    if(user&&!isAdmin&&pendingJoinCode){
+      const code=pendingJoinCode;setPendingJoinCode(null);
+      joinByCode(code);
+    }
+    /* eslint-disable-next-line */
+  },[user,pendingJoinCode]);
+  // ==================== FIN SOCIAL: funciones ====================
+
+
   const approveStatReq=(rid,approve)=>{
     const r=statRequests.find(x=>x.id===rid);if(!r)return;
     if(approve){
@@ -1109,7 +1433,8 @@ export default function App(){
   const openTourney=(t)=>{playRacket();setSelT(t);setTab(t.format==="groups+ko"&&t.groups.length>0?"groups":"draw");setShowIntro(true);setScreen("tournament");};
 
   function Nav(){
-    return <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(4,10,24,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:`0.5px solid ${C.cyanBdr}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px",height:60,fontFamily:F.ios}}>
+    return <>
+    <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(4,10,24,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:`0.5px solid ${C.cyanBdr}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px",height:60,fontFamily:F.ios}}>
       <div style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}} onClick={()=>setScreen("home")}>
         <Logo size={48}/>
         <div style={{fontFamily:F.bn,fontSize:22,letterSpacing:"0.22em",color:C.text}}>SMT</div>
@@ -1117,9 +1442,27 @@ export default function App(){
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         {isAdmin&&<Chip type="cyan">ADMIN</Chip>}
         {isAdmin&&(pendRegs()+pendRes())>0&&<button onClick={()=>setScreen("admin-inbox")} className="btn-press" style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,padding:"6px 10px",borderRadius:10,cursor:"pointer",fontFamily:F.ios,fontSize:12,color:C.amber,fontWeight:600}}>🔔 {pendRegs()+pendRes()}</button>}
+        {user&&!isAdmin&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,fontSize:20,lineHeight:1}}>🔔
+          {notifications.filter(n=>!n.read).length>0&&<span style={{position:"absolute",top:-2,right:-2,minWidth:17,height:17,padding:"0 4px",background:C.red||"#FF453A",color:"#fff",fontSize:10,fontWeight:700,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.ios}}>{notifications.filter(n=>!n.read).length}</span>}
+        </button>}
         <PA photo={user?.photo} avatar={user?.avatar} size={36} onClick={()=>{if(!isAdmin){setViewP(user);setScreen("player-card");}else setScreen("admin-settings");}}/>
       </div>
-    </nav>;
+    </nav>
+    {showNotifs&&<div style={{position:"fixed",inset:0,zIndex:700,background:"rgba(2,6,16,0.6)"}} onClick={()=>setShowNotifs(false)}>
+      <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:64,right:10,width:"min(360px,92vw)",maxHeight:"72vh",overflowY:"auto",background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,boxShadow:"0 20px 60px rgba(0,0,0,0.55)",animation:"fadeIn 0.2s"}}>
+        <div style={{padding:"14px 16px",borderBottom:`1px solid ${C.borderS}`,display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,background:C.surface}}>
+          <div style={{fontWeight:700,fontSize:16,color:C.text}}>Notificaciones</div>
+          <button onClick={()=>setShowNotifs(false)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}>✕</button>
+        </div>
+        {notifications.length===0?<div style={{padding:"34px 20px",textAlign:"center",color:C.muted,fontSize:14}}>No tienes notificaciones todavía 🎾</div>:
+          notifications.map(n=><div key={n.id} onClick={()=>openNotif(n)} className="btn-press" style={{padding:"12px 16px",borderBottom:`1px solid ${C.borderS}`,cursor:"pointer"}}>
+            <div style={{fontWeight:600,fontSize:14,marginBottom:2,color:C.text}}>{n.title}</div>
+            {n.body&&<div style={{fontSize:13,color:C.muted,lineHeight:1.4}}>{n.body}</div>}
+            <div style={{fontSize:11,color:C.muted,marginTop:4,opacity:0.7}}>{notifTime(n.created_at)}</div>
+          </div>)}
+      </div>
+    </div>}
+    </>;
   }
   const Back=({to,label})=><button onClick={()=>setScreen(to)} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← {label||"Volver"}</button>;
 
@@ -1139,6 +1482,7 @@ export default function App(){
     if(name==="person") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 21c.5-4.5 4.5-7 8.5-7s8 2.5 8.5 7"/></svg>;
     // NUEVO: COACH - silbato + lupa
     if(name==="coach") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a6 6 0 0 1 6-6h7a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4h-1v3a1 1 0 0 1-1 1H9a6 6 0 0 1-6-6z"/><circle cx="9" cy="12" r="1.2" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><path d="M18 8.5v0"/></svg>;
+    if(name==="chat") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><circle cx="8" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><circle cx="12" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><circle cx="16" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/></svg>;
     return null;
   };
 
@@ -1147,9 +1491,9 @@ export default function App(){
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
     const tabs=[
       {k:"home",icon:"trophy",label:"Torneos"},
-      ...(userIsMinor?[]:[{k:"find-match",icon:"bolt",label:"Find"}]),
-      ...(userIsMinor?[]:[{k:"coach",icon:"coach",label:"Coach"}]),
+      ...(userIsMinor?[]:[{k:"find-hub",icon:"bolt",label:"Find"}]),
       ...(userIsMinor?[]:[{k:"marketplace",icon:"bag",label:"Market"}]),
+      ...(userIsMinor?[]:[{k:"social",icon:"chat",label:"Social"}]),
       {k:"rankings",icon:"chart",label:"Rank"},
       ...(userIsMinor?[]:[{k:"media",icon:"film",label:"Media"}]),
       {k:"profile-tab",icon:"person",label:"Perfil"}
@@ -1159,25 +1503,25 @@ export default function App(){
       else if(k==="profile-tab"){setViewP(user);setScreen("player-card");}
       else setScreen(k);
     };
-    const currentTab=screen==="home"?"home":screen==="find-match"?"find-match":screen==="coach"?"coach":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
-    return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
+    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
+    return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,maxWidth:720,margin:"0 auto",background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
       <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start",padding:"8px 2px 4px",maxWidth:640,margin:"0 auto"}}>
-        {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="btn-press" style={{flex:1,background:"transparent",border:"none",padding:"4px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative",fontFamily:F.ios,minHeight:50,minWidth:0}}>
-          <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:44,height:30,borderRadius:14,background:active?`linear-gradient(135deg,${C.cyan}28,${C.cyanDeep}18)`:"transparent",transition:"all 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}>
-            {active&&<div style={{position:"absolute",inset:-2,borderRadius:16,background:`radial-gradient(circle,${C.cyan}40,transparent 70%)`,filter:"blur(8px)",animation:"glowPulse 2.4s ease-in-out infinite"}}/>}
-            <div style={{position:"relative",zIndex:1}}><Icon name={t.icon} size={22} color={active?C.cyan:undefined} active={active}/></div>
+        {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="tab-btn" style={{flex:1,background:"transparent",border:"none",padding:"6px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",fontFamily:F.ios,minHeight:60,minWidth:0}}>
+          <div className="tab-icon-box" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:54,height:38,borderRadius:16,background:active?`linear-gradient(135deg,${C.cyan}28,${C.cyanDeep}18)`:"transparent",transition:"all 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}>
+            {active&&<div style={{position:"absolute",inset:-2,borderRadius:18,background:`radial-gradient(circle,${C.cyan}40,transparent 70%)`,filter:"blur(8px)",animation:"glowPulse 2.4s ease-in-out infinite"}}/>}
+            <div style={{position:"relative",zIndex:1}}><Icon name={t.icon} size={26} color={active?C.cyan:undefined} active={active}/></div>
           </div>
-          <div style={{fontSize:9.5,fontWeight:active?700:500,color:active?C.cyan:"rgba(240,237,232,0.55)",letterSpacing:"-0.01em",transition:"color 0.2s",fontFamily:F.ios,whiteSpace:"nowrap"}}>{t.label}</div>
+          <div style={{fontSize:11,fontWeight:active?700:500,color:active?C.cyan:"rgba(240,237,232,0.55)",letterSpacing:"-0.01em",transition:"color 0.2s",fontFamily:F.ios,whiteSpace:"nowrap"}}>{t.label}</div>
         </button>;})}
       </div>
     </div>;
   }
   const ShowTabBar=()=>{const hidden=["welcome","auth"].includes(screen);return hidden?null:<TabBar/>;};
   // Spacer para que el contenido no quede bajo la tab bar
-  const TabSpacer=()=><div style={{height:user?80:0}}/>;
+  const TabSpacer=()=><div style={{height:user?92:0}}/>;
 
   // WELCOME SCREEN
-  if(screen==="welcome")return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+  if(screen==="welcome")return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
     <style>{STYLE}</style>
     <Aurora intense={1.2}/>
     {/* Orbes flotantes Gen-Alpha */}
@@ -1196,7 +1540,7 @@ export default function App(){
 
   // AUTH SCREEN
   if(screen==="auth"){
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style>
       <Aurora intense={1.0}/>
       <button onClick={()=>{setScreen("welcome");setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(null);}} className="btn-press" style={{position:"absolute",top:18,left:18,background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",zIndex:5}}>← Inicio</button>
@@ -1332,14 +1676,14 @@ export default function App(){
   }
 
   // INSIGHTS
-  if(screen==="insights"&&insights){return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios}}><style>{STYLE}</style><MIns data={insights} onClose={()=>{setInsights(null);setScreen("tournament");}}/>{champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}</div>;}
+  if(screen==="insights"&&insights){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios}}><style>{STYLE}</style><MIns data={insights} onClose={()=>{setInsights(null);setScreen("tournament");}}/>{champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}</div>;}
 
   // PLAYER CARD
   if(screen==="player-card"){
     const p=viewP||user;if(!p)return null;
     // PROTECCIÓN DE MENORES: un mayor NO puede ver el perfil de un menor
     if(!isAdmin&&user&&p.id!==user.id&&isMinor(p.birthdate)&&!isMinor(user.birthdate)){
-      return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -1352,7 +1696,7 @@ export default function App(){
     }
     // Si un menor intenta ver perfil de mayor, también bloqueado
     if(!isAdmin&&user&&p.id!==user.id&&isMinor(user.birthdate)&&!isMinor(p.birthdate)){
-      return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -1370,7 +1714,7 @@ export default function App(){
     const canEditPhoto=isMe||(isAdmin&&p.id!==user?.id);
     const hasSk=p.stats?.serve>0||p.stats?.return>0||p.stats?.forehand>0||p.stats?.backhand>0;
     const photoId=`photoUp-${p.id}`;
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -1436,7 +1780,7 @@ export default function App(){
         </div>
         {isMe&&<div style={{padding:"24px 16px 16px"}}>
           <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"15px 18px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
-          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"13px 18px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  Eliminar mi cuenta</button>
+          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"13px 18px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  ELIMINAR MI CUENTA</button>
         </div>}
         <div style={{height:32}}/>
         <TabSpacer/>
@@ -1543,7 +1887,7 @@ export default function App(){
 
   // HOME
   if(screen==="home"){
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style><Aurora intense={0.5}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -1586,6 +1930,7 @@ export default function App(){
             </div>
             <div style={{marginTop:14,display:"flex",gap:8,flexWrap:"wrap"}}>
               <BtnG onClick={()=>{if(!user.category){alert("Primero selecciona tu categoría en tu perfil.");return;}setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:user.sex||"M",category:user.category,format:"groups+ko"});setReqTourModal(true);}}>✏️ SOLICITAR TORNEO {createPermissions[user.id]>0&&`(${createPermissions[user.id]} disp.)`}</BtnG>
+              <BtnG onClick={()=>setScreen("scoreboard")}>📊 MARCADOR EN VIVO</BtnG>
             </div>
             {isMinor(user?.birthdate)&&<div style={{marginTop:14,background:"rgba(91,173,111,0.12)",border:`1px solid rgba(91,173,111,0.4)`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
               <div style={{fontSize:22}}>🛡️</div>
@@ -1780,7 +2125,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="admin-inbox"&&isAdmin){
     const apr=[],areg=[];
     tournaments.forEach(t=>{t.groups.forEach((g,gi)=>g.matches.forEach(m=>{if(m.pendingResult)apr.push({tid:t.id,kind:"group",gi,ri:null,match:m,tName:t.name,gName:g.name});}));t.rounds.forEach((rnd,ri)=>rnd.forEach(m=>{if(m.pendingResult)apr.push({tid:t.id,kind:"ko",gi:null,ri,match:m,tName:t.name,gName:rLabel(ri,t.rounds.length)});}));t.pendingPlayers.forEach(p=>areg.push({tid:t.id,tName:t.name,player:p}));});
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -1980,7 +2325,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
 
   // ADMIN SETTINGS
   if(screen==="admin-settings"&&isAdmin){
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -2014,7 +2359,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const champ=getChamp(t);
     const allGD=t.format==="groups+ko"&&t.groups.length>0&&t.groups.every(g=>g.matches.every(m=>m.status==="done"));
     const avAccts=accounts.filter(a=>!t.players.find(p=>p.id===a.id)&&!t.pendingPlayers.find(p=>p.id===a.id)&&a.name.toLowerCase().includes(addSearch.toLowerCase())&&(!t.gender||t.gender==="Mixed"||!a.sex||a.sex===t.gender));
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       {showIntro&&t.players.length>0&&<TIntro tourney={t} onDone={()=>setShowIntro(false)}/>}
       {champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}
@@ -2180,7 +2525,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
     const inCat=accounts.filter(a=>a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -2213,10 +2558,174 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     </div>;
   }
 
+  // ====================== SOCIAL: pantallas ======================
+  if(screen==="social"){
+    const fld={width:"100%",background:C.iosField,border:`1px solid ${C.borderS}`,borderRadius:12,padding:"13px 14px",color:C.text,fontFamily:F.ios,fontSize:15,boxSizing:"border-box"};
+    const list=socialTab==="mine"?myGroups:discoverGroups;
+    const GroupCard=(g,joined)=><div key={g.id} className="btn-press" onClick={()=>joined?openGroup(g):joinGroupByObj(g)} style={{display:"flex",alignItems:"center",gap:12,background:C.surface2,border:`1px solid ${C.borderS}`,borderRadius:16,padding:13,marginBottom:10,cursor:"pointer"}}>
+        <div style={{width:48,height:48,borderRadius:13,flexShrink:0,background:`linear-gradient(135deg,${g.avatar_color||C.cyanDeep},${C.navyDeep})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:F.bn,fontSize:20,letterSpacing:"0.04em"}}>{(g.name||"?").slice(0,2).toUpperCase()}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:7}}>
+            <span style={{fontWeight:700,fontSize:15.5,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</span>
+            <span style={{flexShrink:0,fontSize:10,padding:"2px 7px",borderRadius:6,background:g.is_public?"rgba(79,195,247,0.14)":"rgba(124,58,237,0.18)",color:g.is_public?C.cyan:"#a78bfa"}}>{g.is_public?"Público":"🔒 Privado"}</span>
+          </div>
+          <div style={{fontSize:12.5,color:C.muted,marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.description||(joined?"Toca para abrir el chat":"Toca para unirte")}</div>
+        </div>
+        {!joined&&<div style={{flexShrink:0,fontSize:13,fontWeight:700,color:C.green}}>Unirme</div>}
+      </div>;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/>
+        <div style={{padding:"14px 18px"}}>
+          <T size={32}>SOCIAL</T><Sub style={{marginTop:4,marginBottom:14}}>Grupos, chats y comunidad de tenis</Sub>
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
+            {[["mine","Mis grupos"],["discover","Descubrir"]].map(([k,l])=><button key={k} onClick={()=>setSocialTab(k)} className="btn-press" style={{flex:1,background:socialTab===k?`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`:C.surface2,border:`1px solid ${socialTab===k?"transparent":C.borderS}`,color:socialTab===k?"#fff":C.muted,fontFamily:F.ios,fontSize:14,fontWeight:700,padding:"11px",borderRadius:12,cursor:"pointer"}}>{l}</button>)}
+          </div>
+          {socialLoading?<div style={{textAlign:"center",color:C.muted,padding:"40px 0",fontSize:14}}>Cargando grupos…</div>:
+            list.length===0?
+              <div style={{textAlign:"center",padding:"36px 16px",background:C.surface2,borderRadius:16,border:`1px solid ${C.borderS}`}}>
+                <div style={{fontSize:38,marginBottom:8}}>{socialTab==="mine"?"🎾":"🔍"}</div>
+                <div style={{fontWeight:700,fontSize:16,marginBottom:5}}>{socialTab==="mine"?"Aún no estás en ningún grupo":"No hay grupos públicos todavía"}</div>
+                <div style={{fontSize:13.5,color:C.muted,lineHeight:1.5}}>{socialTab==="mine"?"Crea tu primer grupo o explora la pestaña Descubrir para unirte a la comunidad.":"¡Sé el primero! Crea un grupo público y empieza a invitar gente."}</div>
+              </div>
+              :list.map(g=>GroupCard(g,socialTab==="mine"))}
+          <button onClick={()=>setShowCreateGroup(true)} className="btn-press" style={{width:"100%",marginTop:14,background:"transparent",border:`1.5px dashed ${C.cyanBdr}`,color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:700,padding:"15px",borderRadius:16,cursor:"pointer"}}>＋  Crear grupo</button>
+          <TabSpacer/>
+        </div>
+      </div>
+
+      {showCreateGroup&&<div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.78)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={()=>setShowCreateGroup(false)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,background:C.surface,borderRadius:"22px 22px 0 0",border:`1px solid ${C.borderS}`,padding:"22px 20px 30px",animation:"slideUp 0.3s ease"}}>
+          <div style={{width:42,height:5,borderRadius:3,background:C.borderS,margin:"0 auto 18px"}}/>
+          <T size={26} style={{marginBottom:16}}>NUEVO GRUPO</T>
+          <Sub style={{marginBottom:6}}>Nombre del grupo</Sub>
+          <input value={newGroup.name} onChange={e=>setNewGroup({...newGroup,name:e.target.value})} placeholder="Ej. Tenis Monterrey" maxLength={40} style={{...fld,marginBottom:14}}/>
+          <Sub style={{marginBottom:6}}>Descripción (opcional)</Sub>
+          <input value={newGroup.description} onChange={e=>setNewGroup({...newGroup,description:e.target.value})} placeholder="¿De qué trata el grupo?" maxLength={80} style={{...fld,marginBottom:14}}/>
+          <div style={{display:"flex",gap:8,marginBottom:18}}>
+            {[[true,"🌐 Público","Cualquiera puede encontrarlo y unirse"],[false,"🔒 Privado","Solo entran con el link de invitación"]].map(([v,l,d])=><button key={String(v)} onClick={()=>setNewGroup({...newGroup,isPublic:v})} className="btn-press" style={{flex:1,textAlign:"left",background:newGroup.isPublic===v?C.cyanDim:C.surface2,border:`1.5px solid ${newGroup.isPublic===v?C.cyanBdr:C.borderS}`,borderRadius:13,padding:"11px 12px",cursor:"pointer",fontFamily:F.ios}}>
+              <div style={{fontWeight:700,fontSize:14,color:newGroup.isPublic===v?C.cyan:C.text}}>{l}</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:3,lineHeight:1.35}}>{d}</div>
+            </button>)}
+          </div>
+          <BtnP onClick={createGroupFn} style={{marginTop:0,opacity:creatingGroup?0.6:1}}>{creatingGroup?"Creando…":"Crear grupo 🎾"}</BtnP>
+          <button onClick={()=>setShowCreateGroup(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cancelar</button>
+        </div>
+      </div>}
+      <ShowTabBar/>
+    </div>;
+  }
+
+  // CHAT DE GRUPO
+  if(screen==="group-chat"&&activeGroup){
+    const g=activeGroup;
+    const isCreator=g.created_by===user?.id;
+    const memName=(uid)=>accounts.find(a=>a.id===uid)?.name||"Miembro";
+    return <div key={"gc-"+g.id} className="screen-fade" style={{minHeight:"100vh",height:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",display:"flex",flexDirection:"column"}}>
+      <style>{STYLE}</style>
+      <div style={{flexShrink:0,display:"flex",alignItems:"center",gap:10,padding:"14px 14px",background:C.surface,borderBottom:`1px solid ${C.borderS}`,position:"relative",zIndex:2}}>
+        <button onClick={()=>{setActiveGroup(null);setScreen("social");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontSize:24,cursor:"pointer",padding:"0 2px",lineHeight:1}}>‹</button>
+        <div onClick={()=>setShowGroupInfo(true)} style={{width:38,height:38,borderRadius:11,flexShrink:0,cursor:"pointer",background:`linear-gradient(135deg,${g.avatar_color||C.cyanDeep},${C.navyDeep})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:F.bn,fontSize:16}}>{(g.name||"?").slice(0,2).toUpperCase()}</div>
+        <div onClick={()=>setShowGroupInfo(true)} style={{flex:1,minWidth:0,cursor:"pointer"}}>
+          <div style={{fontWeight:700,fontSize:15.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</div>
+          <div style={{fontSize:11.5,color:C.muted}}>{groupMembers.length} miembro{groupMembers.length!==1?"s":""} · toca para ver info</div>
+        </div>
+        <button onClick={()=>setInviteGroup(g)} className="btn-press" style={{flexShrink:0,background:"rgba(52,199,89,0.16)",border:`1px solid rgba(52,199,89,0.4)`,color:C.green,fontFamily:F.ios,fontSize:12.5,fontWeight:700,padding:"7px 11px",borderRadius:10,cursor:"pointer"}}>＋ Invitar</button>
+      </div>
+
+      <div style={{flex:1,overflowY:"auto",padding:"14px 14px 6px",display:"flex",flexDirection:"column",gap:9}}>
+        {groupMsgs.length===0&&<div style={{textAlign:"center",color:C.muted,marginTop:30,fontSize:14}}>Sé el primero en escribir 🎾</div>}
+        {groupMsgs.map(m=>{const mine=m.user_id===user?.id;const nm=m.sender_name||memName(m.user_id);const REMO=["👍","❤️","🔥","🎾","😂","👏"];const rx=Object.entries(m.reactions||{}).filter(([e,a])=>a&&a.length);return <div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:mine?"flex-end":"flex-start"}}>
+          {!mine&&<div style={{fontSize:11,color:C.cyan,fontWeight:600,margin:"0 0 2px 4px"}}>{nm}</div>}
+          <div style={{display:"flex",alignItems:"center",gap:6,flexDirection:mine?"row-reverse":"row",maxWidth:"90%"}}>
+            <div style={{maxWidth:"100%",background:mine?`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`:C.surface2,border:mine?"none":`1px solid ${C.borderS}`,borderRadius:16,padding:m.media_url?5:"9px 13px",color:mine?"#fff":C.text}}>
+              {m.reply_to_id&&<div style={{borderLeft:`3px solid ${mine?"#fff":C.cyan}`,padding:"3px 8px",margin:m.media_url?"3px 3px 6px":"0 0 6px",background:mine?"rgba(255,255,255,0.16)":"rgba(255,255,255,0.05)",borderRadius:7}}>
+                <div style={{fontSize:11,fontWeight:700,color:mine?"#fff":C.cyan}}>{m.reply_to_name}</div>
+                <div style={{fontSize:12.5,opacity:0.82,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:190}}>{m.reply_to_text}</div>
+              </div>}
+              {m.media_type==="image"&&<img src={m.media_url} alt="" style={{maxWidth:230,width:"100%",borderRadius:12,display:"block"}}/>}
+              {m.media_type==="video"&&<video src={m.media_url} controls style={{maxWidth:240,width:"100%",borderRadius:12,display:"block"}}/>}
+              {m.text&&<div style={{fontSize:15,lineHeight:1.35,padding:m.media_url?"6px 8px 2px":0,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{m.text}</div>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
+              <button onClick={()=>setReplyingTo(m)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Responder">↩</button>
+              <button onClick={()=>setReactPickerFor(reactPickerFor===m.id?null:m.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Reaccionar">😀</button>
+            </div>
+          </div>
+          {reactPickerFor===m.id&&<div style={{display:"flex",gap:4,marginTop:4,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"5px 8px"}}>
+            {REMO.map(e=><button key={e} onClick={()=>toggleReaction(m,e)} className="btn-press" style={{background:"none",border:"none",cursor:"pointer",fontSize:19,padding:"0 2px"}}>{e}</button>)}
+          </div>}
+          {rx.length>0&&<div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:4,maxWidth:"90%",justifyContent:mine?"flex-end":"flex-start"}}>
+            {rx.map(([e,a])=>{const meR=a.includes(user?.id);return <button key={e} onClick={()=>toggleReaction(m,e)} className="btn-press" style={{background:meR?"rgba(79,195,247,0.22)":C.surface2,border:`1px solid ${meR?C.cyan:C.borderS}`,borderRadius:12,padding:"2px 8px",fontSize:12.5,color:C.text,cursor:"pointer",display:"flex",alignItems:"center",gap:3}}>{e} {a.length}</button>;})}
+          </div>}
+        </div>;})}
+        <div ref={el=>{if(el)el.scrollIntoView({behavior:"auto"});}}/>
+      </div>
+
+      {replyingTo&&<div style={{flexShrink:0,display:"flex",alignItems:"center",gap:10,padding:"8px 14px",background:C.surface,borderTop:`1px solid ${C.borderS}`}}>
+        <div style={{width:3,alignSelf:"stretch",background:C.cyan,borderRadius:2}}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:11.5,fontWeight:700,color:C.cyan}}>Respondiendo a {replyingTo.sender_name||"Miembro"}</div>
+          <div style={{fontSize:12.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{replyingTo.text||(replyingTo.media_type==="video"?"🎥 Video":"📷 Foto")}</div>
+        </div>
+        <button onClick={()=>setReplyingTo(null)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer",padding:2}}>✕</button>
+      </div>}
+      <div style={{flexShrink:0,display:"flex",alignItems:"center",gap:9,padding:"10px 12px",background:C.surface,borderTop:`1px solid ${C.borderS}`,paddingBottom:"calc(10px + env(safe-area-inset-bottom))"}}>
+        <input type="file" accept="image/*,video/*" id="chat-file-input" style={{display:"none"}} onChange={e=>{const f=e.target.files&&e.target.files[0];if(f)sendMedia(f);e.target.value="";}}/>
+        <button onClick={()=>document.getElementById("chat-file-input").click()} className="btn-press" disabled={chatSending} style={{flexShrink:0,background:C.surface2,border:`1px solid ${C.borderS}`,borderRadius:"50%",width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:C.cyan}}>📷</button>
+        <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}} placeholder={chatSending?"Enviando…":"Mensaje…"} style={{flex:1,background:C.iosField,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"11px 15px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none"}}/>
+        <button onClick={sendMsg} className="btn-press" disabled={chatSending||!chatInput.trim()} style={{flexShrink:0,background:chatInput.trim()?`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`:C.surface2,border:"none",borderRadius:"50%",width:42,height:42,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:"#fff"}}>➤</button>
+      </div>
+
+      {inviteGroup&&<div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.8)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setInviteGroup(null)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:380,background:C.surface,borderRadius:20,border:`1px solid ${C.borderS}`,padding:24,textAlign:"center",animation:"fadeIn 0.25s"}}>
+          <div style={{width:54,height:54,borderRadius:15,background:"rgba(52,199,89,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",fontSize:26}}>👥</div>
+          <T size={24} style={{marginBottom:6}}>INVITA A TUS AMIGOS</T>
+          <Sub style={{marginBottom:18,lineHeight:1.5}}>Comparte el link. Tus amigos abren SMT y entran directo a “{inviteGroup.name}”.</Sub>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:C.bg,border:`1px solid ${C.borderS}`,borderRadius:11,padding:"11px 13px",marginBottom:14}}>
+            <span style={{flex:1,textAlign:"left",fontSize:12.5,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{buildInviteUrl(inviteGroup)}</span>
+            <button onClick={()=>copyInvite(inviteGroup)} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:inviteCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{inviteCopied?"✓ Copiado":"Copiar"}</button>
+          </div>
+          <button onClick={()=>shareInviteWhatsApp(inviteGroup)} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
+          <button onClick={()=>setInviteGroup(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"6px",cursor:"pointer"}}>Cerrar</button>
+        </div>
+      </div>}
+
+      {showGroupInfo&&<div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.8)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={()=>setShowGroupInfo(false)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto",background:C.surface,borderRadius:"22px 22px 0 0",border:`1px solid ${C.borderS}`,padding:"22px 20px 30px",animation:"slideUp 0.3s ease"}}>
+          <div style={{width:42,height:5,borderRadius:3,background:C.borderS,margin:"0 auto 18px"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:13,marginBottom:16}}>
+            <div style={{width:56,height:56,borderRadius:15,flexShrink:0,background:`linear-gradient(135deg,${g.avatar_color||C.cyanDeep},${C.navyDeep})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:F.bn,fontSize:24}}>{(g.name||"?").slice(0,2).toUpperCase()}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:18}}>{g.name}</div>
+              <div style={{fontSize:12.5,color:C.muted}}>{g.is_public?"Grupo público":"Grupo privado"} · {groupMembers.length} miembro{groupMembers.length!==1?"s":""}</div>
+            </div>
+          </div>
+          {g.description&&<div style={{fontSize:14,color:C.text,background:C.surface2,borderRadius:12,padding:"11px 13px",marginBottom:16,lineHeight:1.45}}>{g.description}</div>}
+          <button onClick={()=>{setShowGroupInfo(false);setInviteGroup(g);}} className="btn-press" style={{width:"100%",background:"rgba(52,199,89,0.16)",border:`1px solid rgba(52,199,89,0.4)`,color:C.green,fontFamily:F.ios,fontSize:15,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer",marginBottom:16}}>＋ Invitar gente al grupo</button>
+          <Sub style={{marginBottom:9,textTransform:"uppercase",letterSpacing:"0.05em",fontSize:11}}>Miembros</Sub>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
+            {groupMembers.map(m=>{const nm=memName(m.user_id);return <div key={m.id} style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:34,height:34,borderRadius:"50%",flexShrink:0,background:C.surface3,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:C.cyan}}>{ini(nm)}</div>
+              <span style={{fontSize:14.5,flex:1}}>{nm}{m.user_id===user?.id?" (tú)":""}</span>
+              {m.role==="admin"&&<span style={{fontSize:10.5,padding:"2px 8px",borderRadius:6,background:C.goldDim,color:C.gold,fontWeight:700}}>Admin</span>}
+            </div>;})}
+          </div>
+          {isCreator
+            ?<button onClick={()=>deleteGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>🗑  ELIMINAR GRUPO</button>
+            :<button onClick={()=>leaveGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>↩  SALIR DEL GRUPO</button>}
+          <button onClick={()=>setShowGroupInfo(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cerrar</button>
+        </div>
+      </div>}
+    </div>;
+  }
+  // ==================== FIN SOCIAL: pantallas ====================
+
   // MEDIA
   if(screen==="media"){
     // PROTECCIÓN DE MENORES: los menores no pueden ver Media
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -2227,7 +2736,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
     </div>;}
     const detail=openMedia?media.find(m=>m.id===openMedia):null;
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -2339,11 +2848,98 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   }
 
   // FIND A MATCH
-  if(screen==="find-match"){
-    // PROTECCIÓN DE MENORES: los menores no pueden acceder a Find a Match
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+  if(screen==="scoreboard"){
+    const w=sb&&sb.winner!=null;
+    const phase=sb?(sb.matchTiebreak?"MATCH TIE-BREAK":sb.tiebreak?"TIE-BREAK":null):null;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/><Back to="home" label="Home"/>
+        <div style={{padding:"14px 18px"}}>
+          <T size={32}>MARCADOR</T><Sub style={{marginTop:4,marginBottom:18}}>Lleva el score de tu partido</Sub>
+          {!sb&&<div style={{maxWidth:420,margin:"0 auto"}}>
+            <div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,padding:20}}>
+              <Sub style={{fontSize:12,marginBottom:6}}>JUGADOR 1</Sub>
+              <input value={sbP1} onChange={e=>setSbP1(e.target.value)} placeholder="Nombre jugador 1" style={{width:"100%",background:C.iosField,border:`1px solid ${C.borderS}`,borderRadius:12,padding:"12px 14px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
+              <Sub style={{fontSize:12,marginBottom:6}}>JUGADOR 2</Sub>
+              <input value={sbP2} onChange={e=>setSbP2(e.target.value)} placeholder="Nombre jugador 2" style={{width:"100%",background:C.iosField,border:`1px solid ${C.borderS}`,borderRadius:12,padding:"12px 14px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",marginBottom:8,boxSizing:"border-box"}}/>
+              <BtnP onClick={sbStart}>▶  INICIAR PARTIDO</BtnP>
+              <Sub style={{fontSize:11.5,marginTop:12,lineHeight:1.5,textAlign:"center"}}>Formato: 2 de 3 sets · tie-break a 7 en 6-6 · 3er set match tie-break a 7</Sub>
+            </div>
+          </div>}
+          {sb&&<div style={{maxWidth:460,margin:"0 auto"}}>
+            <div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,overflow:"hidden"}}>
+              {phase&&<div style={{textAlign:"center",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",fontWeight:800,fontSize:13,letterSpacing:"0.1em",padding:"7px"}}>{phase}</div>}
+              {[0,1].map(i=>{const isW=sb.winner===i;const oppI=i===0?1:0;return <div key={i} style={{display:"flex",alignItems:"center",padding:"16px",borderBottom:i===0?`1px solid ${C.borderS}`:"none",background:isW?"rgba(52,199,89,0.10)":"transparent"}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:18,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i===0?sb.p1:sb.p2}{isW&&" 🏆"}</div>
+                </div>
+                <div style={{display:"flex",gap:6,alignItems:"center",marginRight:14}}>
+                  {sb.sets.map((st,idx)=><div key={idx} style={{minWidth:20,textAlign:"center",fontSize:15,fontWeight:700,color:(st[i]>st[oppI])?C.cyan:C.muted}}>{st[i]}</div>)}
+                  {sb.winner==null&&!sb.matchTiebreak&&<div style={{minWidth:20,textAlign:"center",fontSize:16,fontWeight:800,color:C.text}}>{sb.games[i]}</div>}
+                </div>
+                {sb.winner==null&&<div style={{minWidth:54,textAlign:"center",fontSize:26,fontWeight:800,color:C.cyan,fontFamily:F.bn}}>{sbPtLabel(sb,i)}</div>}
+              </div>;})}
+            </div>
+            {w?<div style={{textAlign:"center",marginTop:22}}>
+              <div style={{fontSize:46,marginBottom:6}}>🏆</div>
+              <T size={26}>GANADOR</T>
+              <div style={{fontSize:20,fontWeight:700,color:C.cyan,marginTop:4}}>{sb.winner===0?sb.p1:sb.p2}</div>
+              <BtnP onClick={sbReset} style={{marginTop:22}}>NUEVO PARTIDO</BtnP>
+            </div>:<>
+              <div style={{display:"flex",gap:12,marginTop:20}}>
+                {[0,1].map(i=><button key={i} onClick={()=>sbPoint(i)} className="btn-press" style={{flex:1,minWidth:0,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",borderRadius:16,padding:"18px 10px",color:"#fff",fontFamily:F.ios,fontWeight:700,fontSize:15,cursor:"pointer",boxShadow:`0 8px 22px rgba(2,136,209,0.35)`}}>+1 PUNTO<div style={{fontSize:12,fontWeight:500,opacity:0.9,marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i===0?sb.p1:sb.p2}</div></button>)}
+              </div>
+              <div style={{display:"flex",gap:10,marginTop:12}}>
+                <BtnG onClick={sbUndo} style={{flex:1,textAlign:"center",opacity:sbHist.length?1:0.5}}>↩ DESHACER</BtnG>
+                <BtnG onClick={()=>{if(window.confirm("¿Terminar el partido y empezar de nuevo?"))sbReset();}} style={{flex:1,textAlign:"center"}}>✕ TERMINAR</BtnG>
+              </div>
+            </>}
+          </div>}
+        </div>
+        <TabSpacer/>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
+
+  if(screen==="find-hub"){
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
+        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub></div>
+      </div>
+      <ShowTabBar/>
+    </div>;}
+    const HubCard=({emoji,title,desc,onClick,soon})=><div className={soon?"":"btn-press"} onClick={soon?undefined:onClick} style={{display:"flex",alignItems:"center",gap:15,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,padding:"18px 16px",marginBottom:13,cursor:soon?"default":"pointer",opacity:soon?0.55:1}}>
+      <div style={{width:54,height:54,borderRadius:15,flexShrink:0,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{emoji}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontWeight:700,fontSize:17,marginBottom:3}}>{title}{soon&&<span style={{fontSize:10,fontWeight:700,color:C.amber,marginLeft:8,background:"rgba(255,159,10,0.14)",padding:"2px 7px",borderRadius:6,verticalAlign:"middle"}}>PRÓXIMAMENTE</span>}</div>
+        <div style={{fontSize:13,color:C.muted,lineHeight:1.4}}>{desc}</div>
+      </div>
+      {!soon&&<div style={{color:C.cyan,fontSize:22,flexShrink:0}}>›</div>}
+    </div>;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/><Back to="home" label="Home"/>
+        <div style={{padding:"14px 18px"}}>
+          <T size={32}>FIND A</T><Sub style={{marginTop:4,marginBottom:20}}>¿Qué estás buscando?</Sub>
+          <HubCard emoji="🎾" title="Buscar Partido" desc="Encuentra rival de tu nivel para jugar" onClick={()=>setScreen("find-match")}/>
+          <HubCard emoji="🎓" title="Buscar Coach" desc="Reserva clases con entrenadores certificados" onClick={()=>setScreen("coach")}/>
+          <HubCard emoji="🩹" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" soon/>
+        </div>
+        <TabSpacer/>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
+
+  if(screen==="find-match"){
+    // PROTECCIÓN DE MENORES: los menores no pueden acceder a Find a Match
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
           <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
           <T size={28}>NO DISPONIBLE</T>
@@ -2355,10 +2951,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const others=accounts.filter(a=>a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
-        <Nav/><Back to="home" label="Home"/>
+        <Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"14px 18px"}}>
           <T size={32}>FIND A MATCH</T><Sub style={{marginTop:4,marginBottom:18}}>Encuentra rival para jugar</Sub>
           {!user?.phone&&!isAdmin&&<div style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,borderRadius:12,padding:12,marginBottom:14}}>
@@ -2482,9 +3078,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
 
   // COACH
   if(screen==="coach"){
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
-      <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
+      <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
       </div>
       <ShowTabBar/>
@@ -2493,11 +3089,11 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const myCoachApp=coachApplications.find(c=>c.playerId===user?.id);
     const incomingCoachReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id);
     const myCoachReqs=coachRequests.filter(r=>r.playerId===user?.id);
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
-        <Back to="home" label="Home"/>
+        <Back to="find-hub" label="Find A"/>
         <div style={{padding:"14px 18px"}}>
           {/* Hero header Gen-Alpha */}
           <div style={{position:"relative",overflow:"hidden",borderRadius:20,background:`linear-gradient(135deg,#A78BFA 0%,#7C3AED 50%,#4FC3F7 100%)`,backgroundSize:"200% 200%",animation:"gradientShift 8s ease infinite",padding:"22px 20px",marginBottom:18}}>
@@ -2626,7 +3222,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   // MARKETPLACE
   if(screen==="marketplace"){
     // PROTECCIÓN DE MENORES
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -2639,7 +3235,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const filtered=mpFilter==="Todos"?marketplace:marketplace.filter(l=>l.category===mpFilter);
     const incomingPur=purchaseRequests.filter(p=>p.sellerId===user?.id);
     const myPur=purchaseRequests.filter(p=>p.buyerId===user?.id);
-    return <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
