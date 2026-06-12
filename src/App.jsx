@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 
 const STYLE=`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
@@ -39,6 +39,14 @@ select option:checked{background-color:#0288D1 !important;color:#FFFFFF !importa
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(14deg)}75%{transform:rotate(-12deg)}}
 @keyframes ringPulse{0%{transform:scale(1);opacity:0.55}100%{transform:scale(2.2);opacity:0}}
+@keyframes arcDraw{from{stroke-dasharray:0 600}}
+@keyframes radarIn{from{opacity:0;transform:scale(0.4)}}
+@keyframes growDown{from{transform:scaleY(0)}}
+@keyframes flameWob{0%,100%{transform:scale(1) rotate(-4deg)}50%{transform:scale(1.18) rotate(4deg)}}
+@keyframes ballBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.5)}65%{transform:scale(0.85)}100%{transform:scale(1)}}
+.tk-feed{scrollbar-width:none;-ms-overflow-style:none}
+.tk-feed::-webkit-scrollbar{display:none}
 @keyframes auroraA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8%,-6%) scale(1.15)}66%{transform:translate(-10%,10%) scale(0.95)}}
 @keyframes auroraB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-12%,8%) scale(0.9)}66%{transform:translate(8%,-10%) scale(1.2)}}
 @keyframes auroraC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(15%,12%) scale(1.1)}}
@@ -51,6 +59,7 @@ button:active{transform:scale(0.96);filter:brightness(0.78)}
 @media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
 .screen-fade{animation:scrFade 0.4s ease}
 @keyframes scrFade{from{opacity:0}to{opacity:1}}
+@keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
 html,body{background:#040A18;margin:0}
 @media(min-width:768px){
   #root{max-width:720px;margin:0 auto;border-left:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);min-height:100vh;box-shadow:0 0 80px rgba(0,0,0,0.5)}
@@ -64,7 +73,7 @@ let C=C_MEN;
 const SURF_C={Clay:"#C17B4A",Hard:"#4FC3F7",Grass:"#5BAD6F",Indoor:"#8B65C1"};
 const TAVG={serve:7.9,return:6.5,forehand:7.5,backhand:7.1};
 const DSTATS={serve:0,return:0,forehand:0,backhand:0,aces:0,doubleFaults:0,bpWon:0,bpTotal:0,setsDropped:0,gamesLost:0,winners:0,unforcedErrors:0};
-const ADMIN_PASS="admin123";
+const ADMIN_PASS="SmtAdmin#2026";
 const RACKETS=["Wilson Pro Staff","Wilson Blade","Wilson Clash","Wilson Ultra","Babolat Pure Aero","Babolat Pure Drive","Babolat Pure Strike","Head Speed","Head Radical","Head Prestige","Head Boom","Yonex VCORE","Yonex Ezone","Yonex Percept","Prince Phantom","Tecnifibre TFight","Otra"];
 const CATS=["Abierta","B","C","D","Di"];
 const CAT_C={Abierta:"#FFD700",B:"#4FC3F7",C:"#5BAD6F",D:"#F59E0B",Di:"#B8C5D6"};
@@ -276,6 +285,11 @@ const DEMO_P=[
   mkPlayer({id:"d9",email:"sofia@smt.mx",name:"Sofía Martínez",sex:"F",ranking:1,points:2300,wins:40,losses:8,titles:4,racket:"Wilson Clash",category:"Abierta",categoryLocked:true,phone:"+528190123456"}),
   mkPlayer({id:"d10",email:"valeria@smt.mx",name:"Valeria López",sex:"F",ranking:2,points:1900,wins:35,losses:12,titles:2,category:"B",categoryLocked:true,phone:"+528101234567"}),
 ];
+// Aligera objetos antes de guardar en Supabase (quita fotos base64 pesadas; se rehidratan al cargar)
+const slimP=(p)=>p?{...p,photo:null}:p;
+const slimMatch=(m)=>m?{...m,p1:slimP(m.p1),p2:slimP(m.p2),winner:slimP(m.winner)}:m;
+const slimT=(t)=>({...t,players:(t.players||[]).map(slimP),pendingPlayers:(t.pendingPlayers||[]).map(slimP),groups:(t.groups||[]).map(g=>({...g,players:(g.players||[]).map(slimP),matches:(g.matches||[]).map(slimMatch)})),rounds:(t.rounds||[]).map(r=>(r||[]).map(slimMatch))});
+
 const DEMO_T=[
   {id:"t1",name:"Monterrey Open",date:"2026-06-10",surface:"Clay",location:"Club Campestre, MTY",maxPlayers:8,format:"groups+ko",modality:"singles",gender:"M",category:"Abierta",groupSize:4,players:[],pendingPlayers:[],groups:[],rounds:[],status:"open",prize:"$5,000 MXN",image:null,createdBy:"admin"},
   {id:"t2",name:"Sociedad Cup",date:"2026-07-15",surface:"Hard",location:"Club San Agustín",maxPlayers:8,format:"ko",modality:"singles",gender:"M",category:"B",players:[],pendingPlayers:[],groups:[],rounds:[],status:"open",prize:"$10,000 MXN",image:null,createdBy:"admin"},
@@ -338,6 +352,44 @@ const BtnX=({onClick,children})=><button onClick={onClick} className="btn-press"
 const TI=({value,onChange,type,placeholder,autoFocus,onKeyDown,style})=><input type={type||"text"} value={value} onChange={onChange} placeholder={placeholder} autoFocus={autoFocus} onKeyDown={onKeyDown} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",...style}}/>;
 const FL=({children})=><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.muted,marginBottom:7}}>{children}</div>;
 const SL=({children,color})=><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:color||C.cyan,textTransform:"uppercase",marginBottom:12,fontWeight:600}}>{children}</div>;
+
+// ===== COMPONENTES VISUALES DE ESTADÍSTICAS =====
+// Radar de habilidades (jugador vs promedio del tour)
+function Radar({skills,avg,size=260}){
+  const cx=size/2,cy=size/2,R=size/2-52,N=skills.length;
+  const pt=(i,val)=>{const a=-Math.PI/2+i*2*Math.PI/N;const r=R*Math.min(10,Math.max(0,val))/10;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+  const lpt=(i,f)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[cx+R*f*Math.cos(a),cy+R*f*Math.sin(a)];};
+  const poly=vals=>vals.map((v,i)=>pt(i,v).join(",")).join(" ");
+  return <svg width="100%" viewBox={`0 0 ${size} ${size}`} style={{display:"block",maxWidth:310,margin:"0 auto",overflow:"visible"}}>
+    {[2.5,5,7.5,10].map(r=><polygon key={r} points={poly(skills.map(()=>r))} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>)}
+    {skills.map((s,i)=>{const[x,y]=pt(i,10);return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>;})}
+    {avg&&<polygon points={poly(skills.map(s=>avg[s.k]||0))} fill="rgba(201,168,76,0.07)" stroke={C.gold} strokeWidth="1.2" strokeDasharray="4 4" opacity="0.75"/>}
+    <polygon points={poly(skills.map(s=>s.v))} fill="rgba(79,195,247,0.22)" stroke={C.cyan} strokeWidth="2" strokeLinejoin="round" style={{filter:"drop-shadow(0 0 8px rgba(79,195,247,0.5))",transformBox:"fill-box",transformOrigin:"center",animation:"radarIn 0.9s cubic-bezier(0.34,1.56,0.64,1) backwards"}}/>
+    {skills.map((s,i)=>{const[x,y]=pt(i,s.v);return <circle key={i} cx={x} cy={y} r="3.5" fill={C.cyan} style={{animation:`statPop 0.5s ${0.5+i*0.1}s backwards`}}/>;})}
+    {skills.map((s,i)=>{const[x,y]=lpt(i,1.34);return <g key={"l"+i} style={{animation:`fadeIn 0.6s ${0.3+i*0.08}s backwards`}}>
+      <text x={x} y={y-5} textAnchor="middle" fill={C.muted} style={{fontSize:10.5,fontFamily:F.bc,letterSpacing:"0.14em",fontWeight:600}}>{s.l}</text>
+      <text x={x} y={y+12} textAnchor="middle" fill={C.cyan} style={{fontSize:16,fontFamily:F.bn}}>{s.v>0?s.v.toFixed(1):"—"}</text>
+    </g>;})}
+  </svg>;
+}
+// Anillo circular de % de victorias por superficie
+function SurfRing({label,emoji,w,l,delay}){
+  const tot=w+l,pct=tot?Math.round(w/tot*100):0,r=26,circ=2*Math.PI*r;
+  return <div style={{flex:1,minWidth:84,textAlign:"center",animation:`statPop 0.5s ${delay}s backwards`}}>
+    <div style={{position:"relative",width:72,height:72,margin:"0 auto"}}>
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r={r} fill="none" stroke={C.surface3} strokeWidth="7"/>
+        <circle cx="36" cy="36" r={r} fill="none" stroke={C.cyan} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${circ*pct/100} ${circ}`} transform="rotate(-90 36 36)" style={{animation:`arcDraw 1s ${delay+0.2}s backwards ease-out`}}/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{fontSize:15,lineHeight:1}}>{emoji}</div>
+        <div style={{fontFamily:F.bn,fontSize:15,color:C.cyan,lineHeight:1.15}}>{pct}%</div>
+      </div>
+    </div>
+    <div style={{fontSize:11.5,fontWeight:600,marginTop:6,color:C.text}}>{label}</div>
+    <div style={{fontSize:10,color:C.muted}}>{w}W-{l}L</div>
+  </div>;
+}
 const T=({children,size,style})=><div style={{fontFamily:F.bn,fontSize:size||28,letterSpacing:"0.06em",color:C.text,lineHeight:1,...style}}>{children}</div>;
 const Sub=({children,style})=><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,...style}}>{children}</div>;
 const Row=({label,val})=><div style={{display:"flex",justifyContent:"space-between",padding:"13px 18px",borderBottom:`0.5px solid ${C.borderS}`}}><span style={{fontFamily:F.ios,fontSize:14,color:C.muted}}>{label}</span><span style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:500}}>{val}</span></div>;
@@ -539,6 +591,7 @@ export default function App(){
   const [inviteGroup,setInviteGroup]=useState(null); // grupo cuyo link de invitación se muestra
   const [inviteCopied,setInviteCopied]=useState(false);
   const [pendingJoinCode,setPendingJoinCode]=useState(null);
+  const [pendingPostId,setPendingPostId]=useState(null);
   const [groupMembers,setGroupMembers]=useState([]);
   const [showGroupInfo,setShowGroupInfo]=useState(false);
   const [replyingTo,setReplyingTo]=useState(null); // mensaje al que estoy respondiendo
@@ -587,7 +640,10 @@ export default function App(){
   const [phoneShare,setPhoneShare]=useState(null);
   const [rankingGender,setRankingGender]=useState("M");
   const [mediaComments,setMediaComments]=useState({});
+  const [mediaLikes,setMediaLikes]=useState({});
   const [openMedia,setOpenMedia]=useState(null);
+  const [shareMedia,setShareMedia]=useState(null);
+  const [commentsMedia,setCommentsMedia]=useState(null);
   const [commentDraft,setCommentDraft]=useState("");
   const [statRequests,setStatRequests]=useState([]);
   const [showFmFilters,setShowFmFilters]=useState(false);
@@ -684,6 +740,17 @@ export default function App(){
       }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
     }else if(authMode==="admin-login"){
       if(authForm.password!==adminPass)return setAuthErr("Contraseña incorrecta");
+      // Sesión técnica de Supabase para que el admin pueda leer/guardar datos (RLS)
+      setAuthErr("Entrando...");
+      try{
+        const AEMAIL="admin@smt.mx",AKEY="SmtSupaAdmin#2026";
+        let {error}=await supabase.auth.signInWithPassword({email:AEMAIL,password:AKEY});
+        if(error){
+          await supabase.auth.signUp({email:AEMAIL,password:AKEY});
+          await supabase.auth.signInWithPassword({email:AEMAIL,password:AKEY});
+        }
+      }catch(e){console.error("admin supa",e);}
+      setAuthErr("");
       setIsAdmin(true);setUser({id:"admin",name:"Administrador SMT",firstName:"Admin",lastName:"SMT",avatar:"AD",photo:null,email:"smt.tennismx@gmail.com"});setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();
     }
   };
@@ -779,7 +846,7 @@ export default function App(){
       setPasswordResetRequests(prev=>prev.map(x=>x.id===rid?{...x,status:"rejected"}:x));
     }
   };
-  const doLogout=async()=>{try{if(!isAdmin)await supabase.auth.signOut();}catch(e){}setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
+  const doLogout=async()=>{try{await supabase.auth.signOut();}catch(e){}setDataLoaded(false);tPrevIds.current=null;mPrevIds.current=null;setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
   const doDeleteAccount=async()=>{
     if(!user)return;
     const uid=user.id;
@@ -955,6 +1022,93 @@ export default function App(){
     }catch(e){console.error("createGroup",e);alert("No se pudo crear el grupo: "+(e.message||e));}
     setCreatingGroup(false);
   };
+
+  // ==================== PERSISTENCIA: TORNEOS + MARKETPLACE (Supabase) ====================
+  const [dataLoaded,setDataLoaded]=useState(false);
+  const tSaveTimer=useRef(null),tPrevIds=useRef(null);
+  const mSaveTimer=useRef(null),mPrevIds=useRef(null);
+  const savingRef=useRef(false);
+
+  // CARGA: al iniciar sesión (jugador o admin), trae torneos y marketplace de Supabase
+  useEffect(()=>{
+    if(!user||dataLoaded)return;
+    (async()=>{
+      try{
+        const {data:tRows,error:tErr}=await supabase.from("tournament_data").select("id,data");
+        if(!tErr){
+          if(tRows&&tRows.length)setTournaments(tRows.map(r=>r.data));
+          else{
+            // Primera vez: siembra los torneos actuales para que persistan desde ya
+            const seed=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
+            if(seed.length)await supabase.from("tournament_data").upsert(seed);
+          }
+        }
+        const {data:mRows,error:mErr}=await supabase.from("marketplace_data").select("id,data");
+        if(!mErr&&mRows&&mRows.length)setMarketplace(mRows.map(r=>r.data));
+      }catch(e){console.error("loadData",e);}
+      setDataLoaded(true);
+    })();
+    /* eslint-disable-next-line */
+  },[user]);
+
+  // GUARDADO automático de torneos (con pausa de 0.7s para agrupar cambios)
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    if(tPrevIds.current===null){tPrevIds.current=tournaments.map(t=>String(t.id));return;}
+    clearTimeout(tSaveTimer.current);
+    tSaveTimer.current=setTimeout(async()=>{
+      try{
+        savingRef.current=true;
+        const rows=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
+        if(rows.length)await supabase.from("tournament_data").upsert(rows);
+        const ids=rows.map(r=>r.id);
+        const removed=(tPrevIds.current||[]).filter(id=>!ids.includes(id));
+        if(removed.length)await supabase.from("tournament_data").delete().in("id",removed);
+        tPrevIds.current=ids;
+      }catch(e){console.error("saveT",e);}
+      setTimeout(()=>{savingRef.current=false;},900);
+    },700);
+    /* eslint-disable-next-line */
+  },[tournaments,dataLoaded]);
+
+  // GUARDADO automático del marketplace
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    if(mPrevIds.current===null){mPrevIds.current=marketplace.map(x=>String(x.id));return;}
+    clearTimeout(mSaveTimer.current);
+    mSaveTimer.current=setTimeout(async()=>{
+      try{
+        savingRef.current=true;
+        const rows=marketplace.map(x=>({id:String(x.id),data:x}));
+        if(rows.length)await supabase.from("marketplace_data").upsert(rows);
+        const ids=rows.map(r=>r.id);
+        const removed=(mPrevIds.current||[]).filter(id=>!ids.includes(id));
+        if(removed.length)await supabase.from("marketplace_data").delete().in("id",removed);
+        mPrevIds.current=ids;
+      }catch(e){console.error("saveM",e);}
+      setTimeout(()=>{savingRef.current=false;},900);
+    },700);
+    /* eslint-disable-next-line */
+  },[marketplace,dataLoaded]);
+
+  // TIEMPO REAL: si otro dispositivo cambia algo (inscripción, resultado, producto), se refleja aquí
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    const ch=supabase.channel("data-sync")
+      .on("postgres_changes",{event:"*",schema:"public",table:"tournament_data"},(payload)=>{
+        if(savingRef.current)return;
+        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id)setTournaments(prev=>prev.filter(t=>String(t.id)!==String(id)));}
+        else{const row=payload.new;if(row?.data)setTournaments(prev=>{const i=prev.findIndex(t=>String(t.id)===String(row.id));if(i<0)return[...prev,row.data];const cp=[...prev];cp[i]=row.data;return cp;});}
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"marketplace_data"},(payload)=>{
+        if(savingRef.current)return;
+        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id)setMarketplace(prev=>prev.filter(x=>String(x.id)!==String(id)));}
+        else{const row=payload.new;if(row?.data)setMarketplace(prev=>{const i=prev.findIndex(x=>String(x.id)===String(row.id));if(i<0)return[row.data,...prev];const cp=[...prev];cp[i]=row.data;return cp;});}
+      })
+      .subscribe();
+    return ()=>{try{supabase.removeChannel(ch);}catch(e){}};
+    /* eslint-disable-next-line */
+  },[dataLoaded]);
 
   // ==================== MARCADOR EN VIVO (motor de tenis) ====================
   const sbNewMatch=(p1,p2)=>({p1:p1||"Jugador 1",p2:p2||"Jugador 2",sets:[],games:[0,0],points:[0,0],tiebreak:false,tb:[0,0],matchTiebreak:false,mtb:[0,0],winner:null});
@@ -1182,6 +1336,9 @@ export default function App(){
       const params=new URLSearchParams(window.location.search);
       const code=params.get("join");
       if(code){setPendingJoinCode(code);window.history.replaceState({},"",window.location.pathname);}
+      // Deep link de QR compartido (?post=ID): abre la sección Media al entrar
+      const postId=params.get("post");
+      if(postId){setPendingPostId(postId);window.history.replaceState({},"",window.location.pathname);}
     }catch(e){}
   },[]);
 
@@ -1193,6 +1350,15 @@ export default function App(){
     }
     /* eslint-disable-next-line */
   },[user,pendingJoinCode]);
+
+  // Procesa el deep link de post compartido (?post=ID) tras iniciar sesión
+  useEffect(()=>{
+    if(user&&pendingPostId&&!isMinor(user?.birthdate)){
+      setPendingPostId(null);
+      setScreen("media");
+    }
+    /* eslint-disable-next-line */
+  },[user,pendingPostId]);
   // ==================== FIN SOCIAL: funciones ====================
 
 
@@ -1217,6 +1383,24 @@ export default function App(){
     setCommentDraft("");
   };
   const deleteComment=(mediaId,coId)=>setMediaComments(prev=>({...prev,[mediaId]:(prev[mediaId]||[]).filter(c=>c.id!==coId)}));
+
+  // Like en posts de Media (estilo TikTok)
+  const toggleMediaLike=(mediaId)=>{
+    if(!user)return;
+    setMediaLikes(prev=>{const cur=prev[mediaId]||[];return {...prev,[mediaId]:cur.includes(user.id)?cur.filter(x=>x!==user.id):[...cur,user.id]};});
+  };
+
+  // Autoplay de videos del feed Media: solo reproduce el que está en pantalla
+  useEffect(()=>{
+    if(screen!=="media")return;
+    const vids=document.querySelectorAll(".tk-video");
+    if(!vids.length)return;
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{const v=e.target;
+      if(e.intersectionRatio>=0.6){v.play().catch(()=>{});}else{v.pause();}
+    });},{threshold:[0,0.6]});
+    vids.forEach(v=>io.observe(v));
+    return ()=>io.disconnect();
+  },[screen,media]);
 
   const submitSvRequest=()=>{
     if(!svDraft.image){alert("Debes adjuntar un screenshot directo de SwingVision con tus datos.");return;}
@@ -1595,7 +1779,6 @@ export default function App(){
             {authMode==="admin-recover"&&<button onClick={()=>{setAuthMode("admin-login");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>← Volver</button>}
           </div>
         </div>
-        <Sub style={{marginTop:20,textAlign:"center",fontSize:11,color:"rgba(255,255,255,0.4)"}}>Demo: carlos@smt.mx · sofia@smt.mx · pass: demo123 · Admin: admin123</Sub>
       </div>
       {showPrivacyModal&&<Modal onClose={()=>setShowPrivacyModal(false)} large center>
         <T size={22} style={{textAlign:"center",marginBottom:6}}>AVISO DE PRIVACIDAD</T>
@@ -1679,6 +1862,168 @@ export default function App(){
   if(screen==="insights"&&insights){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios}}><style>{STYLE}</style><MIns data={insights} onClose={()=>{setInsights(null);setScreen("tournament");}}/>{champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}</div>;}
 
   // PLAYER CARD
+  if(screen==="stats"){
+    const p=viewP||user;if(!p)return null;
+    // ===== MOTOR: extrae todos los partidos reales del jugador desde los torneos =====
+    const roundName=(ri,total)=>{const left=total-ri;return left===1?"Final":left===2?"Semifinal":left===3?"Cuartos":`Ronda ${ri+1}`;};
+    const myMatches=[];
+    tournaments.forEach(t=>{
+      const push=(m,phase)=>{if(m&&m.status==="done"&&m.p1&&m.p2&&m.winner&&(m.p1.id===p.id||m.p2.id===p.id))myMatches.push({t,m,phase});};
+      (t.groups||[]).forEach(g=>(g.matches||[]).forEach(m=>push(m,"Grupos")));
+      (t.rounds||[]).forEach((r,ri)=>(r||[]).forEach(m=>push(m,roundName(ri,t.rounds.length))));
+    });
+    myMatches.sort((a,b)=>new Date(a.t.date)-new Date(b.t.date));
+    const won=myMatches.filter(x=>x.m.winner?.id===p.id),lost=myMatches.filter(x=>x.m.winner?.id!==p.id);
+    const total=myMatches.length,wr=total?Math.round(won.length/total*100):0;
+    // Racha actual
+    let streak=0,streakW=null;
+    for(let i=myMatches.length-1;i>=0;i--){const w=myMatches[i].m.winner?.id===p.id;if(streakW===null){streakW=w;streak=1;}else if(w===streakW)streak++;else break;}
+    // Por superficie
+    const surfaces={};myMatches.forEach(x=>{const s=x.t.surface||"Otra";surfaces[s]=surfaces[s]||{w:0,l:0};if(x.m.winner?.id===p.id)surfaces[s].w++;else surfaces[s].l++;});
+    const surfEmoji={Clay:"🟧",Hard:"🟦",Grass:"🟩",Carpet:"🟪"};
+    const surfName=s=>s==="Clay"?"Arcilla":s==="Hard"?"Dura":s==="Grass"?"Pasto":s;
+    // Mejor victoria (rival con mejor ranking vencido)
+    let bestWin=null;
+    won.forEach(x=>{const opp=x.m.p1.id===p.id?x.m.p2:x.m.p1;const r=Number(opp?.ranking)||9999;if(!bestWin||r<bestWin.r)bestWin={r,opp,x};});
+    // Actividad por torneo (últimos 8)
+    const byT=[];myMatches.forEach(x=>{let e=byT.find(b=>b.t.id===x.t.id);if(!e){e={t:x.t,w:0,l:0};byT.push(e);}if(x.m.winner?.id===p.id)e.w++;else e.l++;});
+    const lastT=byT.slice(-8),maxM=Math.max(1,...lastT.map(b=>b.w+b.l));
+    // Habilidades SwingVision
+    const skills=[["serve","SAQUE"],["return","DEVOLUCIÓN"],["forehand","DERECHA"],["backhand","REVÉS"]].map(([k,l])=>({k,l,v:parseFloat(p.stats?.[k])||0}));
+    const hasSkills=skills.some(s=>s.v>0);
+    const ring=2*Math.PI*50;
+    const recent=myMatches.slice(-14);
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/><Back to="player-card" label="Perfil"/>
+        <div style={{padding:"14px 18px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,animation:"slideDown 0.5s backwards"}}>
+            <PA photo={p.photo} avatar={p.avatar} size={46}/>
+            <div><T size={26}>{(p.name||"").toUpperCase()}</T><Sub style={{fontSize:12}}>Estadísticas · basadas en partidos SMT</Sub></div>
+          </div>
+
+          {/* HERO: anillo de win rate animado + contadores */}
+          <div style={{background:`linear-gradient(160deg,${C.surface} 0%,${C.surface2} 100%)`,border:`1px solid ${C.cyanBdr}`,borderRadius:22,padding:"20px 16px",display:"flex",alignItems:"center",gap:18,marginBottom:14,position:"relative",overflow:"hidden",animation:"statPop 0.55s backwards"}}>
+            <div style={{position:"absolute",top:-60,right:-60,width:180,height:180,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,195,247,0.14),transparent 65%)",pointerEvents:"none"}}/>
+            <div style={{position:"relative",width:118,height:118,flexShrink:0}}>
+              <svg width="118" height="118" viewBox="0 0 118 118">
+                <defs><linearGradient id="wrGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={C.cyanBright}/><stop offset="100%" stopColor={C.cyanDeep}/></linearGradient></defs>
+                <circle cx="59" cy="59" r="50" fill="none" stroke={C.surface3} strokeWidth="10"/>
+                <circle cx="59" cy="59" r="50" fill="none" stroke="url(#wrGrad)" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${ring*wr/100} ${ring}`} transform="rotate(-90 59 59)" style={{filter:"drop-shadow(0 0 6px rgba(79,195,247,0.6))",animation:"arcDraw 1.3s 0.2s backwards cubic-bezier(0.22,1,0.36,1)"}}/>
+              </svg>
+              <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                <div style={{fontSize:30,fontWeight:800,fontFamily:F.bn,color:C.cyan,lineHeight:1}}><CountUp target={wr} suffix="%" duration={1300}/></div>
+                <div style={{fontSize:9.5,color:C.muted,letterSpacing:"0.1em",fontWeight:700}}>VICTORIAS</div>
+              </div>
+            </div>
+            <div style={{flex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px 8px"}}>
+              {[[<span key="r"><CountUp target={won.length} duration={900}/>W <CountUp target={lost.length} duration={900}/>L</span>,"Récord SMT"],[<CountUp key="t" target={total} duration={1000}/>,"Partidos"],[<CountUp key="ti" target={p.titles||0} duration={1100}/>,"Títulos"],[p.ranking?`#${p.ranking}`:"—","Ranking"]].map(([v,l],i)=><div key={l} style={{animation:`statPop 0.5s ${0.25+i*0.08}s backwards`}}>
+                <div style={{fontSize:21,fontWeight:800,fontFamily:F.bn,color:C.text,lineHeight:1.1}}>{v}</div>
+                <div style={{fontSize:10.5,color:C.muted,letterSpacing:"0.06em",fontWeight:600,marginTop:2}}>{String(l).toUpperCase()}</div>
+              </div>)}
+            </div>
+          </div>
+
+          {/* RACHA + FORMA RECIENTE */}
+          {total>0&&<div style={{display:"flex",gap:10,marginBottom:14}}>
+            <div style={{flex:"0 0 auto",background:streakW?"rgba(52,199,89,0.10)":"rgba(255,59,48,0.10)",border:`1px solid ${streakW?"rgba(52,199,89,0.35)":"rgba(255,59,48,0.35)"}`,borderRadius:18,padding:"12px 16px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"slideLeft 0.5s 0.15s backwards"}}>
+              <div style={{fontSize:28,animation:streakW?"flameWob 1.6s ease-in-out infinite":"floatSlow 3s ease-in-out infinite"}}>{streakW?"🔥":"❄️"}</div>
+              <div style={{fontSize:24,fontWeight:800,fontFamily:F.bn,color:streakW?C.green:C.red,lineHeight:1,marginTop:4}}><CountUp target={streak} duration={800}/></div>
+              <div style={{fontSize:9.5,color:C.muted,letterSpacing:"0.08em",fontWeight:700,marginTop:2}}>{streakW?"RACHA W":"RACHA L"}</div>
+            </div>
+            <div style={{flex:1,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,padding:"12px 14px",animation:"slideRight 0.5s 0.15s backwards"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.08em",color:C.muted,marginBottom:6}}>FORMA RECIENTE</div>
+              <div style={{display:"flex",alignItems:"center",gap:4,height:52,position:"relative"}}>
+                <div style={{position:"absolute",left:0,right:0,top:"50%",height:1,background:"rgba(255,255,255,0.12)"}}/>
+                {recent.map((x,i)=>{const w=x.m.winner?.id===p.id;return <div key={i} style={{flex:1,height:"100%",display:"flex",flexDirection:"column"}}>
+                  <div style={{flex:1,display:"flex",alignItems:"flex-end"}}>{w&&<div style={{width:"100%",maxWidth:14,margin:"0 auto",height:"92%",borderRadius:4,background:`linear-gradient(180deg,${C.cyan},${C.cyanDeep})`,boxShadow:"0 0 6px rgba(79,195,247,0.4)",animation:`growUp 0.45s ${0.35+i*0.05}s backwards`}}/>}</div>
+                  <div style={{flex:1,display:"flex",alignItems:"flex-start"}}>{!w&&<div style={{width:"100%",maxWidth:14,margin:"0 auto",height:"92%",borderRadius:4,background:"linear-gradient(180deg,rgba(255,59,48,0.75),rgba(255,59,48,0.2))",transformOrigin:"top",animation:`growDown 0.45s ${0.35+i*0.05}s backwards`}}/>}</div>
+                </div>;})}
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
+                <div style={{fontSize:9.5,color:C.muted}}>← anteriores</div>
+                <div style={{fontSize:9.5,color:C.muted}}>último →</div>
+              </div>
+            </div>
+          </div>}
+
+          {total===0&&<div style={{background:C.surface,border:`1px dashed ${C.borderS}`,borderRadius:18,padding:"34px 20px",textAlign:"center",marginBottom:14}}>
+            <div style={{fontSize:40,marginBottom:8,animation:"ballBounce 1.2s ease-in-out infinite",display:"inline-block"}}>🎾</div>
+            <div style={{fontWeight:700,fontSize:16,marginBottom:6}}>Aún no hay partidos registrados</div>
+            <Sub style={{fontSize:13,lineHeight:1.5}}>Las estadísticas se generan automáticamente cuando juegas torneos en SMT. ¡Inscríbete a un torneo para empezar!</Sub>
+          </div>}
+
+          {/* RADAR DE HABILIDADES */}
+          {hasSkills&&<div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"16px 16px 10px",marginBottom:14,animation:"statPop 0.55s 0.2s backwards"}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.muted,marginBottom:4}}>HABILIDADES</div>
+            <Radar skills={skills} avg={TAVG}/>
+            <div style={{display:"flex",gap:16,justifyContent:"center",marginTop:4,paddingBottom:6}}>
+              <div style={{fontSize:10.5,color:C.muted}}><span style={{display:"inline-block",width:14,height:3,borderRadius:2,background:C.cyan,marginRight:5,verticalAlign:"middle"}}/>Tú</div>
+              <div style={{fontSize:10.5,color:C.muted}}><span style={{display:"inline-block",width:14,height:0,borderTop:`2px dashed ${C.gold}`,marginRight:5,verticalAlign:"middle"}}/>Promedio tour</div>
+            </div>
+          </div>}
+
+          {/* ACTIVIDAD POR TORNEO */}
+          {lastT.length>0&&<div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"16px",marginBottom:14,animation:"statPop 0.55s 0.25s backwards"}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.muted,marginBottom:14}}>ACTIVIDAD POR TORNEO</div>
+            <div style={{display:"flex",alignItems:"flex-end",gap:10,height:110}}>
+              {lastT.map((b,i)=>{const h=90*(b.w+b.l)/maxM,hw=b.w/(b.w+b.l)*h;return <div key={b.t.id} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:0}}>
+                <div style={{fontSize:10.5,fontWeight:700,color:C.text}}>{b.w}-{b.l}</div>
+                <div style={{width:"70%",maxWidth:30,height:h,borderRadius:7,overflow:"hidden",display:"flex",flexDirection:"column",animation:`growUp 0.5s ${0.3+i*0.07}s backwards`}}>
+                  <div style={{flex:`${h-hw} 0 auto`,background:"rgba(255,59,48,0.45)"}}/>
+                  <div style={{flex:`${hw} 0 auto`,background:`linear-gradient(180deg,${C.cyan},${C.cyanDeep})`}}/>
+                </div>
+                <div style={{fontSize:9,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>{(b.t.name||"").split(" ")[0]}</div>
+              </div>;})}
+            </div>
+            <div style={{display:"flex",gap:14,marginTop:10,justifyContent:"center"}}>
+              <div style={{fontSize:10.5,color:C.muted}}><span style={{display:"inline-block",width:9,height:9,borderRadius:3,background:C.cyan,marginRight:5}}/>Ganados</div>
+              <div style={{fontSize:10.5,color:C.muted}}><span style={{display:"inline-block",width:9,height:9,borderRadius:3,background:"rgba(255,59,48,0.45)",marginRight:5}}/>Perdidos</div>
+            </div>
+          </div>}
+
+          {/* POR SUPERFICIE: anillos circulares */}
+          {Object.keys(surfaces).length>0&&<div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"16px",marginBottom:14,animation:"statPop 0.55s 0.3s backwards"}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.muted,marginBottom:14}}>RENDIMIENTO POR SUPERFICIE</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+              {Object.entries(surfaces).map(([s,d],i)=><SurfRing key={s} label={surfName(s)} emoji={surfEmoji[s]||"⬜"} w={d.w} l={d.l} delay={0.35+i*0.12}/>)}
+            </div>
+          </div>}
+
+          {/* MEJOR VICTORIA */}
+          {bestWin&&<div style={{background:`linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.04))`,border:`1px solid ${C.goldBdr}`,borderRadius:20,padding:"16px",marginBottom:14,position:"relative",overflow:"hidden",animation:"statPop 0.55s 0.35s backwards"}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(105deg,transparent 40%,rgba(255,235,180,0.10) 50%,transparent 60%)",animation:"shimmer 3.2s ease-in-out infinite",pointerEvents:"none"}}/>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.gold,marginBottom:10}}>⭐ MEJOR VICTORIA</div>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <PA photo={bestWin.opp?.photo} avatar={bestWin.opp?.avatar} size={44}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:16}}>{bestWin.opp?.name}</div>
+                <div style={{fontSize:12,color:C.muted}}>Ranking #{bestWin.opp?.ranking||"—"} · {bestWin.x.t.name} · {bestWin.x.phase}</div>
+              </div>
+              {bestWin.x.m.score&&<Chip type="gold">{bestWin.x.m.score}</Chip>}
+            </div>
+          </div>}
+
+          {/* HISTORIAL DE PARTIDOS */}
+          {total>0&&<div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"6px 16px",marginBottom:14,animation:"statPop 0.55s 0.4s backwards"}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.muted,padding:"12px 0 6px"}}>ÚLTIMOS PARTIDOS</div>
+            {[...myMatches].reverse().slice(0,10).map((x,i)=>{const w=x.m.winner?.id===p.id;const opp=x.m.p1.id===p.id?x.m.p2:x.m.p1;return <div key={x.m.id||i} style={{display:"flex",alignItems:"center",gap:11,padding:"11px 0",borderBottom:i<Math.min(total,10)-1?`0.5px solid ${C.borderS}`:"none",animation:`slideLeft 0.4s ${0.45+i*0.05}s backwards`}}>
+              <div style={{width:30,height:30,borderRadius:9,flexShrink:0,background:w?"rgba(52,199,89,0.15)":"rgba(255,59,48,0.13)",color:w?C.green:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13}}>{w?"W":"L"}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>vs {opp?.name||"—"}</div>
+                <div style={{fontSize:11,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{x.t.name} · {x.phase}</div>
+              </div>
+              {x.m.score&&<div style={{fontSize:12.5,fontWeight:700,color:w?C.green:C.muted,flexShrink:0}}>{x.m.score}</div>}
+            </div>;})}
+          </div>}
+        </div>
+        <TabSpacer/>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
+
   if(screen==="player-card"){
     const p=viewP||user;if(!p)return null;
     // PROTECCIÓN DE MENORES: un mayor NO puede ver el perfil de un menor
@@ -1737,6 +2082,7 @@ export default function App(){
           </div>
         </div>
         {(isMe||(isAdmin&&p.id!==user?.id))&&<div style={{padding:"14px 16px",display:"flex",gap:8,flexWrap:"wrap"}}>
+          <BtnG onClick={()=>setScreen("stats")} style={{flex:"1 1 140px",padding:12}}>📊 ESTADÍSTICAS</BtnG>
           <BtnG onClick={()=>{setEditProfile({...p});setEditAsAdmin(isAdmin&&p.id!==user?.id);setShowProfileEdit(true);}} style={{flex:"1 1 140px",padding:12}}>✏️ {isAdmin&&p.id!==user?.id?"EDITAR (ADMIN)":"EDITAR PERFIL"}</BtnG>
           {isMe&&<BtnG onClick={()=>{setSvDraft({serve:"",return:"",forehand:"",backhand:"",image:null});setShowSvModal(true);}} style={{flex:"1 1 140px",padding:12}}>📊 SUBIR SWINGVISION</BtnG>}
           {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}>🔒 CONTRASEÑA</BtnG>}
@@ -2735,117 +3081,145 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>
       </div>
     </div>;}
-    const detail=openMedia?media.find(m=>m.id===openMedia):null;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
-      <style>{STYLE}</style><Aurora intense={0.4}/>
-      <div style={{position:"relative",zIndex:1}}>
-        <Nav/>
-        {!detail?<>
-          <Back to="home" label="Home"/>
-          <div style={{padding:"14px 18px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div><T size={32}>MEDIA</T><Sub style={{marginTop:4}}>{media.length} publicaci{media.length===1?"ón":"ones"}</Sub></div>
-              <div style={{display:"flex",gap:6}}>
-                {!isAdmin&&!isMinor(user?.birthdate)&&<BtnG onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}}>📝 POSTEAR</BtnG>}
-                {isAdmin&&<BtnG onClick={()=>setMediaUploadModal(true)}>📤 SUBIR</BtnG>}
-              </div>
+    // ===== FEED ESTILO TIKTOK: pantalla completa, scroll vertical post por post =====
+    const likedBy=(id)=>(mediaLikes[id]||[]);
+    const iLike=(id)=>user&&likedBy(id).includes(user.id);
+    const shareM=shareMedia?media.find(m=>m.id===shareMedia):null;
+    const comM=commentsMedia?media.find(m=>m.id===commentsMedia):null;
+    const shareUrl=shareM?`https://smt-green.vercel.app/?post=${shareM.id}`:"";
+    // Botón flotante transparente (derecha)
+    const RailBtn=({onClick,children,label,active})=><div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+      <button onClick={onClick} className="btn-press" style={{width:48,height:48,borderRadius:"50%",border:`1px solid rgba(255,255,255,${active?0.0:0.25})`,background:active?"rgba(255,59,48,0.22)":"rgba(255,255,255,0.13)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",padding:0}}>{children}</button>
+      {label!==undefined&&<div style={{fontFamily:F.ios,fontSize:11.5,fontWeight:700,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,0.7)"}}>{label}</div>}
+    </div>;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:"#000",color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style>
+      <Nav/>
+      {/* FEED a pantalla completa con snap vertical */}
+      <div className="tk-feed" style={{position:"fixed",top:60,bottom:0,left:0,right:0,maxWidth:720,margin:"0 auto",overflowY:"auto",scrollSnapType:"y mandatory",background:"#000",WebkitOverflowScrolling:"touch",zIndex:1}}>
+        {media.length===0?<div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:24}}>
+          <div style={{fontSize:52,marginBottom:14,animation:"ballBounce 1.4s ease-in-out infinite"}}>🎬</div>
+          <T size={26}>AÚN NO HAY POSTS</T>
+          <Sub style={{fontSize:14,marginTop:8,marginBottom:20}}>{isAdmin?"Sube el primer post con el botón SUBIR.":"¡Sé el primero en publicar!"}</Sub>
+          {!isAdmin&&<BtnG onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}}>📝 POSTEAR</BtnG>}
+          {isAdmin&&<BtnG onClick={()=>setMediaUploadModal(true)}>📤 SUBIR</BtnG>}
+        </div>:media.map((m,i)=>{const nLikes=likedBy(m.id).length,nCom=(mediaComments[m.id]||[]).length,lk=iLike(m.id);
+        return <div key={m.id} style={{height:"100%",scrollSnapAlign:"start",scrollSnapStop:"always",position:"relative",overflow:"hidden",background:"#000"}}>
+          {/* Fondo difuminado + media centrado */}
+          {m.type==="image"?<>
+            <img src={m.url} aria-hidden="true" alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",filter:"blur(45px) brightness(0.4)",transform:"scale(1.25)"}}/>
+            <img src={m.url} alt="" onDoubleClick={()=>{if(!lk)toggleMediaLike(m.id);}} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:m.aspect==="vertical"?"cover":"contain"}}/>
+          </>:<video className="tk-video" src={m.url} muted loop playsInline onClick={e=>{const v=e.currentTarget;if(v.paused)v.play().catch(()=>{});else v.pause();}} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:m.aspect==="vertical"?"cover":"contain",background:"#000"}}/>}
+          {/* Degradado inferior para legibilidad */}
+          <div style={{position:"absolute",left:0,right:0,bottom:0,height:"38%",background:"linear-gradient(180deg,transparent,rgba(0,0,0,0.72))",pointerEvents:"none"}}/>
+          {/* Autor + descripción (abajo izquierda) */}
+          <div style={{position:"absolute",left:14,right:84,bottom:104}}>
+            <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:8}}>
+              <PA photo={m.by&&m.by!=="admin"?m.byPhoto:null} avatar={m.by&&m.by!=="admin"?(m.byAvatar||"?"):"SMT"} size={34} border="1.5px solid rgba(255,255,255,0.65)"/>
+              <div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:"#fff",textShadow:"0 1px 5px rgba(0,0,0,0.7)"}}>{m.by&&m.by!=="admin"?m.byName:"SMT Oficial"}</div>
             </div>
-            {/* Banner Instagram oficial SMT */}
-            <a href="https://www.instagram.com/tennis.smt/" target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block",marginBottom:16}}>
-              <div className="btn-press" style={{position:"relative",overflow:"hidden",borderRadius:16,background:"linear-gradient(135deg,#833AB4 0%,#FD1D1D 50%,#FCB045 100%)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",animation:"breathSubtle 5s infinite"}}>
-                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 20% 90%,rgba(255,255,255,0.18),transparent 60%)",pointerEvents:"none"}}/>
-                <div style={{width:46,height:46,borderRadius:13,background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,position:"relative",zIndex:1}}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                </div>
-                <div style={{flex:1,position:"relative",zIndex:1}}>
-                  <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"rgba(255,255,255,0.85)",fontWeight:600,marginBottom:2}}>SÍGUENOS EN INSTAGRAM</div>
-                  <div style={{fontFamily:F.ios,fontSize:16,color:"#fff",fontWeight:700,letterSpacing:"-0.01em"}}>@tennis.smt</div>
-                </div>
-                <div style={{color:"#fff",fontSize:22,fontWeight:300,position:"relative",zIndex:1}}>›</div>
-              </div>
-            </a>
-            {media.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}>🎬</div><Sub style={{fontSize:14}}>{isAdmin?"Sube el primer post con el botón SUBIR.":"Aún no hay publicaciones. ¡Sé el primero!"}</Sub></div>:(()=>{
-              // Layout tipo Instagram: separar verticales (9:16) y cuadrados (1:1)
-              // Verticales arriba (grid 2 col tall), cuadrados abajo (grid 2 col).
-              // O intercalados en pares: cada vertical ocupa 1 columna, junto a 2 cuadrados apilados
-              const items=media.map(m=>({...m,aspect:m.aspect||"square"}));
-              return <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,gridAutoRows:"min-content"}}>
-                {items.map((m,i)=>{const isVert=m.aspect==="vertical";return <div key={m.id} onClick={()=>setOpenMedia(m.id)} className="btn-press" style={{position:"relative",aspectRatio:isVert?"9/16":"1",borderRadius:14,overflow:"hidden",border:`0.5px solid ${C.borderS}`,background:"#000",cursor:"pointer",animation:`scaleIn 0.4s ${i*0.04}s backwards`,gridRow:isVert?"span 2":"auto"}}>
-                  {m.type==="image"?<img src={m.url} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathSubtle 7s infinite"}} alt=""/>:<video src={m.url} style={{width:"100%",height:"100%",objectFit:"cover",background:"#000"}}/>}
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.55))",pointerEvents:"none"}}/>
-                  <div style={{position:"absolute",top:8,left:8,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)",padding:"3px 8px",borderRadius:6,fontFamily:F.bc,fontSize:9,letterSpacing:"0.16em",color:"#fff",fontWeight:600,display:"flex",alignItems:"center",gap:4}}>{m.type==="video"?<>🎥 {isVert?"REEL":"VIDEO"}</>:<>📷 {isVert?"STORY":"POST"}</>}</div>
-                  {m.by&&m.by!=="admin"&&<div style={{position:"absolute",bottom:8,left:8,right:8,display:"flex",alignItems:"center",gap:6}}><PA photo={m.byPhoto} avatar={m.byAvatar||"?"} size={22} border="1px solid rgba(255,255,255,0.4)"/><span style={{fontFamily:F.ios,fontSize:11,color:"#fff",fontWeight:600,textShadow:"0 1px 4px rgba(0,0,0,0.6)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.byName?.split(" ")[0]}</span></div>}
-                  {(mediaComments[m.id]||[]).length>0&&<div style={{position:"absolute",top:8,right:8,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)",padding:"3px 7px",borderRadius:6,fontFamily:F.bc,fontSize:10,color:"#fff",fontWeight:600}}>💬 {mediaComments[m.id].length}</div>}
-                  {isAdmin&&<button onClick={(e)=>{e.stopPropagation();if(confirm("¿Eliminar este post?")){setMedia(prev=>prev.filter(x=>x.id!==m.id));setMediaComments(prev=>{const n={...prev};delete n[m.id];return n;});}}} className="btn-press" style={{position:"absolute",top:m.by&&m.by!=="admin"?8:38,right:8,background:"rgba(255,59,48,0.95)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
-                </div>;})}
-              </div>;
-            })()}
-            <div style={{height:32}}/>
+            {m.caption&&<div style={{fontFamily:F.ios,fontSize:13.5,color:"rgba(255,255,255,0.95)",lineHeight:1.45,textShadow:"0 1px 5px rgba(0,0,0,0.7)",display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{m.caption}</div>}
           </div>
-        </>:<>
-          <button onClick={()=>{setOpenMedia(null);setCommentDraft("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← Galería</button>
-          <div style={{padding:"10px 0 0"}}>
-            <div style={{position:"relative",margin:"0 16px",borderRadius:14,overflow:"hidden",border:`0.5px solid ${C.borderS}`,background:"#000"}}>
-              {detail.type==="image"?<img src={detail.url} style={{width:"100%",maxHeight:"60vh",objectFit:"contain",display:"block",animation:"breathSubtle 8s infinite"}} alt=""/>:<video src={detail.url} controls autoPlay style={{width:"100%",maxHeight:"60vh",display:"block",background:"#000"}}/>}
-            </div>
-            <div style={{padding:"14px 18px"}}>
-              {detail.by&&detail.by!=="admin"&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,padding:"10px 12px",background:C.surface,borderRadius:12,border:`0.5px solid ${C.borderS}`}}>
-                <PA photo={detail.byPhoto} avatar={detail.byAvatar||"?"} size={36}/>
-                <div style={{flex:1}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,fontWeight:600}}>POSTEADO POR</div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600,marginTop:2}}>{detail.byName}</div></div>
-              </div>}
-              {detail.caption&&<div style={{padding:"10px 12px",background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:10,marginBottom:14,fontFamily:F.ios,fontSize:14,color:C.text,lineHeight:1.5}}>{detail.caption}</div>}
-              <SL>💬 Comentarios ({(mediaComments[detail.id]||[]).length})</SL>
-              {(mediaComments[detail.id]||[]).length===0?<Sub style={{padding:"14px 0",textAlign:"center"}}>Sé el primero en comentar.</Sub>:(mediaComments[detail.id]||[]).map(co=><div key={co.id} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
-                <PA photo={co.userPhoto} avatar={co.userAvatar} size={32}/>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-                    <div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.cyan}}>{co.userName}</div>
-                    {(isAdmin||co.userId===user?.id)&&<button onClick={()=>deleteComment(detail.id,co.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",padding:2}}>✕</button>}
-                  </div>
-                  <div style={{fontFamily:F.ios,fontSize:14,color:C.text,marginTop:2,lineHeight:1.4,wordBreak:"break-word"}}>{co.text}</div>
-                </div>
-              </div>)}
-              <div style={{display:"flex",gap:8,marginTop:14,alignItems:"center"}}>
-                <PA photo={user?.photo} avatar={user?.avatar} size={36}/>
-                <input value={commentDraft} onChange={e=>setCommentDraft(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addComment(detail.id)} placeholder="Escribe un comentario..." style={{flex:1,background:C.iosField,border:"none",borderRadius:20,padding:"10px 16px",color:C.text,fontFamily:F.ios,fontSize:14,outline:"none"}}/>
-                <button onClick={()=>addComment(detail.id)} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:18,fontWeight:600}}>↑</button>
-              </div>
-            </div>
-            <div style={{height:32}}/>
+          {/* Botonera flotante derecha: like, comentar, compartir */}
+          <div style={{position:"absolute",right:10,bottom:104,display:"flex",flexDirection:"column",gap:16,zIndex:2}}>
+            <RailBtn onClick={()=>toggleMediaLike(m.id)} label={nLikes||""} active={lk}>
+              <svg key={lk?"y":"n"} width="26" height="26" viewBox="0 0 24 24" fill={lk?"#FF3B30":"none"} stroke={lk?"#FF3B30":"#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{animation:lk?"heartPop 0.45s ease":"none"}}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+            </RailBtn>
+            <RailBtn onClick={()=>{setCommentDraft("");setCommentsMedia(m.id);}} label={nCom||""}>
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </RailBtn>
+            <RailBtn onClick={()=>setShareMedia(m.id)}>
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </RailBtn>
+            {isAdmin&&<RailBtn onClick={()=>{if(confirm("¿Eliminar este post?")){setMedia(prev=>prev.filter(x=>x.id!==m.id));setMediaComments(prev=>{const n={...prev};delete n[m.id];return n;});setMediaLikes(prev=>{const n={...prev};delete n[m.id];return n;});}}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </RailBtn>}
           </div>
-        </>}
-        {mediaUploadModal&&<Modal onClose={()=>setMediaUploadModal(false)}>
-          <T size={24} style={{textAlign:"center",marginBottom:8}}>SUBIR MEDIA</T>
-          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Imagen o video. Visible para todos los jugadores.</Sub>
-          <label htmlFor="mediaFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:36,background:C.iosField,textAlign:"center",display:"block"}}>
-            <div style={{fontSize:42,marginBottom:10}}>📤</div>
-            <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600}}>Selecciona archivo</div>
-            <Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub>
-          </label>
-          <input id="mediaFile" type="file" accept="image/*,video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMediaUpload}/>
-          <BtnX onClick={()=>setMediaUploadModal(false)}>CANCELAR</BtnX>
-        </Modal>}
-        {postMediaModal&&<Modal onClose={()=>setPostMediaModal(false)} large>
-          <T size={22} style={{textAlign:"center",marginBottom:8}}>POSTEAR EN MEDIA</T>
-          <Sub style={{textAlign:"center",marginBottom:14,fontSize:13}}>Tu post aparecerá cuando el admin lo apruebe</Sub>
-          <FL>Imagen o video *</FL>
-          <label htmlFor="mediaDraftFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:mediaDraft.url?0:24,background:C.iosField,textAlign:"center",display:"block",marginBottom:14,overflow:"hidden"}}>
-            {mediaDraft.url?(mediaDraft.type==="image"?<img src={mediaDraft.url} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<video src={mediaDraft.url} controls style={{width:"100%",maxHeight:280,display:"block",background:"#000"}}/>):<><div style={{fontSize:36,marginBottom:8}}>📤</div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Selecciona archivo</div><Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub></>}
-          </label>
-          <input id="mediaDraftFile" type="file" accept="image/*,video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMediaDraftFile}/>
-          {mediaDraft.url&&<button onClick={()=>setMediaDraft({type:null,url:null,caption:""})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Cambiar archivo</button>}
-          <FL>Descripción (opcional)</FL>
-          <TI value={mediaDraft.caption} onChange={e=>setMediaDraft({...mediaDraft,caption:e.target.value})} placeholder="Comparte algo sobre tu post..."/>
-          <div style={{background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.3)`,borderRadius:10,padding:10,marginTop:14}}>
-            <Sub style={{fontSize:12,color:C.amber}}>⚠️ El admin revisará y aprobará tu post antes de que sea público.</Sub>
-          </div>
-          <BtnP onClick={submitMediaRequest}>ENVIAR PARA REVISIÓN</BtnP>
-          <BtnX onClick={()=>setPostMediaModal(false)}>CANCELAR</BtnX>
-        </Modal>}
+          {/* Indicador de scroll en el primer post */}
+          {i===0&&media.length>1&&<div style={{position:"absolute",bottom:96,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.75)",fontSize:20,animation:"ballBounce 1.6s ease-in-out infinite",pointerEvents:"none",textShadow:"0 1px 5px rgba(0,0,0,0.7)"}}>⌄</div>}
+        </div>;})}
       </div>
+      {/* Barra superior flotante: volver + Instagram + postear */}
+      <div style={{position:"fixed",top:66,left:0,right:0,maxWidth:720,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 12px",zIndex:5,pointerEvents:"none"}}>
+        <button onClick={()=>setScreen("home")} className="btn-press" style={{pointerEvents:"auto",background:"rgba(0,0,0,0.45)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer"}}>← Home</button>
+        <div style={{display:"flex",gap:8}}>
+          <a href="https://www.instagram.com/tennis.smt/" target="_blank" rel="noopener noreferrer" className="btn-press" style={{pointerEvents:"auto",textDecoration:"none",background:"linear-gradient(135deg,#833AB4,#FD1D1D,#FCB045)",border:"none",color:"#fff",borderRadius:20,padding:"8px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            @tennis.smt
+          </a>
+          {!isAdmin&&<button onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>📝 Postear</button>}
+          {isAdmin&&<button onClick={()=>setMediaUploadModal(true)} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>📤 Subir</button>}
+        </div>
+      </div>
+      {/* MODAL DE COMENTARIOS (hoja inferior) */}
+      {comM&&<Modal onClose={()=>{setCommentsMedia(null);setCommentDraft("");}}>
+        <SL>💬 Comentarios ({(mediaComments[comM.id]||[]).length})</SL>
+        <div style={{maxHeight:"42vh",overflowY:"auto"}}>
+          {(mediaComments[comM.id]||[]).length===0?<Sub style={{padding:"18px 0",textAlign:"center"}}>Sé el primero en comentar.</Sub>:(mediaComments[comM.id]||[]).map(co=><div key={co.id} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
+            <PA photo={co.userPhoto} avatar={co.userAvatar} size={32}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+                <div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.cyan}}>{co.userName}</div>
+                {(isAdmin||co.userId===user?.id)&&<button onClick={()=>deleteComment(comM.id,co.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",padding:2}}>✕</button>}
+              </div>
+              <div style={{fontFamily:F.ios,fontSize:14,color:C.text,marginTop:2,lineHeight:1.4,wordBreak:"break-word"}}>{co.text}</div>
+            </div>
+          </div>)}
+        </div>
+        <div style={{display:"flex",gap:8,marginTop:14,alignItems:"center"}}>
+          <PA photo={user?.photo} avatar={user?.avatar} size={36}/>
+          <input value={commentDraft} onChange={e=>setCommentDraft(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addComment(comM.id)} placeholder="Escribe un comentario..." autoFocus style={{flex:1,background:C.iosField,border:"none",borderRadius:20,padding:"10px 16px",color:C.text,fontFamily:F.ios,fontSize:14,outline:"none"}}/>
+          <button onClick={()=>addComment(comM.id)} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:18,fontWeight:600}}>↑</button>
+        </div>
+      </Modal>}
+      {/* MODAL DE COMPARTIR CON QR */}
+      {shareM&&<Modal onClose={()=>setShareMedia(null)} center>
+        <T size={24} style={{textAlign:"center",marginBottom:6}}>COMPARTIR POST</T>
+        <Sub style={{textAlign:"center",marginBottom:18,fontSize:13,lineHeight:1.5}}>Quien escanee el QR descarga la app SMT<br/>y entra directo a ver este post 🎾</Sub>
+        <div style={{background:"#fff",borderRadius:18,padding:14,width:228,margin:"0 auto",boxShadow:"0 12px 36px rgba(0,0,0,0.45)"}}>
+          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&color=040A18&data=${encodeURIComponent(shareUrl)}`} alt="QR del post" style={{width:200,height:200,display:"block"}}/>
+        </div>
+        <div style={{textAlign:"center",marginTop:12,fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:C.muted}}>SOCIEDAD MEXICANA DE TENIS</div>
+        <BtnP onClick={async()=>{
+          try{
+            if(navigator.share){await navigator.share({title:"SMT · Sociedad Mexicana de Tenis",text:"Mira este post en la app SMT 🎾",url:shareUrl});}
+            else{await navigator.clipboard.writeText(shareUrl);alert("¡Link copiado! Pégalo donde quieras compartirlo.");}
+          }catch(e){}
+        }}>COMPARTIR LINK</BtnP>
+        <BtnX onClick={()=>setShareMedia(null)}>CERRAR</BtnX>
+      </Modal>}
+      {mediaUploadModal&&<Modal onClose={()=>setMediaUploadModal(false)}>
+        <T size={24} style={{textAlign:"center",marginBottom:8}}>SUBIR MEDIA</T>
+        <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Imagen o video. Visible para todos los jugadores.</Sub>
+        <label htmlFor="mediaFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:36,background:C.iosField,textAlign:"center",display:"block"}}>
+          <div style={{fontSize:42,marginBottom:10}}>📤</div>
+          <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600}}>Selecciona archivo</div>
+          <Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub>
+        </label>
+        <input id="mediaFile" type="file" accept="image/*,video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMediaUpload}/>
+        <BtnX onClick={()=>setMediaUploadModal(false)}>CANCELAR</BtnX>
+      </Modal>}
+      {postMediaModal&&<Modal onClose={()=>setPostMediaModal(false)} large>
+        <T size={22} style={{textAlign:"center",marginBottom:8}}>POSTEAR EN MEDIA</T>
+        <Sub style={{textAlign:"center",marginBottom:14,fontSize:13}}>Tu post aparecerá cuando el admin lo apruebe</Sub>
+        <FL>Imagen o video *</FL>
+        <label htmlFor="mediaDraftFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:mediaDraft.url?0:24,background:C.iosField,textAlign:"center",display:"block",marginBottom:14,overflow:"hidden"}}>
+          {mediaDraft.url?(mediaDraft.type==="image"?<img src={mediaDraft.url} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<video src={mediaDraft.url} controls style={{width:"100%",maxHeight:280,display:"block",background:"#000"}}/>):<><div style={{fontSize:36,marginBottom:8}}>📤</div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Selecciona archivo</div><Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub></>}
+        </label>
+        <input id="mediaDraftFile" type="file" accept="image/*,video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMediaDraftFile}/>
+        {mediaDraft.url&&<button onClick={()=>setMediaDraft({type:null,url:null,caption:""})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Cambiar archivo</button>}
+        <FL>Descripción (opcional)</FL>
+        <TI value={mediaDraft.caption} onChange={e=>setMediaDraft({...mediaDraft,caption:e.target.value})} placeholder="Comparte algo sobre tu post..."/>
+        <div style={{background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.3)`,borderRadius:10,padding:10,marginTop:14}}>
+          <Sub style={{fontSize:12,color:C.amber}}>⚠️ El admin revisará y aprobará tu post antes de que sea público.</Sub>
+        </div>
+        <BtnP onClick={submitMediaRequest}>ENVIAR PARA REVISIÓN</BtnP>
+        <BtnX onClick={()=>setPostMediaModal(false)}>CANCELAR</BtnX>
+      </Modal>}
       <ShowTabBar/>
     </div>;
   }
+
 
   // FIND A MATCH
   if(screen==="scoreboard"){
