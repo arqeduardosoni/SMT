@@ -1,0 +1,19 @@
+{
+  "name": "Sociedad Mexicana de Tenis",
+  "short_name": "SMT",
+  "description": "Organiza torneos, encuentra rivales y coaches, compra equipo de tenis en México",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#040A18",
+  "theme_color": "#040A18",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

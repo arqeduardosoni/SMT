@@ -1,7 +1,6 @@
 node_modules/
 dist/
 android/
-ios/
 .env
 *.keystore
 .DS_Store
