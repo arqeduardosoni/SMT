@@ -595,6 +595,9 @@ export default function App(){
   const [inviteCopied,setInviteCopied]=useState(false);
   const [pendingJoinCode,setPendingJoinCode]=useState(null);
   const [pendingPostId,setPendingPostId]=useState(null);
+  const [pendingJoinTourney,setPendingJoinTourney]=useState(null);
+  const [shareTourney,setShareTourney]=useState(null);
+  const [shareTCopied,setShareTCopied]=useState(false);
   const [groupMembers,setGroupMembers]=useState([]);
   const [showGroupInfo,setShowGroupInfo]=useState(false);
   const [replyingTo,setReplyingTo]=useState(null); // mensaje al que estoy respondiendo
@@ -883,6 +886,26 @@ export default function App(){
     setTimeout(()=>alert("Tu cuenta y todos tus datos han sido eliminados permanentemente."),300);
   };
 
+  // ===== INSCRIPCIÓN POR LINK/QR + VINCULACIÓN POR NOMBRE =====
+  const tnorm=(s)=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const buildJoinTourneyUrl=(t)=>`https://smt-green.vercel.app/?jt=${t.id}`;
+  const swapTPlayer=(t,oldId,np)=>({...t,
+    players:(t.players||[]).map(p=>p.id===oldId?np:p),
+    pendingPlayers:(t.pendingPlayers||[]).map(p=>p.id===oldId?np:p),
+    groups:(t.groups||[]).map(g=>({...g,players:(g.players||[]).map(p=>p.id===oldId?np:p),matches:(g.matches||[]).map(m=>({...m,p1:m.p1&&m.p1.id===oldId?np:m.p1,p2:m.p2&&m.p2.id===oldId?np:m.p2,winner:m.winner&&m.winner.id===oldId?np:m.winner}))})),
+    rounds:(t.rounds||[]).map(r=>(r||[]).map(m=>({...m,p1:m.p1&&m.p1.id===oldId?np:m.p1,p2:m.p2&&m.p2.id===oldId?np:m.p2,winner:m.winner&&m.winner.id===oldId?np:m.winner})))});
+  const joinTournamentByLink=(tid)=>{
+    const t=tournaments.find(x=>String(x.id)===String(tid));
+    if(!t){alert("No encontramos ese torneo. Pide el enlace de nuevo al organizador.");return;}
+    const openT=(tt)=>{setSelT(tt);setShowIntro(true);setTab(tt.format==="groups+ko"&&(tt.groups||[]).length>0?"groups":"draw");setScreen("tournament");};
+    if((t.players||[]).find(p=>p.id===user.id)){openT(t);return;}
+    const ph=(t.players||[]).find(p=>typeof p.id==="string"&&p.id.startsWith("imp-")&&tnorm(p.name)===tnorm(user.name));
+    let nt;
+    if(ph){nt=swapTPlayer(t,ph.id,{...user});setTimeout(()=>alert(`✅ ¡Listo, ${user.firstName||(user.name||"").split(" ")[0]}! Quedaste vinculado a tu lugar en "${t.name}". Tus partidos y resultados ya aparecen en la app.`),350);}
+    else{nt={...t,players:[...(t.players||[]),user]};setTimeout(()=>alert(`✅ ¡Quedaste inscrito en "${t.name}"!`),350);}
+    setTournaments(prev=>prev.map(x=>x.id===t.id?nt:x));
+    openT(nt);
+  };
   const reqReg=(tid)=>{if(gate("Crea tu cuenta gratis para inscribirte a torneos."))return;const t=tournaments.find(x=>x.id===tid);if(!t)return;if(t.players.find(p=>p.id===user.id)||t.pendingPlayers.find(p=>p.id===user.id))return;if(t.players.length+t.pendingPlayers.length>=parseInt(t.maxPlayers))return;const userIsMinor=isMinor(user.birthdate);if(!isAdmin&&userIsMinor&&!t.forMinors){alert("Este torneo es para mayores de edad. No puedes inscribirte.");return;}if(!isAdmin&&!userIsMinor&&t.forMinors){alert("Este torneo es exclusivo para menores de edad.");return;}if(t.gender&&t.gender!=="Mixed"&&user.sex&&user.sex!==t.gender){alert(`Este torneo es exclusivo para categoría ${t.gender==="M"?"masculino ♂":"femenino ♀"}.`);return;}if(!isAdmin&&t.category){if(!user.category){alert("Debes seleccionar tu categoría en tu perfil antes de inscribirte a torneos.");return;}const userCatIdx=CATS.indexOf(user.category),tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx){alert(`No puedes inscribirte a torneos de categoría inferior. Tu categoría es ${user.category}, este torneo es ${t.category}.`);return;}}if(isAdmin)setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,user]}:x));else setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:[...x.pendingPlayers,user]}:x));};
   const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));};
   const adminReject=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:x.pendingPlayers.filter(p=>p.id!==pid)}:x));
@@ -1349,6 +1372,8 @@ export default function App(){
       // Deep link de QR compartido (?post=ID): abre la sección Media al entrar
       const postId=params.get("post");
       if(postId){setPendingPostId(postId);window.history.replaceState({},"",window.location.pathname);}
+      const jt=params.get("jt");
+      if(jt){setPendingJoinTourney(jt);window.history.replaceState({},"",window.location.pathname);}
     }catch(e){}
   },[]);
 
@@ -1369,6 +1394,17 @@ export default function App(){
     }
     /* eslint-disable-next-line */
   },[user,pendingPostId]);
+
+  // Procesa el link/QR de inscripción a torneo (?jt=ID) tras iniciar sesión
+  useEffect(()=>{
+    if(user&&pendingJoinTourney){
+      if(guest){setGuestPrompt("Crea tu cuenta gratis para inscribirte al torneo.");return;} // se conserva y se procesa al registrarse
+      if(isAdmin){setPendingJoinTourney(null);return;}
+      const tid=pendingJoinTourney;setPendingJoinTourney(null);
+      joinTournamentByLink(tid);
+    }
+    /* eslint-disable-next-line */
+  },[user,guest,pendingJoinTourney]);
   // ==================== FIN SOCIAL: funciones ====================
 
 
@@ -2737,6 +2773,22 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <style>{STYLE}</style><Aurora intense={0.4}/>
       {showIntro&&t.players.length>0&&<TIntro tourney={t} onDone={()=>setShowIntro(false)}/>}
       {champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}
+      {shareTourney&&(()=>{const url=buildJoinTourneyUrl(shareTourney);return <div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShareTourney(null)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:390,background:C.surface,borderRadius:22,border:`1px solid ${C.cyanBdr}`,padding:24,textAlign:"center",animation:"scaleIn 0.3s",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{fontSize:30,marginBottom:6}}>🔗</div>
+          <T size={22} style={{marginBottom:4}}>INSCRIPCIÓN DIRECTA</T>
+          <Sub style={{marginBottom:16,lineHeight:1.5,fontSize:13}}>Comparte este QR o link con los jugadores de <b style={{color:C.cyan}}>{shareTourney.name}</b>. Al abrirlo entran <b>directo al torneo, sin que tú apruebes</b>. Si su nombre coincide con un jugador ya cargado, hereda sus partidos y resultados.</Sub>
+          <div style={{background:"#fff",borderRadius:16,padding:12,display:"inline-block",marginBottom:16}}>
+            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodeURIComponent(url)}`} width={220} height={220} alt="QR inscripción" style={{display:"block"}}/>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:C.bg,border:`1px solid ${C.borderS}`,borderRadius:11,padding:"11px 13px",marginBottom:12}}>
+            <span style={{flex:1,textAlign:"left",fontSize:12,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{url}</span>
+            <button onClick={()=>{try{navigator.clipboard.writeText(url);}catch(e){}setShareTCopied(true);setTimeout(()=>setShareTCopied(false),2000);}} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:shareTCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{shareTCopied?"✓ Copiado":"Copiar"}</button>
+          </div>
+          <button onClick={()=>{const msg=`🎾 Inscríbete al torneo "${shareTourney.name}" de la Sociedad Mexicana de Tenis. Abre este link en tu celular:\n${url}\n\n(Primero descarga la app SMT del App Store)`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");}} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
+          <button onClick={()=>setShareTourney(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"6px",cursor:"pointer"}}>Cerrar</button>
+        </div>
+      </div>;})()}
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
         <button onClick={()=>{setScreen("home");setSelT(null);setShowIntro(false);}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← Torneos</button>
@@ -2755,6 +2807,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {!isAdmin&&!isReg&&!isPending&&t.status==="open"&&!isFull&&<BtnG onClick={()=>reqReg(t.id)} style={{flex:1,padding:12}}>SOLICITAR INSCRIPCIÓN</BtnG>}
           {!isAdmin&&isPending&&<Chip type="amber">⏳ ESPERANDO APROBACIÓN</Chip>}
           {!isAdmin&&isReg&&<span style={{fontFamily:F.ios,fontSize:13,color:C.green,fontWeight:600}}>✓ Inscrito</span>}
+          {isAdmin&&<BtnG onClick={()=>{setShareTourney(t);setShareTCopied(false);}} style={{flex:1,padding:12,background:C.cyanDim}}>🔗 LINK / QR INSCRIPCIÓN</BtnG>}
           {isAdmin&&t.status==="open"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
           {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"⚡ INICIAR GRUPOS":"⚡ GENERAR DRAW"}</BtnG>}
           {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}>⚡ GENERAR ELIMINATORIA</BtnG>}
