@@ -796,7 +796,7 @@ export default function App(){
     return p.split("").sort(()=>Math.random()-0.5).join("");
   };
 
-  const doRecover=()=>{
+  const doRecover=async()=>{
     setAuthErr("");
     // FLUJO ADMIN: código por email (a smt.tennismx@gmail.com)
     if(authMode==="admin-recover"){
@@ -806,14 +806,15 @@ export default function App(){
       alert(`📧 EMAIL ENVIADO\n\nEnviamos un código de verificación a:\n${adminEmail}\n\nRevisa tu bandeja de entrada (y carpeta spam).\n\n[Modo demo - código generado: ${code}]\n\nEn producción este código solo aparecería en tu correo.`);
       return;
     }
-    // FLUJO JUGADOR: solicitar al admin
-    const a=accounts.find(x=>x.email.toLowerCase()===authForm.email.toLowerCase());
-    if(!a)return setAuthErr("Email no registrado");
-    // Verificar que no haya ya una solicitud pendiente
-    const existing=passwordResetRequests.find(r=>r.accountId===a.id&&r.status==="pending");
-    if(existing){setResetRequestSent(true);return;}
-    setPasswordResetRequests(prev=>[...prev,{id:`pr-${Date.now()}`,accountId:a.id,email:a.email,name:a.name,playerPhoto:a.photo,playerAvatar:a.avatar,time:Date.now(),status:"pending"}]);
-    setResetRequestSent(true);
+    // FLUJO JUGADOR: correo de recuperación nativo de Supabase (seguro y automático)
+    const email=authForm.email.trim().toLowerCase();
+    if(!email)return setAuthErr("Escribe tu email");
+    setAuthErr("Enviando...");
+    try{
+      const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:"https://smt-green.vercel.app/reset.html"});
+      if(error){setAuthErr(error.message);return;}
+      setAuthErr("");setResetRequestSent(true);
+    }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
   const verifyRecoveryCode=()=>{
     if(!recoveryFlow)return;
@@ -1769,8 +1770,8 @@ export default function App(){
           {/* Flujo JUGADOR: solicitud al admin */}
           {authMode==="player-recover"&&resetRequestSent&&<div style={{marginTop:14,background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.40)`,padding:18,borderRadius:14,textAlign:"center"}}>
             <div style={{fontSize:38,marginBottom:10}}>📩</div>
-            <div style={{fontFamily:F.bc,color:C.green,letterSpacing:"0.18em",fontSize:11,fontWeight:700,marginBottom:8}}>SOLICITUD ENVIADA AL ADMIN</div>
-            <Sub style={{fontSize:13,color:C.text,lineHeight:1.5,marginBottom:14}}>Le notificamos al administrador. Una vez que apruebe tu solicitud, recibirás un correo en <b style={{color:C.cyan}}>{authForm.email}</b> con una <b>contraseña temporal</b>. Úsala para entrar y cambiarla.</Sub>
+            <div style={{fontFamily:F.bc,color:C.green,letterSpacing:"0.18em",fontSize:11,fontWeight:700,marginBottom:8}}>CORREO ENVIADO</div>
+            <Sub style={{fontSize:13,color:C.text,lineHeight:1.5,marginBottom:14}}>Si <b style={{color:C.cyan}}>{authForm.email}</b> está registrado, te llegará un correo con un enlace para crear una <b>contraseña nueva</b>. Revisa tu bandeja de entrada (y la carpeta de spam).</Sub>
             <button onClick={()=>{setResetRequestSent(false);setAuthMode("player-login");setAuthForm({email:"",password:"",name:""});}} className="btn-press" style={{background:C.cyan,color:"#fff",border:"none",padding:"11px 22px",fontFamily:F.ios,fontSize:13,cursor:"pointer",borderRadius:12,fontWeight:600}}>VOLVER AL INICIO</button>
           </div>}
           {/* Flujo ADMIN: código por email + reset */}
@@ -1791,7 +1792,7 @@ export default function App(){
           </div>}
           {(authMode==="player-login"||authMode==="admin-login")&&!recoveryFlow&&<BtnP onClick={doLogin}>INGRESAR</BtnP>}
           {authMode==="player-register"&&<BtnP onClick={doRegister}>CREAR CUENTA</BtnP>}
-          {authMode==="player-recover"&&!resetRequestSent&&<BtnP onClick={doRecover}>📩 SOLICITAR AL ADMIN</BtnP>}
+          {authMode==="player-recover"&&!resetRequestSent&&<BtnP onClick={doRecover}>📩 ENVIARME CORREO DE RECUPERACIÓN</BtnP>}
           {authMode==="admin-recover"&&!recoveryFlow&&<BtnP onClick={doRecover}>📧 ENVIARME CÓDIGO</BtnP>}
           <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6,alignItems:"center"}}>
             {authMode==="player-login"&&!recoveryFlow&&<><button onClick={()=>{setAuthMode("player-recover");setRecoveryFlow(null);setResetRequestSent(false);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste tu contraseña?</button><button onClick={()=>{setAuthMode("player-register");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿No tienes cuenta? <span style={{color:C.cyan}}>Crear cuenta</span></button></>}

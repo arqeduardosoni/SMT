@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>SMT — Restablecer contraseña</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{min-height:100vh;background:#040A18;color:#F0EDE8;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:380px;background:linear-gradient(180deg,#0A1B3D,#0D2148);border:1px solid rgba(79,195,247,.35);border-radius:22px;padding:30px 24px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .logo{font-size:30px;font-weight:900;letter-spacing:-.02em;text-align:center;color:#fff;margin-bottom:4px}
+  .logo span{color:#4FC3F7}
+  .sub{text-align:center;color:#7E93B5;font-size:13px;margin-bottom:22px;letter-spacing:.04em}
+  h1{font-size:20px;text-align:center;margin-bottom:18px;font-weight:800}
+  label{display:block;font-size:13px;color:#9FB6D6;margin-bottom:6px;font-weight:600}
+  input{width:100%;background:#06122a;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 15px;color:#fff;font-size:16px;outline:none;margin-bottom:14px}
+  input:focus{border-color:#4FC3F7}
+  button{width:100%;background:linear-gradient(135deg,#4FC3F7,#0288D1);color:#fff;border:none;padding:15px;font-size:16px;font-weight:700;border-radius:14px;cursor:pointer;box-shadow:0 10px 26px rgba(2,136,209,.4)}
+  button:disabled{opacity:.5;cursor:default}
+  .msg{text-align:center;font-size:14px;line-height:1.5;margin-top:14px}
+  .ok{color:#34C759}.err{color:#FF453A}.hint{color:#7E93B5;font-size:12px;margin-top:-6px;margin-bottom:14px}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">S<span>M</span>T</div>
+  <div class="sub">SOCIEDAD MEXICANA DE TENIS</div>
+
+  <div id="loading" class="msg">Verificando tu enlace…</div>
+
+  <form id="form" class="hide">
+    <h1>Crea tu nueva contraseña</h1>
+    <label>Nueva contraseña</label>
+    <input id="p1" type="password" placeholder="••••••••" autocomplete="new-password"/>
+    <div class="hint">Mínimo 8 caracteres, 1 mayúscula y 1 número.</div>
+    <label>Repite la contraseña</label>
+    <input id="p2" type="password" placeholder="••••••••" autocomplete="new-password"/>
+    <button id="btn" type="submit">Guardar contraseña</button>
+    <div id="formMsg" class="msg"></div>
+  </form>
+
+  <div id="done" class="hide msg ok">
+    ✓ ¡Listo! Tu contraseña fue actualizada.<br/><br/>
+    Vuelve a la app <b>SMT</b> e inicia sesión con tu nueva contraseña.
+  </div>
+
+  <div id="bad" class="hide msg err">
+    Este enlace no es válido o ya expiró.<br/><br/>
+    Abre la app, ve a <b>¿Olvidaste tu contraseña?</b> y pide un correo nuevo.
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL="https://vwdviikyhimzikxoasjd.supabase.co";
+  var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3ZHZpaWt5aGltemlreG9hc2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NDgzMjIsImV4cCI6MjA5NDUyNDMyMn0.-xf4-d2-rFEC299v2udYawm9tIjs1SyS5BRvw0hHXT8";
+  var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{detectSessionInUrl:true,flowType:"implicit",persistSession:false}});
+  var $=function(id){return document.getElementById(id)};
+  var ready=false;
+
+  function showForm(){ if(ready)return; ready=true; $("loading").classList.add("hide"); $("form").classList.remove("hide"); }
+  function showBad(){ $("loading").classList.add("hide"); $("bad").classList.remove("hide"); }
+
+  // Cuando Supabase detecta el token de recuperación en el enlace, hay sesión de recuperación
+  sb.auth.onAuthStateChange(function(event,session){ if(session){ showForm(); } });
+
+  // Respaldo: revisar si ya hay sesión / token; si no hay nada, mostrar "enlace inválido"
+  setTimeout(function(){
+    sb.auth.getSession().then(function(res){
+      if(res.data && res.data.session){ showForm(); }
+      else if(!ready){
+        var h=window.location.hash||"";
+        if(h.indexOf("access_token")===-1 && window.location.search.indexOf("code=")===-1){ showBad(); }
+      }
+    });
+  },1200);
+
+  $("form").addEventListener("submit",function(e){
+    e.preventDefault();
+    var p1=$("p1").value, p2=$("p2").value, m=$("formMsg");
+    m.className="msg err";
+    if(p1.length<8){ m.textContent="La contraseña debe tener mínimo 8 caracteres."; return; }
+    if(!/[A-Z]/.test(p1)||!/[0-9]/.test(p1)){ m.textContent="Debe incluir al menos una mayúscula y un número."; return; }
+    if(p1!==p2){ m.textContent="Las contraseñas no coinciden."; return; }
+    $("btn").disabled=true; m.className="msg"; m.style.color="#7E93B5"; m.textContent="Guardando…";
+    sb.auth.updateUser({password:p1}).then(function(res){
+      if(res.error){ $("btn").disabled=false; m.className="msg err"; m.textContent=res.error.message; return; }
+      $("form").classList.add("hide"); $("done").classList.remove("hide");
+    }).catch(function(){ $("btn").disabled=false; m.className="msg err"; m.textContent="Error de conexión. Intenta de nuevo."; });
+  });
+</script>
+</body>
+</html>
