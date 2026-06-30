@@ -344,7 +344,7 @@ function Chip({type,children,style}){
 }
 
 function Modal({onClose,children,large,center}){
-  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?16:0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"86vh":"92vh",overflowY:"auto",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
+  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?16:0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"86vh":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
 }
 
 const BtnP=({onClick,children,style})=><button onClick={onClick} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"15px 18px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,marginTop:12,boxShadow:`0 10px 28px rgba(2,136,209,0.42)`,letterSpacing:"-0.01em",...style}}>{children}</button>;
@@ -1344,7 +1344,7 @@ export default function App(){
   };
 
   const deleteGroupFn=async(g)=>{
-    if(g.created_by!==user.id)return;
+    if(g.created_by!==user.id&&!isAdmin)return;
     if(!window.confirm(`¿Eliminar el grupo "${g.name}"? Se borrarán todos sus mensajes. Esto no se puede deshacer.`))return;
     try{
       await supabase.from("groups").delete().eq("id",g.id);
@@ -1672,6 +1672,7 @@ export default function App(){
   const deleteListing=(lid)=>{
     if(!confirm("¿Eliminar este producto del marketplace?"))return;
     setMarketplace(prev=>prev.filter(x=>x.id!==lid));
+    try{supabase.from("marketplace_data").delete().eq("id",String(lid));}catch(e){}
     setMpDetail(null);
   };
 
@@ -1706,7 +1707,7 @@ export default function App(){
     if(accept){setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone,playerName:r.playerName,playerPhone:r.playerPhone,hourlyRate:r.coachHourlyRate,frequency:r.frequency});}
   };
 
-  const handlePhoto=(e)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const url=r.result;if(viewP&&isAdmin&&viewP.id!==user?.id)updateAccount({...viewP,photo:url});else if(user)updateUser({...user,photo:url});};r.onerror=()=>alert("Error al cargar imagen");r.readAsDataURL(f);e.target.value="";};
+  const handlePhoto=(e)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const url=r.result;if(viewP&&isAdmin&&viewP.id!==user?.id){updateAccount({...viewP,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",viewP.id);}catch(er){}}else if(user){updateUser({...user,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",user.id);}catch(er){}}};r.onerror=()=>alert("Error al cargar imagen");r.readAsDataURL(f);e.target.value="";};
   const handleTImg=(e,target)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{if(target==="new")setNewT(prev=>({...prev,image:r.result}));else setEditTourney(prev=>({...prev,image:r.result}));};r.readAsDataURL(f);e.target.value="";};
 
   const changePassword=()=>{
@@ -2317,7 +2318,7 @@ export default function App(){
             </>:<>
               {[["serve","Servicio"],["return","Resto"],["forehand","Derecha"],["backhand","Revés"]].map(([k,l])=><div key={k} style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
                 <div style={{fontFamily:F.ios,fontSize:14,color:C.text,flex:1,fontWeight:500}}>{l}</div>
-                <input type="number" min="0" max="10" step="0.1" style={{width:90,background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:22,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseFloat(e.target.value)||0}})} placeholder="0"/>
+                <input type="number" min="0" max="10" step="0.1" style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:22,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseFloat(e.target.value)||0}})} placeholder="0"/>
               </div>)}
             </>}
           </div>
@@ -2325,11 +2326,11 @@ export default function App(){
             <SL color={C.amber}>Estadísticas (solo admin)</SL>
             {[["wins","Victorias"],["losses","Derrotas"],["titles","Títulos"],["points","Puntos"],["ranking","Ranking #"]].map(([k,l])=><div key={k} style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
               <div style={{fontFamily:F.ios,fontSize:14,color:C.text,flex:1,fontWeight:500}}>{l}</div>
-              <input type="number" min="0" style={{width:90,background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile[k]||""} onChange={e=>setEditProfile({...editProfile,[k]:parseInt(e.target.value)||0})}/>
+              <input type="number" min="0" style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile[k]||""} onChange={e=>setEditProfile({...editProfile,[k]:parseInt(e.target.value)||0})}/>
             </div>)}
             {[["aces","Aces"],["doubleFaults","Dobles faltas"],["bpWon","BP ganados"],["bpTotal","BP totales"],["winners","Winners"],["unforcedErrors","Err. no forzados"],["setsDropped","Sets perdidos"],["gamesLost","Juegos perdidos"]].map(([k,l])=><div key={k} style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
               <div style={{fontFamily:F.ios,fontSize:14,color:C.text,flex:1,fontWeight:500}}>{l}</div>
-              <input type="number" min="0" style={{width:90,background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseInt(e.target.value)||0}})}/>
+              <input type="number" min="0" style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseInt(e.target.value)||0}})}/>
             </div>)}
           </div>}
           <BtnP onClick={saveProfile}>GUARDAR</BtnP>
@@ -3220,7 +3221,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               {m.role==="admin"&&<span style={{fontSize:10.5,padding:"2px 8px",borderRadius:6,background:C.goldDim,color:C.gold,fontWeight:700}}>Admin</span>}
             </div>;})}
           </div>
-          {isCreator
+          {(isCreator||isAdmin)
             ?<button onClick={()=>deleteGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}><Ico n="trash"/> ELIMINAR GRUPO</button>
             :<button onClick={()=>leaveGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>↩  SALIR DEL GRUPO</button>}
           <button onClick={()=>setShowGroupInfo(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cerrar</button>
@@ -3491,7 +3492,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="find-hub" label="Find A"/>
-        <div style={{padding:"14px 18px"}}>
+        <div style={{padding:"14px 18px 120px"}}>
           <T size={32}>FIND A MATCH</T><Sub style={{marginTop:4,marginBottom:18}}>Encuentra rival para jugar</Sub>
           {!user?.phone&&!isAdmin&&<div style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,borderRadius:12,padding:12,marginBottom:14}}>
             <Sub style={{color:C.amber,fontSize:13,fontWeight:600}}>⚠️ Agrega tu número de celular en tu perfil para usar Find a Match.</Sub>
