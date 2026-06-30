@@ -50,14 +50,14 @@ select option:checked{background-color:#0288D1 !important;color:#FFFFFF !importa
 @keyframes auroraA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8%,-6%) scale(1.15)}66%{transform:translate(-10%,10%) scale(0.95)}}
 @keyframes auroraB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-12%,8%) scale(0.9)}66%{transform:translate(8%,-10%) scale(1.2)}}
 @keyframes auroraC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(15%,12%) scale(1.1)}}
-.btn-press:active{transform:scale(0.96);filter:brightness(0.78);transition:transform 0.08s,filter 0.08s}
+.btn-press{transition:transform 0.16s cubic-bezier(0.34,1.56,0.64,1),filter 0.16s ease}.btn-press:hover{transform:translateY(-1.5px);filter:brightness(1.1)}.btn-press:active{transform:scale(0.95);filter:brightness(0.82);transition:transform 0.08s,filter 0.08s}
 .tap-row:active{background:rgba(255,255,255,0.04);filter:brightness(0.85)}
 button{transition:transform 0.1s ease,filter 0.1s ease}
 button:active{transform:scale(0.96);filter:brightness(0.78)}
 .tab-btn{transition:transform 0.15s ease,filter 0.15s ease}
 .tab-btn:active{transform:scale(0.88);filter:brightness(0.78)}
 @media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
-.screen-fade{animation:scrFade 0.4s ease}
+.screen-fade{animation:scrSlide 0.34s cubic-bezier(0.22,1,0.36,1)}@keyframes scrSlide{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:translateX(0)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
 @keyframes scrFade{from{opacity:0}to{opacity:1}}
 @keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
 html,body{background:#040A18;margin:0}
@@ -339,7 +339,7 @@ const Beam=()=><div style={{position:"absolute",left:0,right:0,height:3,backgrou
 
 function Chip({type,children,style}){
   const c={default:{bg:C.surface2,c:C.muted,b:C.borderS},cyan:{bg:C.cyanDim,c:C.cyan,b:C.cyanBdr},gold:{bg:C.goldDim,c:C.gold,b:C.goldBdr},green:{bg:"rgba(52,199,89,0.15)",c:C.green,b:"rgba(52,199,89,0.3)"},red:{bg:"rgba(255,59,48,0.15)",c:C.red,b:"rgba(255,59,48,0.3)"},amber:{bg:"rgba(255,159,10,0.15)",c:C.amber,b:"rgba(255,159,10,0.3)"}}[type||"default"];
-  return <span style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,background:c.bg,color:c.c,border:`1px solid ${c.b}`,fontWeight:600,...style}}>{children}</span>;
+  return <span className={type==="gold"?"glow-gold":""} style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,background:c.bg,color:c.c,border:`1px solid ${c.b}`,fontWeight:600,...style}}>{children}</span>;
 }
 
 function Modal({onClose,children,large,center}){
@@ -392,6 +392,69 @@ function SurfRing({label,emoji,w,l,delay}){
 }
 const T=({children,size,style})=><div style={{fontFamily:F.bn,fontSize:size||28,letterSpacing:"0.06em",color:C.text,lineHeight:1,...style}}>{children}</div>;
 const Sub=({children,style})=><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,...style}}>{children}</div>;
+
+// ===== SMT PREMIUM (panel de beneficios) =====
+function PremiumPanel({onClose}){
+  const benefits=[
+    ["🎓","Feedback de un coach","Mándale tus videos y mensajes. Te responde con video, mensajes y notas de voz para mejorar tu juego."],
+    ["🩹","Feedback de un fisioterapeuta","Prevén y atiende lesiones con un profesional."],
+    ["🏆","Torneos privados","Crea tu torneo con tus amigos e invítalos por QR."],
+    ["🚫","Sin anuncios","Disfruta la app sin publicidad."],
+  ];
+  return <div style={{position:"fixed",inset:0,zIndex:950,background:"rgba(2,6,16,0.9)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",textAlign:"center",animation:"scaleIn 0.3s"}}>
+      <div style={{fontSize:40,marginBottom:4}}>⭐</div>
+      <T size={26} style={{marginBottom:4}}>SMT PREMIUM</T>
+      <Sub style={{marginBottom:10}}>Lleva tu juego al siguiente nivel.</Sub>
+      <div style={{display:"inline-block",background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",color:"#FFD15C",fontFamily:F.bc,fontSize:11,letterSpacing:"0.12em",fontWeight:700,padding:"5px 12px",borderRadius:999,marginBottom:18}}>MUY PRONTO · PRUEBA GRATIS 7 DÍAS</div>
+      <div style={{textAlign:"left",marginBottom:18}}>
+        {benefits.map((b,i)=><div key={i} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:i<benefits.length-1?`1px solid ${C.borderS}`:"none"}}>
+          <div style={{fontSize:24,flexShrink:0}}>{b[0]}</div>
+          <div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{b[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted,marginTop:2,lineHeight:1.4}}>{b[2]}</div></div>
+        </div>)}
+      </div>
+      <div style={{display:"flex",gap:10,marginBottom:16}}>
+        <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$79</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al mes</div></div>
+        <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$799</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al año · ahorra 2 meses</div></div>
+      </div>
+      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible. 🎾");onClose();}}>QUIERO ENTERARME</BtnP>
+      <button onClick={onClose} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Ahora no</button>
+    </div>
+  </div>;
+}
+
+// ===== TUTORIAL DE BIENVENIDA (primer ingreso) =====
+function Onboarding({onClose,onGoProfile,onShowPremium}){
+  const [step,setStep]=useState(0);
+  const steps=[
+    {icon:"🎾",title:"¡BIENVENIDO A SMT!",body:"Tu comunidad de tenis: torneos, retas, coaches y marketplace. Te muestro lo básico en 30 segundos."},
+    {icon:"👤",title:"COMPLETA TU PERFIL",body:"Agrega tu foto, categoría, club y número de celular. Es lo que necesitas para inscribirte a torneos y para que otros jugadores te encuentren y te reten.",note:"Lo llenas en la pestaña “Perfil”, botón “Editar perfil”."},
+    {icon:"🏆",title:"LO QUE PUEDES HACER",list:[["🎾","Inscribirte a torneos","por QR o link, al instante"],["⚔️","Retar jugadores","de tu mismo nivel"],["🎓","Buscar coaches","y reservar clases"],["🛒","Vender en el marketplace","tu equipo de tenis"]]},
+    {icon:"⭐",title:"SMT PREMIUM",body:"Muy pronto: feedback directo de un coach y un fisio (con video y notas de voz), torneos privados con tus amigos y app sin anuncios. Con prueba gratis de 7 días.",premium:true},
+    {icon:"🏆",title:"PREMIO ANUAL",body:"Al cerrar el año, el jugador #1 del ranking de cada categoría se gana $2,000. Exclusivo para cuentas Premium. ¡Sube en tu ranking y llévatelo!"},
+    {icon:"✅",title:"¡TODO LISTO!",body:"Empieza por completar tu perfil para poder inscribirte y jugar. ¡Nos vemos en la cancha!",final:true},
+  ];
+  const s=steps[step];const last=step===steps.length-1;
+  return <div style={{position:"fixed",inset:0,zIndex:940,background:`linear-gradient(180deg,${C.bg},${C.surface2||C.bg})`,display:"flex",flexDirection:"column",padding:"max(46px,env(safe-area-inset-top)) 24px 30px"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{display:"flex",gap:6}}>{steps.map((_,i)=><div key={i} style={{width:i===step?22:7,height:7,borderRadius:4,background:i===step?C.cyan:C.borderS,transition:"all .3s"}}/>)}</div>
+      {!last&&<button onClick={onClose} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,cursor:"pointer"}}>Saltar</button>}
+    </div>
+    <div key={step} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",textAlign:"center",animation:"fadeIn .35s"}}>
+      <div style={{fontSize:64,marginBottom:18}}>{s.icon}</div>
+      <T size={32} style={{marginBottom:12}}>{s.title}</T>
+      {s.body&&<Sub style={{fontSize:15,lineHeight:1.6,maxWidth:340,margin:"0 auto",color:C.text}}>{s.body}</Sub>}
+      {s.note&&<div style={{marginTop:12,fontFamily:F.ios,fontSize:13,color:C.cyan}}>{s.note}</div>}
+      {s.list&&<div style={{marginTop:8,textAlign:"left",maxWidth:340,margin:"8px auto 0",width:"100%"}}>{s.list.map((it,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"center",padding:"11px 0",borderBottom:i<s.list.length-1?`1px solid ${C.borderS}`:"none"}}><div style={{fontSize:24}}>{it[0]}</div><div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{it[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted}}>{it[2]}</div></div></div>)}</div>}
+      {s.premium&&<button onClick={onShowPremium} className="btn-press" style={{marginTop:18,alignSelf:"center",background:"rgba(255,209,92,0.14)",border:"1px solid rgba(255,209,92,0.45)",color:"#FFD15C",fontFamily:F.ios,fontSize:14,fontWeight:700,padding:"11px 20px",borderRadius:14,cursor:"pointer"}}>Ver beneficios Premium</button>}
+    </div>
+    <div style={{display:"flex",gap:10}}>
+      {step>0&&<button onClick={()=>setStep(step-1)} className="btn-press" style={{flex:"0 0 auto",background:"rgba(118,118,128,0.16)",border:"none",color:C.text,fontFamily:F.ios,fontSize:16,fontWeight:600,padding:"15px 22px",borderRadius:16,cursor:"pointer"}}>Atrás</button>}
+      {!last?<BtnP onClick={()=>setStep(step+1)} style={{marginTop:0}}>Siguiente</BtnP>:<BtnP onClick={onGoProfile} style={{marginTop:0}}>IR A MI PERFIL</BtnP>}
+    </div>
+    {last&&<button onClick={onClose} className="btn-press" style={{marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,cursor:"pointer"}}>Explorar primero</button>}
+  </div>;
+}
 const Row=({label,val})=><div style={{display:"flex",justifyContent:"space-between",padding:"13px 18px",borderBottom:`0.5px solid ${C.borderS}`}}><span style={{fontFamily:F.ios,fontSize:14,color:C.muted}}>{label}</span><span style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:500}}>{val}</span></div>;
 
 function Seg({options,value,onChange,style}){
@@ -604,6 +667,8 @@ export default function App(){
   const [reactPickerFor,setReactPickerFor]=useState(null); // id del mensaje con el picker de reacciones abierto
   const [notifications,setNotifications]=useState([]);
   const [showNotifs,setShowNotifs]=useState(false);
+  const [showOnboarding,setShowOnboarding]=useState(false);
+  const [showPremium,setShowPremium]=useState(false);
   const [sb,setSb]=useState(null);          // estado del partido en el marcador
   const [sbHist,setSbHist]=useState([]);     // historial para deshacer
   const [sbP1,setSbP1]=useState("");
@@ -784,7 +849,7 @@ export default function App(){
       setAuthErr("");
       const p=profileToPlayer(row);
       setAccounts(prev=>[...prev.filter(a=>a.id!==p.id),p]);
-      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();
+      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();setShowOnboarding(true);
     }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
   // Generar contraseña temporal aleatoria segura
@@ -1692,6 +1757,8 @@ export default function App(){
           </div>)}
       </div>
     </div>}
+    {showOnboarding&&!isAdmin&&!guest&&<Onboarding onClose={()=>setShowOnboarding(false)} onGoProfile={()=>{setShowOnboarding(false);setViewP(user);setScreen("player-card");}} onShowPremium={()=>setShowPremium(true)}/>}
+    {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
         <div style={{fontSize:38,marginBottom:10}}>🎾</div>
@@ -2184,8 +2251,8 @@ export default function App(){
           <Row label="Fecha de nacimiento" val={p.birthdate||"—"}/>
         </div>
         {isMe&&<div style={{padding:"24px 16px 16px"}}>
-          <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"15px 18px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
-          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"13px 18px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  ELIMINAR MI CUENTA</button>
+          <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
+          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  ELIMINAR MI CUENTA</button>
         </div>}
         <div style={{height:32}}/>
         <TabSpacer/>
@@ -2341,6 +2408,8 @@ export default function App(){
             <div style={{marginTop:14,display:"flex",gap:8,flexWrap:"wrap"}}>
               <BtnG onClick={()=>{if(gate("Crea tu cuenta gratis para solicitar un torneo."))return;if(!user.category){alert("Primero selecciona tu categoría en tu perfil.");return;}setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:user.sex||"M",category:user.category,format:"groups+ko"});setReqTourModal(true);}}>✏️ SOLICITAR TORNEO {createPermissions[user.id]>0&&`(${createPermissions[user.id]} disp.)`}</BtnG>
               <BtnG onClick={()=>setScreen("scoreboard")}>📊 MARCADOR EN VIVO</BtnG>
+              <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}>⭐ SMT PREMIUM</BtnG>
+              <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}>⭐ SMT PREMIUM</BtnG>
             </div>
             {isMinor(user?.birthdate)&&<div style={{marginTop:14,background:"rgba(91,173,111,0.12)",border:`1px solid rgba(91,173,111,0.4)`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
               <div style={{fontSize:22}}>🛡️</div>
