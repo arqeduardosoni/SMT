@@ -50,7 +50,7 @@ select option:checked{background-color:#0288D1 !important;color:#FFFFFF !importa
 @keyframes auroraA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8%,-6%) scale(1.15)}66%{transform:translate(-10%,10%) scale(0.95)}}
 @keyframes auroraB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-12%,8%) scale(0.9)}66%{transform:translate(8%,-10%) scale(1.2)}}
 @keyframes auroraC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(15%,12%) scale(1.1)}}
-.btn-press{transition:transform 0.16s cubic-bezier(0.34,1.56,0.64,1),filter 0.16s ease}.btn-press:hover{transform:translateY(-1.5px);filter:brightness(1.1)}.btn-press:active{transform:scale(0.95);filter:brightness(0.82);transition:transform 0.08s,filter 0.08s}
+.btn-press{transition:transform 0.16s cubic-bezier(0.34,1.56,0.64,1),filter 0.16s ease}.btn-press:hover{transform:translateY(-3px) scale(1.03);filter:brightness(1.18);box-shadow:0 10px 26px rgba(79,195,247,0.32)}.tap-row{transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s ease,border-color 0.2s ease}.tap-row:hover{transform:translateY(-3px) scale(1.012);box-shadow:0 14px 34px rgba(0,0,0,0.45);border-color:rgba(79,195,247,0.55)!important;z-index:5;position:relative}@keyframes auroraSweep{0%{transform:translateX(-40%) rotate(10deg)}100%{transform:translateX(320%) rotate(10deg)}}.btn-press:active{transform:scale(0.95);filter:brightness(0.82);transition:transform 0.08s,filter 0.08s}
 .tap-row:active{background:rgba(255,255,255,0.04);filter:brightness(0.85)}
 button{transition:transform 0.1s ease,filter 0.1s ease}
 button:active{transform:scale(0.96);filter:brightness(0.78)}
@@ -332,6 +332,7 @@ function Aurora({intense=1}){
     <div style={{position:"absolute",top:"-15%",left:"-15%",width:"75%",height:"60%",borderRadius:"50%",background:`radial-gradient(circle,rgba(41,182,246,${0.45*intense}) 0%,rgba(41,182,246,0) 65%)`,animation:"auroraA 22s ease-in-out infinite",filter:"blur(40px)"}}/>
     <div style={{position:"absolute",bottom:"-10%",right:"-15%",width:"80%",height:"65%",borderRadius:"50%",background:`radial-gradient(circle,rgba(2,136,209,${0.55*intense}) 0%,rgba(2,136,209,0) 70%)`,animation:"auroraB 28s ease-in-out infinite",filter:"blur(50px)"}}/>
     <div style={{position:"absolute",top:"30%",left:"20%",width:"55%",height:"50%",borderRadius:"50%",background:`radial-gradient(circle,rgba(79,195,247,${0.32*intense}) 0%,rgba(79,195,247,0) 60%)`,animation:"auroraC 35s ease-in-out infinite",filter:"blur(45px)"}}/>
+    <div style={{position:"absolute",top:"-60%",left:"-25%",width:"42%",height:"220%",background:"linear-gradient(100deg,transparent,rgba(126,221,247,0.12),rgba(126,221,247,0.18),rgba(126,221,247,0.12),transparent)",animation:"auroraSweep 13s linear infinite",filter:"blur(6px)"}}/>
   </div>;
 }
 
@@ -393,6 +394,10 @@ function SurfRing({label,emoji,w,l,delay}){
 const T=({children,size,style})=><div style={{fontFamily:F.bn,fontSize:size||28,letterSpacing:"0.06em",color:C.text,lineHeight:1,...style}}>{children}</div>;
 const Sub=({children,style})=><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,...style}}>{children}</div>;
 
+function Ico({n,s=15,c="currentColor"}){
+  const paths={edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",chart:"M3 21h18M7 21v-7M12 21V8M17 21v-4",star:"M12 2.5l2.9 6 6.6.8-4.8 4.5 1.2 6.5L12 18.8 6.1 20.3l1.2-6.5L2.5 9.3l6.6-.8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0",cart:"M5 5h2l1.5 9h9l1.5-6H7M9 19a1 1 0 1 0 .01 0M17 19a1 1 0 1 0 .01 0",play:"M6 4l13 8-13 8z",trophy:"M7 4h10v4a5 5 0 0 1-10 0zM4 5h3M17 5h3M10 18h4M12 14v4M8 21h8",film:"M3 4h18v16H3zM3 9h18M3 15h18M8 4v16M16 4v16",upload:"M12 16V4M8 8l4-4 4 4M5 20h14",download:"M12 4v12M8 12l4 4 4-4M5 20h14",settings:"M12 9a3 3 0 1 0 .01 0M12 2v3M12 19v3M4.5 4.5l2 2M17.5 17.5l2 2M2 12h3M19 12h3M4.5 19.5l2-2M17.5 6.5l2-2",doc:"M14 3v5h5M14 3H6v18h12V8zM9 13h6M9 17h4",link:"M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1",bolt:"M13 2L4 14h7l-1 8 9-12h-7z",people:"M9 11a3.5 3.5 0 1 0 .01 0M2 20a7 7 0 0 1 14 0M17 11.5a3 3 0 1 0-1-5.8M22 20a6 6 0 0 0-5-5.9",person:"M12 12a4 4 0 1 0 .01 0M4 21a8 8 0 0 1 16 0",phone:"M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",lock:"M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5zM12 15v3",cap:"M2 9l10-4 10 4-10 4zM6 11v5c0 1.3 3 2.4 6 2.4s6-1.1 6-2.4v-5",clock:"M12 7v5l3 2M12 3a9 9 0 1 0 .01 0",trash:"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6",search:"M11 4a7 7 0 1 0 .01 0M21 21l-5-5",camera:"M4 8h3l1.5-2h7L17 8h3v11H4zM12 16a3 3 0 1 0 .01 0",mail:"M3 6h18v12H3zM3 7l9 6 9-6",clip:"M9 4h6v2H9zM7 4H6v16h12V4h-1M9 12h6M9 16h4"};
+  return <svg width={s} height={s} viewBox="0 0 24 24" fill={n==="star"?c:"none"} stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:6,flexShrink:0}}><path d={paths[n]}/></svg>;
+}
 // ===== SMT PREMIUM (panel de beneficios) =====
 function PremiumPanel({onClose}){
   const benefits=[
@@ -403,7 +408,7 @@ function PremiumPanel({onClose}){
   ];
   return <div style={{position:"fixed",inset:0,zIndex:950,background:"rgba(2,6,16,0.9)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",textAlign:"center",animation:"scaleIn 0.3s"}}>
-      <div style={{fontSize:40,marginBottom:4}}>⭐</div>
+      <div style={{marginBottom:4}}><Ico n="star" s={40} c="#FFD15C"/></div>
       <T size={26} style={{marginBottom:4}}>SMT PREMIUM</T>
       <Sub style={{marginBottom:10}}>Lleva tu juego al siguiente nivel.</Sub>
       <div style={{display:"inline-block",background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",color:"#FFD15C",fontFamily:F.bc,fontSize:11,letterSpacing:"0.12em",fontWeight:700,padding:"5px 12px",borderRadius:999,marginBottom:18}}>MUY PRONTO · PRUEBA GRATIS 7 DÍAS</div>
@@ -417,7 +422,7 @@ function PremiumPanel({onClose}){
         <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$79</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al mes</div></div>
         <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$799</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al año · ahorra 2 meses</div></div>
       </div>
-      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible. 🎾");onClose();}}>QUIERO ENTERARME</BtnP>
+      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible. 🎾");onClose();}}>Quiero enterarme</BtnP>
       <button onClick={onClose} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Ahora no</button>
     </div>
   </div>;
@@ -601,7 +606,7 @@ function MIns({data,onClose}){
         <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14}}>
           <PA photo={match.winner.photo} avatar={match.winner.avatar} size={56} border={`3px solid ${C.cyan}`} animated/>
           <div style={{textAlign:"left"}}>
-            <div style={{fontFamily:F.bc,color:C.cyan,textTransform:"uppercase",letterSpacing:"0.28em",marginBottom:4,fontSize:11,fontWeight:600}}>🏆 GANADOR</div>
+            <div style={{fontFamily:F.bc,color:C.cyan,textTransform:"uppercase",letterSpacing:"0.28em",marginBottom:4,fontSize:11,fontWeight:600}}><Ico n="trophy"/>GANADOR</div>
             <T size={26}>{match.winner.name}</T>
           </div>
         </div>
@@ -1736,7 +1741,7 @@ export default function App(){
       </div>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         {isAdmin&&<Chip type="cyan">ADMIN</Chip>}
-        {isAdmin&&(pendRegs()+pendRes())>0&&<button onClick={()=>setScreen("admin-inbox")} className="btn-press" style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,padding:"6px 10px",borderRadius:10,cursor:"pointer",fontFamily:F.ios,fontSize:12,color:C.amber,fontWeight:600}}>🔔 {pendRegs()+pendRes()}</button>}
+        {isAdmin&&(pendRegs()+pendRes())>0&&<button onClick={()=>setScreen("admin-inbox")} className="btn-press" style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,padding:"6px 10px",borderRadius:10,cursor:"pointer",fontFamily:F.ios,fontSize:12,color:C.amber,fontWeight:600}}><Ico n="bell"/>{pendRegs()+pendRes()}</button>}
         {user&&!isAdmin&&!guest&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,fontSize:20,lineHeight:1}}>🔔
           {notifications.filter(n=>!n.read).length>0&&<span style={{position:"absolute",top:-2,right:-2,minWidth:17,height:17,padding:"0 4px",background:C.red||"#FF453A",color:"#fff",fontSize:10,fontWeight:700,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.ios}}>{notifications.filter(n=>!n.read).length}</span>}
         </button>}
@@ -1879,7 +1884,7 @@ export default function App(){
           </div>}
           {/* Flujo ADMIN: código por email + reset */}
           {recoveryFlow&&recoveryFlow.step==="verify"&&<div style={{marginTop:14,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,padding:16,borderRadius:14}}>
-            <div style={{fontFamily:F.bc,color:C.cyan,letterSpacing:"0.18em",fontSize:10,marginBottom:8,fontWeight:600}}>📧 CÓDIGO ENVIADO POR EMAIL</div>
+            <div style={{fontFamily:F.bc,color:C.cyan,letterSpacing:"0.18em",fontSize:10,marginBottom:8,fontWeight:600}}><Ico n="mail"/>CÓDIGO ENVIADO POR EMAIL</div>
             <Sub style={{fontSize:12,color:C.text,marginBottom:10}}>Te enviamos un código de 6 dígitos a <b style={{color:C.cyan}}>{recoveryFlow.email}</b>. Revisa tu bandeja de entrada (y spam).</Sub>
             <FL>Código de verificación</FL>
             <TI value={recoveryCode} onChange={e=>setRecoveryCode(e.target.value)} placeholder="000000" autoFocus onKeyDown={e=>e.key==="Enter"&&verifyRecoveryCode()}/>
@@ -1895,8 +1900,8 @@ export default function App(){
           </div>}
           {(authMode==="player-login"||authMode==="admin-login")&&!recoveryFlow&&<BtnP onClick={doLogin}>INGRESAR</BtnP>}
           {authMode==="player-register"&&<BtnP onClick={doRegister}>CREAR CUENTA</BtnP>}
-          {authMode==="player-recover"&&!resetRequestSent&&<BtnP onClick={doRecover}>📩 ENVIARME CORREO DE RECUPERACIÓN</BtnP>}
-          {authMode==="admin-recover"&&!recoveryFlow&&<BtnP onClick={doRecover}>📧 ENVIARME CÓDIGO</BtnP>}
+          {authMode==="player-recover"&&!resetRequestSent&&<BtnP onClick={doRecover}><Ico n="mail"/>ENVIARME CORREO DE RECUPERACIÓN</BtnP>}
+          {authMode==="admin-recover"&&!recoveryFlow&&<BtnP onClick={doRecover}><Ico n="mail"/>ENVIARME CÓDIGO</BtnP>}
           <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6,alignItems:"center"}}>
             {authMode==="player-login"&&!recoveryFlow&&<><button onClick={()=>{setAuthMode("player-recover");setRecoveryFlow(null);setResetRequestSent(false);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste tu contraseña?</button><button onClick={()=>{setAuthMode("player-register");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿No tienes cuenta? <span style={{color:C.cyan}}>Crear cuenta</span></button></>}
             {authMode==="player-register"&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Ya tienes cuenta? <span style={{color:C.cyan}}>Iniciar sesión</span></button>}
@@ -2194,7 +2199,7 @@ export default function App(){
           <div style={{position:"relative",aspectRatio:"3/4",maxHeight:540,overflow:"hidden"}}>
             {pIsMinor?<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14}}><div style={{fontSize:90}}>🛡️</div><div style={{fontFamily:F.bn,fontSize:60,color:C.cyan,letterSpacing:"0.08em"}}>{p.avatar}</div><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:"rgba(255,255,255,0.5)",fontWeight:600,textAlign:"center",padding:"0 20px"}}>MENOR DE EDAD<br/>FOTO NO DISPONIBLE</div></div>:(p.photo?<img src={p.photo} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",animation:"parallaxY 7s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:130,color:C.cyan}}>{p.avatar}</div>)}
             {canEditPhoto&&!pIsMinor&&<>
-              <label htmlFor={photoId} className="btn-press" style={{position:"absolute",top:14,right:14,padding:"10px 16px",borderRadius:24,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",border:`2px solid ${C.bg}`,fontSize:13,fontFamily:F.ios,color:"#fff",fontWeight:600,boxShadow:"0 4px 14px rgba(2,136,209,0.45)",userSelect:"none",zIndex:5}}>📷 SUBIR FOTO</label>
+              <label htmlFor={photoId} className="btn-press" style={{position:"absolute",top:14,right:14,padding:"10px 16px",borderRadius:24,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",border:`2px solid ${C.bg}`,fontSize:13,fontFamily:F.ios,color:"#fff",fontWeight:600,boxShadow:"0 4px 14px rgba(2,136,209,0.45)",userSelect:"none",zIndex:5}}><Ico n="camera"/>SUBIR FOTO</label>
               <input id={photoId} type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handlePhoto}/>
             </>}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 45%,rgba(4,10,24,0.5) 70%,rgba(4,10,24,0.97))"}}/>
@@ -2208,10 +2213,10 @@ export default function App(){
           </div>
         </div>
         {(isMe||(isAdmin&&p.id!==user?.id))&&<div style={{padding:"14px 16px",display:"flex",gap:8,flexWrap:"wrap"}}>
-          <BtnG onClick={()=>setScreen("stats")} style={{flex:"1 1 140px",padding:12}}>📊 ESTADÍSTICAS</BtnG>
-          <BtnG onClick={()=>{setEditProfile({...p});setEditAsAdmin(isAdmin&&p.id!==user?.id);setShowProfileEdit(true);}} style={{flex:"1 1 140px",padding:12}}>✏️ {isAdmin&&p.id!==user?.id?"EDITAR (ADMIN)":"EDITAR PERFIL"}</BtnG>
-          {isMe&&<BtnG onClick={()=>{setSvDraft({serve:"",return:"",forehand:"",backhand:"",image:null});setShowSvModal(true);}} style={{flex:"1 1 140px",padding:12}}>📊 SUBIR SWINGVISION</BtnG>}
-          {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}>🔒 CONTRASEÑA</BtnG>}
+          <BtnG onClick={()=>setScreen("stats")} style={{flex:"1 1 140px",padding:12}}><Ico n="chart"/>ESTADÍSTICAS</BtnG>
+          <BtnG onClick={()=>{setEditProfile({...p});setEditAsAdmin(isAdmin&&p.id!==user?.id);setShowProfileEdit(true);}} style={{flex:"1 1 140px",padding:12}}><Ico n="edit"/>{isAdmin&&p.id!==user?.id?"EDITAR (ADMIN)":"EDITAR PERFIL"}</BtnG>
+          {isMe&&<BtnG onClick={()=>{setSvDraft({serve:"",return:"",forehand:"",backhand:"",image:null});setShowSvModal(true);}} style={{flex:"1 1 140px",padding:12}}><Ico n="chart"/>SUBIR SWINGVISION</BtnG>}
+          {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}><Ico n="lock"/>CONTRASEÑA</BtnG>}
         </div>}
         <div style={{background:C.surface,padding:"18px 20px",margin:"4px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
           <SL>Resumen de temporada</SL>
@@ -2252,7 +2257,7 @@ export default function App(){
         </div>
         {isMe&&<div style={{padding:"24px 16px 16px"}}>
           <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
-          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>🗑  ELIMINAR MI CUENTA</button>
+          <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}><Ico n="trash"/> ELIMINAR MI CUENTA</button>
         </div>}
         <div style={{height:32}}/>
         <TabSpacer/>
@@ -2406,10 +2411,9 @@ export default function App(){
               {[["#"+(user?.ranking||"—"),"Ranking"],[user?.points||0,"Puntos"],[`${user?.wins||0}W ${user?.losses||0}L`,"Record"],[user?.titles||0,"Títulos"]].map(([v,l],i)=><div key={l} style={{animation:`statPop 0.5s ${0.3+i*0.07}s backwards`}}><div style={{fontFamily:F.bn,fontSize:26,color:C.cyan}}>{v}</div><div style={{fontFamily:F.bc,marginTop:2,textTransform:"uppercase",letterSpacing:"0.2em",fontSize:10,color:C.muted,fontWeight:600}}>{l}</div></div>)}
             </div>
             <div style={{marginTop:14,display:"flex",gap:8,flexWrap:"wrap"}}>
-              <BtnG onClick={()=>{if(gate("Crea tu cuenta gratis para solicitar un torneo."))return;if(!user.category){alert("Primero selecciona tu categoría en tu perfil.");return;}setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:user.sex||"M",category:user.category,format:"groups+ko"});setReqTourModal(true);}}>✏️ SOLICITAR TORNEO {createPermissions[user.id]>0&&`(${createPermissions[user.id]} disp.)`}</BtnG>
-              <BtnG onClick={()=>setScreen("scoreboard")}>📊 MARCADOR EN VIVO</BtnG>
-              <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}>⭐ SMT PREMIUM</BtnG>
-              <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}>⭐ SMT PREMIUM</BtnG>
+              <BtnG onClick={()=>{if(gate("Crea tu cuenta gratis para solicitar un torneo."))return;if(!user.category){alert("Primero selecciona tu categoría en tu perfil.");return;}setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:user.sex||"M",category:user.category,format:"groups+ko"});setReqTourModal(true);}}><Ico n="edit"/>SOLICITAR TORNEO {createPermissions[user.id]>0&&`(${createPermissions[user.id]} disp.)`}</BtnG>
+              <BtnG onClick={()=>setScreen("scoreboard")}><Ico n="chart"/>MARCADOR EN VIVO</BtnG>
+              <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}><Ico n="star" c="#FFD15C"/>SMT PREMIUM</BtnG>
             </div>
             {isMinor(user?.birthdate)&&<div style={{marginTop:14,background:"rgba(91,173,111,0.12)",border:`1px solid rgba(91,173,111,0.4)`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
               <div style={{fontSize:22}}>🛡️</div>
@@ -2422,12 +2426,12 @@ export default function App(){
           <T size={32}>ADMINISTRADOR</T>
           <Sub style={{marginTop:4}}>{tournaments.length} torneos · {accounts.length} jugadores</Sub>
           <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
-            <BtnG onClick={()=>setScreen("admin-inbox")}>🔔 BANDEJA ({pendRegs()+pendRes()+categoryRequests.filter(r=>r.status==="pending").length+tournamentRequests.filter(r=>r.status==="pending").length+statRequests.filter(r=>r.status==="pending").length+svRequests.filter(r=>r.status==="pending").length+coachApplications.filter(r=>r.status==="pending").length+passwordResetRequests.filter(r=>r.status==="pending").length+mediaRequests.filter(r=>r.status==="pending").length})</BtnG>
-            <BtnG onClick={()=>setScreen("rankings")}>🏆 RANKINGS</BtnG>
-            <BtnG onClick={()=>setScreen("media")}>🎬 MEDIA</BtnG>
-            <BtnG onClick={()=>setScreen("marketplace")}>🛒 MARKETPLACE</BtnG>
-            <BtnG onClick={()=>setMediaUploadModal(true)}>📤 SUBIR MEDIA</BtnG>
-            <BtnG onClick={()=>setScreen("admin-settings")}>⚙️ AJUSTES</BtnG>
+            <BtnG onClick={()=>setScreen("admin-inbox")}><Ico n="bell"/>BANDEJA ({pendRegs()+pendRes()+categoryRequests.filter(r=>r.status==="pending").length+tournamentRequests.filter(r=>r.status==="pending").length+statRequests.filter(r=>r.status==="pending").length+svRequests.filter(r=>r.status==="pending").length+coachApplications.filter(r=>r.status==="pending").length+passwordResetRequests.filter(r=>r.status==="pending").length+mediaRequests.filter(r=>r.status==="pending").length})</BtnG>
+            <BtnG onClick={()=>setScreen("rankings")}><Ico n="trophy"/>RANKINGS</BtnG>
+            <BtnG onClick={()=>setScreen("media")}><Ico n="film"/>MEDIA</BtnG>
+            <BtnG onClick={()=>setScreen("marketplace")}><Ico n="cart"/>MARKETPLACE</BtnG>
+            <BtnG onClick={()=>setMediaUploadModal(true)}><Ico n="upload"/>SUBIR MEDIA</BtnG>
+            <BtnG onClick={()=>setScreen("admin-settings")}><Ico n="settings"/>AJUSTES</BtnG>
             <BtnG onClick={doLogout}>↩ SALIR</BtnG>
           </div>
         </div>}
@@ -2699,7 +2703,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             <div onClick={()=>setViewSvImg(r.image)} style={{cursor:"pointer",borderRadius:10,overflow:"hidden",border:`1px solid ${C.cyanBdr}`,marginBottom:12,background:"#000"}}>
               <img src={r.image} style={{width:"100%",maxHeight:300,objectFit:"contain",display:"block"}} alt=""/>
-              <div style={{padding:"6px 10px",background:"rgba(0,0,0,0.7)",fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:C.cyan,fontWeight:600}}>📸 SCREENSHOT SWINGVISION · TOCA PARA AMPLIAR</div>
+              <div style={{padding:"6px 10px",background:"rgba(0,0,0,0.7)",fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:C.cyan,fontWeight:600}}><Ico n="camera"/>SCREENSHOT SWINGVISION · TOCA PARA AMPLIAR</div>
             </div>
             <div style={{background:C.surface2,padding:12,borderRadius:8,marginBottom:10}}>
               <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:C.muted,marginBottom:8,fontWeight:600}}>VALORES PROPUESTOS</div>
@@ -2765,7 +2769,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <Sub style={{fontSize:11,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.email}</Sub>
                 <Sub style={{fontSize:10,marginTop:2,color:C.amber}}>Solicita reset de contraseña · hace {Math.max(0,Math.floor((Date.now()-r.time)/60000))} min</Sub>
               </div>
-              <div style={{background:"rgba(255,159,10,0.18)",border:"1px solid rgba(255,159,10,0.4)",padding:"4px 10px",borderRadius:8,fontFamily:F.bc,fontSize:9,letterSpacing:"0.18em",color:C.amber,fontWeight:700}}>🔑 RESET</div>
+              <div style={{background:"rgba(255,159,10,0.18)",border:"1px solid rgba(255,159,10,0.4)",padding:"4px 10px",borderRadius:8,fontFamily:F.bc,fontSize:9,letterSpacing:"0.18em",color:C.amber,fontWeight:700}}><Ico n="lock"/>RESET</div>
             </div>
             <div style={{padding:"10px 12px",background:C.surface2,borderRadius:10,marginBottom:12}}>
               <Sub style={{fontSize:11,lineHeight:1.5}}>Al aprobar, la app genera una contraseña temporal segura, la asigna al jugador y se la mostrará en pantalla para que tú la envíes por correo o WhatsApp. El jugador deberá cambiarla al iniciar sesión.</Sub>
@@ -2795,7 +2799,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <button onClick={()=>{
             const txt=`Hola ${tempPassDisplay.playerName.split(" ")[0]},\n\nTu contraseña temporal para Sociedad Mexicana de Tenis es:\n\n${tempPassDisplay.tempPass}\n\nÚsala para iniciar sesión y cámbiala desde tu perfil.\n\nSMT — smt.tennismx@gmail.com`;
             if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert("✓ Mensaje copiado. Ahora pégalo en correo o WhatsApp del jugador."));}else{alert(txt);}
-          }} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:14,fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14,marginBottom:8}}>📋 COPIAR MENSAJE COMPLETO</button>
+          }} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:14,fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14,marginBottom:8}}><Ico n="clip"/>COPIAR MENSAJE COMPLETO</button>
           <button onClick={()=>setTempPassDisplay(null)} className="btn-press" style={{width:"100%",background:"rgba(118,118,128,0.16)",border:"none",color:C.text,padding:14,fontFamily:F.ios,fontSize:14,fontWeight:500,cursor:"pointer",borderRadius:14}}>CERRAR</button>
         </Modal>}
       </div>
@@ -2874,17 +2878,17 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>
         <div style={{padding:"14px 18px",display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
           {!isAdmin&&!isReg&&!isPending&&t.status==="open"&&!isFull&&<BtnG onClick={()=>reqReg(t.id)} style={{flex:1,padding:12}}>SOLICITAR INSCRIPCIÓN</BtnG>}
-          {!isAdmin&&isPending&&<Chip type="amber">⏳ ESPERANDO APROBACIÓN</Chip>}
+          {!isAdmin&&isPending&&<Chip type="amber"><Ico n="clock"/>ESPERANDO APROBACIÓN</Chip>}
           {!isAdmin&&isReg&&<span style={{fontFamily:F.ios,fontSize:13,color:C.green,fontWeight:600}}>✓ Inscrito</span>}
-          {isAdmin&&<BtnG onClick={()=>{setShareTourney(t);setShareTCopied(false);}} style={{flex:1,padding:12,background:C.cyanDim}}>🔗 LINK / QR INSCRIPCIÓN</BtnG>}
+          {isAdmin&&<BtnG onClick={()=>{setShareTourney(t);setShareTCopied(false);}} style={{flex:1,padding:12,background:C.cyanDim}}><Ico n="link"/>LINK / QR INSCRIPCIÓN</BtnG>}
           {isAdmin&&t.status==="open"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
           {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"⚡ INICIAR GRUPOS":"⚡ GENERAR DRAW"}</BtnG>}
-          {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}>⚡ GENERAR ELIMINATORIA</BtnG>}
+          {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}><Ico n="bolt"/>GENERAR ELIMINATORIA</BtnG>}
           {isFull&&!isReg&&!isPending&&!isAdmin&&<Chip type="red">TORNEO LLENO</Chip>}
         </div>
         {champ&&<div onClick={()=>setChampion({champion:champ,tourney:t})} style={{background:`linear-gradient(135deg,${C.goldDim},transparent 60%)`,border:`1px solid ${C.goldBdr}`,borderRadius:12,padding:"14px 18px",margin:"8px 18px 14px",display:"flex",alignItems:"center",gap:14,animation:"scaleIn 0.5s",cursor:"pointer"}}>
           <PA photo={champ.photo} avatar={champ.avatar} size={56} border={`2px solid ${C.gold}`} animated/>
-          <div><div style={{fontFamily:F.bc,color:C.gold,textTransform:"uppercase",letterSpacing:"0.22em",marginBottom:4,fontSize:11,fontWeight:600}}>🏆 Campeón · Toca para celebrar</div><T size={26}>{champ.name}</T></div>
+          <div><div style={{fontFamily:F.bc,color:C.gold,textTransform:"uppercase",letterSpacing:"0.22em",marginBottom:4,fontSize:11,fontWeight:600}}><Ico n="trophy"/>Campeón · Toca para celebrar</div><T size={26}>{champ.name}</T></div>
         </div>}
         <div style={{display:"flex",borderBottom:`0.5px solid ${C.borderS}`,padding:"0 18px",overflowX:"auto"}}>
           {[t.format==="groups+ko"&&t.groups.length>0?["groups","GRUPOS"]:null,["draw",t.format==="groups+ko"?"ELIMINATORIA":"DRAW"],["players","JUGADORES"],["info","INFO"]].filter(Boolean).map(([k,l])=><button key={k} className="btn-press" style={{fontFamily:F.bc,fontSize:12,letterSpacing:"0.2em",textTransform:"uppercase",padding:"14px 16px 12px",cursor:"pointer",color:tab===k?C.cyan:C.muted,background:"none",border:"none",borderBottom:tab===k?`2px solid ${C.cyan}`:"2px solid transparent",whiteSpace:"nowrap",fontWeight:600}} onClick={()=>setTab(k)}>{l}</button>)}
@@ -2911,13 +2915,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                   const click=match.status==="pending"&&canEdit(match);
                   const isDone=match.status==="done";
                   return <div key={match.id} onClick={()=>{if(click){setSubData({tid:t.id,kind:"group",gi,match});setSubStep("pick");setPicked(null);}}} style={{padding:10,background:C.surface2,borderRadius:10,marginBottom:6,cursor:click?"pointer":"default",border:`1px solid ${match.pendingResult?C.amber:click?C.cyanBdr:isDone?"rgba(52,199,89,0.3)":"transparent"}`}}>
-                    {match.pendingResult&&<div style={{fontFamily:F.bc,fontSize:9,color:C.amber,letterSpacing:"0.18em",marginBottom:6,textTransform:"uppercase",fontWeight:600}}>⏳ Pendiente aprobación</div>}
+                    {match.pendingResult&&<div style={{fontFamily:F.bc,fontSize:9,color:C.amber,letterSpacing:"0.18em",marginBottom:6,textTransform:"uppercase",fontWeight:600}}><Ico n="clock"/>Pendiente aprobación</div>}
                     {[match.p1,match.p2].map((p,pi)=>{const w=match.winner&&p&&match.winner.id===p.id;return <div key={pi} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 0"}}>
                       <PA photo={p.photo} avatar={p.avatar} size={22}/>
                       <span style={{flex:1,fontFamily:F.ios,fontSize:13,color:w?C.green:C.text,fontWeight:w?600:500}}>{p.name}</span>
                       {match.score&&match.score!=="BYE"&&<span style={{fontFamily:F.bn,fontSize:14,color:w?C.cyan:C.muted}}>{match.score.split("-")[pi]}</span>}
                     </div>;})}
-                    {match.detailedScore&&<div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,marginTop:6,paddingTop:6,borderTop:`0.5px solid ${C.borderS}`,fontWeight:600}}>📊 {match.detailedScore}</div>}
+                    {match.detailedScore&&<div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,marginTop:6,paddingTop:6,borderTop:`0.5px solid ${C.borderS}`,fontWeight:600}}><Ico n="chart"/>{match.detailedScore}</div>}
                   </div>;
                 })}
               </div>
@@ -2990,11 +2994,11 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <div style={{display:"flex",gap:10,marginBottom:14,paddingBottom:12,borderBottom:`0.5px solid ${C.borderS}`}}>
                 <div style={{flex:1,display:"flex",alignItems:"center",gap:8,opacity:picked.id===p1.id?1:0.55}}>
                   <PA photo={p1.photo} avatar={p1.avatar} size={32}/>
-                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:picked.id===p1.id?C.cyan:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p1.firstName||p1.name.split(" ")[0]}</div>{picked.id===p1.id&&<Sub style={{fontSize:10,color:C.cyan,fontWeight:600}}>🏆 GANADOR</Sub>}</div>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:picked.id===p1.id?C.cyan:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p1.firstName||p1.name.split(" ")[0]}</div>{picked.id===p1.id&&<Sub style={{fontSize:10,color:C.cyan,fontWeight:600}}><Ico n="trophy"/>GANADOR</Sub>}</div>
                 </div>
                 <div style={{flex:1,display:"flex",alignItems:"center",gap:8,opacity:picked.id===p2.id?1:0.55}}>
                   <PA photo={p2.photo} avatar={p2.avatar} size={32}/>
-                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:picked.id===p2.id?C.cyan:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p2.firstName||p2.name.split(" ")[0]}</div>{picked.id===p2.id&&<Sub style={{fontSize:10,color:C.cyan,fontWeight:600}}>🏆 GANADOR</Sub>}</div>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:picked.id===p2.id?C.cyan:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p2.firstName||p2.name.split(" ")[0]}</div>{picked.id===p2.id&&<Sub style={{fontSize:10,color:C.cyan,fontWeight:600}}><Ico n="trophy"/>GANADOR</Sub>}</div>
                 </div>
               </div>
               {setScores.map((s,idx)=><div key={idx} style={{display:"flex",gap:10,alignItems:"center",marginBottom:10}}>
@@ -3209,7 +3213,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>;})}
           </div>
           {isCreator
-            ?<button onClick={()=>deleteGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>🗑  ELIMINAR GRUPO</button>
+            ?<button onClick={()=>deleteGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}><Ico n="trash"/> ELIMINAR GRUPO</button>
             :<button onClick={()=>leaveGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>↩  SALIR DEL GRUPO</button>}
           <button onClick={()=>setShowGroupInfo(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cerrar</button>
         </div>
@@ -3251,8 +3255,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{fontSize:52,marginBottom:14,animation:"ballBounce 1.4s ease-in-out infinite"}}>🎬</div>
           <T size={26}>AÚN NO HAY POSTS</T>
           <Sub style={{fontSize:14,marginTop:8,marginBottom:20}}>{isAdmin?"Sube el primer post con el botón SUBIR.":"¡Sé el primero en publicar!"}</Sub>
-          {!isAdmin&&<BtnG onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}}>📝 POSTEAR</BtnG>}
-          {isAdmin&&<BtnG onClick={()=>setMediaUploadModal(true)}>📤 SUBIR</BtnG>}
+          {!isAdmin&&<BtnG onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}}><Ico n="doc"/>POSTEAR</BtnG>}
+          {isAdmin&&<BtnG onClick={()=>setMediaUploadModal(true)}><Ico n="upload"/>SUBIR</BtnG>}
         </div>:media.map((m,i)=>{const nLikes=likedBy(m.id).length,nCom=(mediaComments[m.id]||[]).length,lk=iLike(m.id);
         return <div key={m.id} style={{height:"100%",scrollSnapAlign:"start",scrollSnapStop:"always",position:"relative",overflow:"hidden",background:"#000"}}>
           {/* Fondo difuminado + media centrado */}
@@ -3297,8 +3301,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             @tennis.smt
           </a>
-          {!isAdmin&&<button onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>📝 Postear</button>}
-          {isAdmin&&<button onClick={()=>setMediaUploadModal(true)} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>📤 Subir</button>}
+          {!isAdmin&&<button onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}><Ico n="doc"/>Postear</button>}
+          {isAdmin&&<button onClick={()=>setMediaUploadModal(true)} className="btn-press" style={{pointerEvents:"auto",background:"rgba(79,195,247,0.25)",backdropFilter:"blur(12px)",border:`1px solid ${C.cyanBdr}`,color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}><Ico n="upload"/>Subir</button>}
         </div>
       </div>
       {/* MODAL DE COMENTARIOS (hoja inferior) */}
@@ -3539,7 +3543,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <button onClick={()=>respondMatchRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
               </div>}
               {r.status==="accepted"&&r.fromPhone&&<div style={{marginTop:10,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,padding:12}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,marginBottom:4,fontWeight:600}}>📞 NÚMERO DE {r.fromName.toUpperCase()}</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,marginBottom:4,fontWeight:600}}><Ico n="phone"/>NÚMERO DE {r.fromName.toUpperCase()}</div>
                 <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,letterSpacing:"0.04em"}}>{r.fromPhone||"(sin teléfono)"}</div>
               </div>}
             </div>)}
@@ -3561,7 +3565,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 </div>
               </div>
               {r.status==="accepted"&&to?.phone&&<div style={{marginTop:10,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,padding:12}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,marginBottom:4,fontWeight:600}}>📞 TELÉFONO DE {to.name.toUpperCase()}</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,marginBottom:4,fontWeight:600}}><Ico n="phone"/>TELÉFONO DE {to.name.toUpperCase()}</div>
                 <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,letterSpacing:"0.04em"}}>{to.phone}</div>
               </div>}
             </div>;})}
@@ -3586,7 +3590,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <Sub style={{marginTop:8}}>Comparte y coordina por teléfono</Sub>
           </div>
           <div style={{background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:16,marginBottom:10}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,marginBottom:6,fontWeight:600}}>📞 NÚMERO DE {phoneShare.with?.toUpperCase()}</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,marginBottom:6,fontWeight:600}}><Ico n="phone"/>NÚMERO DE {phoneShare.with?.toUpperCase()}</div>
             <div style={{fontFamily:F.bn,fontSize:26,color:C.cyan,letterSpacing:"0.06em"}}>{phoneShare.phone}</div>
           </div>
           <div style={{background:C.surface2,border:`1px solid ${C.borderS}`,borderRadius:14,padding:16}}>
@@ -3631,13 +3635,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           {!isAdmin&&<>
             {!myCoachApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});setShowCoachApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:`linear-gradient(135deg,${C.cyanDeep},${C.cyanBright})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(2,136,209,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}>🎾 SOLICITAR SER COACH</button>}
-            {myCoachApp&&myCoachApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}>⏳ TU SOLICITUD COACH</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
+            {myCoachApp&&myCoachApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD COACH</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
             {myCoachApp&&myCoachApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.35)`,borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}>✓</div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700}}>ERES COACH SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myCoachApp.hourlyRate}/hr</Sub></div></div>}
             {myCoachApp&&myCoachApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}>✕ SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myCoachApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
             {/* Notificaciones */}
             {(incomingCoachReqs.filter(r=>r.status==="pending").length>0||myCoachReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:`linear-gradient(135deg,${C.cyanDim},rgba(167,139,250,0.10))`,border:`1px solid ${C.cyanBdr}`,borderRadius:14,marginBottom:14}}>
               {incomingCoachReqs.filter(r=>r.status==="pending").length>0&&<div style={{marginBottom:incomingCoachReqs.filter(r=>r.status!=="pending").length>0||myCoachReqs.length>0?12:0}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,fontWeight:700,marginBottom:8}}>📥 ALUMNOS INTERESADOS</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,fontWeight:700,marginBottom:8}}><Ico n="download"/>ALUMNOS INTERESADOS</div>
                 {incomingCoachReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{COACH_FREQ.find(f=>f.v===r.frequency)?.l} · {r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}</Sub></div>
@@ -3675,7 +3679,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{coach.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:"rgba(167,139,250,0.12)",color:"#C4B5FD",border:"1px solid rgba(167,139,250,0.25)",fontWeight:500}}>{s}</span>)}{coach.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{coach.specialties.length-4}</span>}</div>
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{coach.bio.length>140?coach.bio.slice(0,140)+"…":coach.bio}"</Sub>
-              {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}>⏳ SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}>🎾 SOLICITAR ENTRENAR</button>;})()}
+              {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}>🎾 SOLICITAR ENTRENAR</button>;})()}
               {coach.playerId===user?.id&&<div style={{padding:"8px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
               {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este coach?")){setCoachApplications(prev=>prev.filter(x=>x.id!==coach.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}>✕</button>}
             </div>)}
@@ -3729,12 +3733,12 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{background:`linear-gradient(135deg,rgba(167,139,250,0.15),rgba(124,58,237,0.10))`,border:`1px solid rgba(167,139,250,0.35)`,borderRadius:14,padding:14,marginBottom:10}}>
             <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#C4B5FD",marginBottom:4,fontWeight:600}}>🎾 COACH</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.coachName}</div>
-            <div style={{fontFamily:F.bn,fontSize:22,color:"#C4B5FD",letterSpacing:"0.04em"}}>📞 {coachContactShare.coachPhone}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:"#C4B5FD",letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
           </div>
           <div style={{background:`rgba(52,199,89,0.12)`,border:`1px solid rgba(52,199,89,0.35)`,borderRadius:14,padding:14}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}>👤 ALUMNO</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}><Ico n="person"/>ALUMNO</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.playerName}</div>
-            <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}>📞 {coachContactShare.playerPhone}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.playerPhone}</div>
           </div>
           <BtnP onClick={()=>setCoachContactShare(null)}>¡A ENTRENAR! 🎾</BtnP>
         </Modal>}
@@ -3772,7 +3776,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             {(incomingPur.length>0||myPur.length>0)&&<div style={{margin:"14px 0 6px",background:`linear-gradient(135deg,rgba(79,195,247,0.10),rgba(2,136,209,0.05))`,border:`1px solid ${C.cyanBdr}`,borderRadius:12,padding:12}}>
               {incomingPur.filter(p=>p.status==="pending").length>0&&<div style={{marginBottom:incomingPur.filter(p=>p.status!=="pending").length>0||myPur.length>0?12:0}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,fontWeight:700,marginBottom:8}}>📥 SOLICITUDES DE COMPRA</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,fontWeight:700,marginBottom:8}}><Ico n="download"/>SOLICITUDES DE COMPRA</div>
                 {incomingPur.filter(p=>p.status==="pending").map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={p.buyerPhoto} avatar={p.buyerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{p.buyerName}</div><Sub style={{fontSize:11,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.title} · ${p.price.toLocaleString()}</Sub></div>
@@ -3797,7 +3801,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{aspectRatio:"1",position:"relative",background:"#000",overflow:"hidden"}}>
                   <img src={l.images[0]} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathSubtle 7s infinite"}} alt=""/>
                   <div style={{position:"absolute",top:6,left:6,background:"rgba(0,0,0,0.75)",padding:"3px 8px",borderRadius:6,fontFamily:F.bc,fontSize:9,letterSpacing:"0.16em",color:C.cyan,fontWeight:700}}>{l.category.toUpperCase()}</div>
-                  {l.images.length>1&&<div style={{position:"absolute",bottom:6,right:6,background:"rgba(0,0,0,0.75)",padding:"2px 7px",borderRadius:5,fontFamily:F.ios,fontSize:10,color:"#fff",fontWeight:600}}>📷 {l.images.length}</div>}
+                  {l.images.length>1&&<div style={{position:"absolute",bottom:6,right:6,background:"rgba(0,0,0,0.75)",padding:"2px 7px",borderRadius:5,fontFamily:F.ios,fontSize:10,color:"#fff",fontWeight:600}}><Ico n="camera"/>{l.images.length}</div>}
                   {l.sellerId===user?.id&&<div style={{position:"absolute",bottom:6,left:6,background:"rgba(79,195,247,0.95)",padding:"3px 8px",borderRadius:6,fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:"#fff",fontWeight:700}}>TUYO</div>}
                 </div>
                 <div style={{padding:"10px 12px"}}>
@@ -3833,14 +3837,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{padding:"12px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,marginBottom:10,fontFamily:F.ios,fontSize:13,color:C.cyan,textAlign:"center",fontWeight:600}}>Este es tu producto</div>
                 <button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}>✕ ELIMINAR PUBLICACIÓN</button>
               </>:(isAdmin?<button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}>✕ ELIMINAR (ADMIN)</button>:(myReq?(myReq.status==="pending"?<div style={{padding:"14px 18px",background:"rgba(255,159,10,0.12)",border:`1px solid rgba(255,159,10,0.4)`,borderRadius:12,textAlign:"center"}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}>⏳ SOLICITUD ENVIADA</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>
                 <Sub style={{fontSize:12,marginTop:4}}>Esperando respuesta de {l.sellerName}</Sub>
               </div>:myReq.status==="accepted"?<div style={{padding:"14px 18px",background:"rgba(52,199,89,0.12)",border:`1px solid rgba(52,199,89,0.4)`,borderRadius:12,cursor:"pointer"}} onClick={()=>setMpContactShare({buyerName:user.name,buyerPhone:user.phone||"—",sellerName:l.sellerName,sellerPhone:l.sellerPhone||"—",title:l.title,price:l.price})}>
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.green,fontWeight:700,textAlign:"center"}}>✓ COMPRA ACEPTADA</div>
                 <div style={{fontFamily:F.ios,fontSize:14,color:C.text,marginTop:6,fontWeight:600,textAlign:"center"}}>Toca para ver contacto del vendedor</div>
               </div>:<div style={{padding:"14px 18px",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.4)`,borderRadius:12,textAlign:"center"}}>
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>
-              </div>):<BtnP onClick={()=>requestPurchase(l.id)}>🛒 SOLICITAR COMPRA</BtnP>))}
+              </div>):<BtnP onClick={()=>requestPurchase(l.id)}><Ico n="cart"/>SOLICITAR COMPRA</BtnP>))}
             </div>
             <div style={{height:32}}/>
           </div>
@@ -3895,14 +3899,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,marginTop:4}}>${mpContactShare.price.toLocaleString()} MXN</div>
           </div>
           <div style={{background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:14,marginBottom:10}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,marginBottom:4,fontWeight:600}}>👤 VENDEDOR</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,marginBottom:4,fontWeight:600}}><Ico n="person"/>VENDEDOR</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{mpContactShare.sellerName}</div>
-            <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,letterSpacing:"0.04em"}}>📞 {mpContactShare.sellerPhone}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,letterSpacing:"0.04em"}}><Ico n="phone"/>{mpContactShare.sellerPhone}</div>
           </div>
           <div style={{background:`rgba(52,199,89,0.12)`,border:`1px solid rgba(52,199,89,0.35)`,borderRadius:14,padding:14}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}>🛒 COMPRADOR</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}><Ico n="cart"/>COMPRADOR</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{mpContactShare.buyerName}</div>
-            <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}>📞 {mpContactShare.buyerPhone}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{mpContactShare.buyerPhone}</div>
           </div>
           <BtnP onClick={()=>setMpContactShare(null)}>ENTENDIDO 🤝</BtnP>
         </Modal>}
