@@ -4,3 +4,6 @@ android/
 .env
 *.keystore
 .DS_Store
+*.p8
+GoogleService-Info.plist
+AuthKey_*.p8
