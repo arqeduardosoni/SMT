@@ -977,7 +977,7 @@ export default function App(){
     openT(nt);
   };
   const reqReg=(tid)=>{if(gate("Crea tu cuenta gratis para inscribirte a torneos."))return;const t=tournaments.find(x=>x.id===tid);if(!t)return;if(t.players.find(p=>p.id===user.id)||t.pendingPlayers.find(p=>p.id===user.id))return;if(t.players.length+t.pendingPlayers.length>=parseInt(t.maxPlayers))return;const userIsMinor=isMinor(user.birthdate);if(!isAdmin&&userIsMinor&&!t.forMinors){alert("Este torneo es para mayores de edad. No puedes inscribirte.");return;}if(!isAdmin&&!userIsMinor&&t.forMinors){alert("Este torneo es exclusivo para menores de edad.");return;}if(t.gender&&t.gender!=="Mixed"&&user.sex&&user.sex!==t.gender){alert(`Este torneo es exclusivo para categoría ${t.gender==="M"?"masculino ♂":"femenino ♀"}.`);return;}if(!isAdmin&&t.category){if(!user.category){alert("Debes seleccionar tu categoría en tu perfil antes de inscribirte a torneos.");return;}const userCatIdx=CATS.indexOf(user.category),tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx){alert(`No puedes inscribirte a torneos de categoría inferior. Tu categoría es ${user.category}, este torneo es ${t.category}.`);return;}}if(isAdmin)setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,user]}:x));else setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:[...x.pendingPlayers,user]}:x));};
-  const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));};
+  const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));if(p)createNotif(p.id,{type:"approval",title:"¡Inscripción aprobada!",body:`Ya estás dentro del torneo "${t?.name}". ¡Mucha suerte!`,link:"home"});};
   const adminReject=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:x.pendingPlayers.filter(p=>p.id!==pid)}:x));
   const adminAdd=(tid,pid)=>{const p=accounts.find(a=>a.id===pid);setTournaments(prev=>prev.map(x=>{if(x.id!==tid)return x;if(x.players.find(pp=>pp.id===pid))return x;return{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)};}));};
   const adminRemove=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:x.players.filter(p=>p.id!==pid)}:x));
@@ -1005,6 +1005,7 @@ export default function App(){
     const detailedScore=validSets.map(s=>pickedIsP1?`${s.a}-${s.b}`:`${s.b}-${s.a}`).join(", ");
     const scoreStr=pickedIsP1?`${setsA}-${setsB}`:`${setsB}-${setsA}`;
     const result={winner:picked,score:scoreStr,detailedScore,submittedBy:user?.id};
+    [match.p1,match.p2].forEach(pp=>{if(pp&&pp.id&&pp.id!==user?.id&&!String(pp.id).startsWith("imp-"))createNotif(pp.id,{type:"result",title:"Resultado de tu partido",body:`${match.p1?.name} vs ${match.p2?.name}: ganó ${picked.name} (${scoreStr})`,link:"home"});});
     const t=tournaments.find(x=>x.id===tid);
     setTournaments(prev=>prev.map(t=>{
       if(t.id!==tid)return t;
@@ -1373,6 +1374,7 @@ export default function App(){
     try{
       const {error}=await supabase.from("group_messages").insert({group_id:activeGroup.id,user_id:user.id,sender_name:user.name,text:txt,...rf});
       if(error)throw error;
+      groupMembers.filter(m=>m.user_id&&m.user_id!==user.id).forEach(m=>createNotif(m.user_id,{type:"social",title:`Mensaje en ${activeGroup.name}`,body:`${user.name}: ${txt.slice(0,40)}`,link:"social"}));
     }catch(e){console.error("send",e);alert("No se pudo enviar el mensaje");setChatInput(txt);}
     setChatSending(false);
   };
@@ -1496,6 +1498,7 @@ export default function App(){
   const addComment=(mediaId)=>{if(gate("Crea tu cuenta gratis para comentar."))return;
     if(!commentDraft.trim()||!user) return;
     setMediaComments(prev=>({...prev,[mediaId]:[...(prev[mediaId]||[]),{id:`co-${Date.now()}`,userId:user.id,userName:user.name,userPhoto:user.photo,userAvatar:user.avatar,text:commentDraft.trim(),time:Date.now()}]}));
+    {const mm=media.find(x=>x.id===mediaId);if(mm&&mm.by&&mm.by!==user.id&&mm.by!=="admin")createNotif(mm.by,{type:"media",title:"Comentaron tu post",body:`${user.name}: ${commentDraft.trim().slice(0,40)}`,link:"media"});}
     setCommentDraft("");
   };
   const deleteComment=(mediaId,coId)=>setMediaComments(prev=>({...prev,[mediaId]:(prev[mediaId]||[]).filter(c=>c.id!==coId)}));
@@ -1503,7 +1506,7 @@ export default function App(){
   // Like en posts de Media (estilo TikTok)
   const toggleMediaLike=(mediaId)=>{if(gate("Crea tu cuenta gratis para reaccionar a los posts."))return;
     if(!user)return;
-    setMediaLikes(prev=>{const cur=prev[mediaId]||[];return {...prev,[mediaId]:cur.includes(user.id)?cur.filter(x=>x!==user.id):[...cur,user.id]};});
+    setMediaLikes(prev=>{const cur=prev[mediaId]||[];return {...prev,[mediaId]:cur.includes(user.id)?cur.filter(x=>x!==user.id):[...cur,user.id]};});{const mm=media.find(x=>x.id===mediaId);if(mm&&mm.by&&mm.by!==user.id&&mm.by!=="admin"&&!(mediaLikes[mediaId]||[]).includes(user.id))createNotif(mm.by,{type:"media",title:"Le gustó tu post",body:`A ${user.name} le gustó tu publicación.`,link:"media"});}
   };
 
   // Autoplay de videos del feed Media: solo reproduce el que está en pantalla
@@ -1563,11 +1566,13 @@ export default function App(){
     setMatchRequests(prev=>[...prev,{id:`mr-${Date.now()}`,fromId:user.id,fromName:user.name,fromPhoto:user.photo,fromAvatar:user.avatar,fromPhone:user.phone||"",toId,toName:accounts.find(a=>a.id===toId)?.name||"",...data,status:"pending",time:Date.now()}]);
     setMatchReqModal(null);
     setNewMatchReq({club:"Club Campestre Monterrey",when:"weekend",time:"morning",msg:""});
+    createNotif(toId,{type:"match",title:"Te retaron a un partido",body:`${user.name} te propone jugar. Revisa la propuesta en Buscar Partido.`,link:"find-match"});
     alert("Solicitud de partido enviada.");
   };
   const respondMatchRequest=(rid,accept)=>{
     const r=matchRequests.find(x=>x.id===rid);if(!r)return;
     setMatchRequests(prev=>prev.map(x=>x.id===rid?{...x,status:accept?"accepted":"rejected"}:x));
+    createNotif(r.fromId,{type:"match",title:accept?"¡Aceptaron tu reta!":"Reta no aceptada",body:accept?`${user.name} aceptó tu partido. Coordinen lugar y hora.`:`${user.name} no pudo aceptar tu partido.`,link:"find-match"});
     if(accept){const otherPhone=r.fromPhone;const myPhone=user.phone||"(sin teléfono)";setPhoneShare({with:r.fromName,phone:otherPhone||"(sin teléfono)",myShared:myPhone});}
   };
   const detectAspect=(dataUrl,isVideo,cb)=>{
@@ -1597,6 +1602,7 @@ export default function App(){
   };
   const approveMediaReq=(rid,approve)=>{
     const r=mediaRequests.find(x=>x.id===rid);if(!r)return;
+    createNotif(r.playerId,{type:"approval",title:approve?"Tu post fue aprobado":"Tu post no fue aprobado",body:approve?"Ya aparece en la sección MEDIA.":"El administrador no aprobó tu publicación.",link:"media"});
     if(approve){setMedia(prev=>[{id:`md-${Date.now()}`,type:r.type,url:r.url,aspect:r.aspect||"square",uploadedAt:Date.now(),caption:r.caption,by:r.playerId,byName:r.playerName,byPhoto:r.playerPhoto,byAvatar:r.playerAvatar},...prev]);}
     setMediaRequests(prev=>prev.map(x=>x.id===rid?{...x,status:approve?"approved":"rejected"}:x));
     setPreviewMediaReq(null);
@@ -1652,12 +1658,14 @@ export default function App(){
     const exists=purchaseRequests.find(r=>r.listingId===listingId&&r.buyerId===user.id&&r.status==="pending");
     if(exists){alert("Ya enviaste una solicitud de compra para este producto.");return;}
     setPurchaseRequests(prev=>[...prev,{id:`pur-${Date.now()}`,listingId,buyerId:user.id,buyerName:user.name,buyerPhoto:user.photo,buyerAvatar:user.avatar,buyerPhone:user.phone,sellerId:l.sellerId,sellerName:l.sellerName,sellerPhone:l.sellerPhone,title:l.title,price:l.price,status:"pending",time:Date.now()}]);
+    createNotif(l.sellerId,{type:"market",title:"Nueva oferta de compra",body:`${user.name} quiere comprar "${l.title}" ($${l.price})`,link:"marketplace"});
     alert("Solicitud de compra enviada al vendedor. Te notificaremos cuando responda.");
   };
 
   const respondPurchase=(rid,accept)=>{
     const r=purchaseRequests.find(x=>x.id===rid);if(!r)return;
     setPurchaseRequests(prev=>prev.map(x=>x.id===rid?{...x,status:accept?"accepted":"rejected"}:x));
+    createNotif(r.buyerId,{type:"market",title:accept?"¡Aceptaron tu compra!":"Compra no aceptada",body:accept?`${r.sellerName} aceptó venderte "${r.title}". Ya puedes ver su contacto.`:`${r.sellerName} no aceptó tu solicitud de "${r.title}".`,link:"marketplace"});
     if(accept){setMpContactShare({buyerName:r.buyerName,buyerPhone:r.buyerPhone,sellerName:r.sellerName,sellerPhone:r.sellerPhone,title:r.title,price:r.price});}
   };
 
@@ -1680,7 +1688,7 @@ export default function App(){
     setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
     alert("✓ Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como coach.");
   };
-  const approveCoachApp=(cid,approve)=>{setCoachApplications(prev=>prev.map(x=>x.id===cid?{...x,status:approve?"approved":"rejected"}:x));};
+  const approveCoachApp=(cid,approve)=>{const ca=coachApplications.find(x=>x.id===cid);setCoachApplications(prev=>prev.map(x=>x.id===cid?{...x,status:approve?"approved":"rejected"}:x));if(ca)createNotif(ca.playerId,{type:"approval",title:approve?"¡Aprobado como coach!":"Solicitud de coach rechazada",body:approve?"Ya apareces en Buscar Coach.":"Tu solicitud de coach no fue aprobada esta vez.",link:"coach"});};
   const requestCoachSession=(coachAppId)=>{if(gate("Crea tu cuenta gratis para reservar clases con un coach."))return;
     const coach=coachApplications.find(x=>x.id===coachAppId);if(!coach)return;
     if(coach.playerId===user.id){alert("No puedes solicitarte a ti mismo.");return;}
