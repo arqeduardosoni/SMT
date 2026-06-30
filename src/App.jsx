@@ -1130,8 +1130,61 @@ export default function App(){
   // ==================== PERSISTENCIA: TORNEOS + MARKETPLACE (Supabase) ====================
   const [dataLoaded,setDataLoaded]=useState(false);
   const tSaveTimer=useRef(null),tPrevIds=useRef(null);
+  const [reqLoaded,setReqLoaded]=useState(false);
+  const reqSaveTimer=useRef(null),reqInit=useRef(false);
   const mSaveTimer=useRef(null),mPrevIds=useRef(null);
   const savingRef=useRef(false);
+
+  // ==================== PERSISTENCIA: SOLICITUDES (coach, retas, compras, etc.) ====================
+  const REQ_SETTERS={coach_app:setCoachApplications,match_req:setMatchRequests,purchase_req:setPurchaseRequests,media_req:setMediaRequests,category_req:setCategoryRequests,stat_req:setStatRequests,sv_req:setSvRequests,coach_req:setCoachRequests,reset_req:setPasswordResetRequests,tournament_req:setTournamentRequests};
+  useEffect(()=>{
+    if(!user||reqLoaded)return;
+    (async()=>{
+      try{
+        const {data}=await supabase.from("app_requests").select("kind,data");
+        if(data){const byk={};data.forEach(r=>{(byk[r.kind]=byk[r.kind]||[]).push(r.data);});Object.entries(byk).forEach(([k,arr])=>{const set=REQ_SETTERS[k];if(set)set(arr);});}
+      }catch(e){console.error("loadReq",e);}
+      reqInit.current=false;setReqLoaded(true);
+    })();
+    /* eslint-disable-next-line */
+  },[user]);
+  useEffect(()=>{
+    if(!reqLoaded)return;
+    const map={coach_app:coachApplications,match_req:matchRequests,purchase_req:purchaseRequests,media_req:mediaRequests,category_req:categoryRequests,stat_req:statRequests,sv_req:svRequests,coach_req:coachRequests,reset_req:passwordResetRequests,tournament_req:tournamentRequests};
+    const rows=[];Object.entries(map).forEach(([kind,arr])=>(arr||[]).forEach(r=>{if(r&&r.id)rows.push({id:String(r.id),kind,data:r});}));
+    if(!reqInit.current){reqInit.current=true;return;}
+    clearTimeout(reqSaveTimer.current);
+    reqSaveTimer.current=setTimeout(async()=>{try{if(rows.length)await supabase.from("app_requests").upsert(rows);}catch(e){console.error("saveReq",e);}},700);
+    /* eslint-disable-next-line */
+  },[coachApplications,matchRequests,purchaseRequests,mediaRequests,categoryRequests,statRequests,svRequests,coachRequests,passwordResetRequests,tournamentRequests,reqLoaded]);
+  useEffect(()=>{
+    if(!user)return;
+    const ch=supabase.channel("app-requests").on("postgres_changes",{event:"*",schema:"public",table:"app_requests"},(payload)=>{
+      const row=payload.new;if(!row||!row.kind||!row.data)return;const set=REQ_SETTERS[row.kind];if(!set)return;
+      set(prev=>{const w=prev.filter(x=>String(x.id)!==String(row.data.id));return [...w,row.data];});
+    }).subscribe();
+    return ()=>{try{supabase.removeChannel(ch);}catch(e){}};
+    /* eslint-disable-next-line */
+  },[user]);
+
+  // ==================== NOTIFICACIONES PUSH NATIVAS (iOS) ====================
+  useEffect(()=>{
+    if(!user||user.id==="__guest__")return;
+    let sub1,sub2;
+    (async()=>{
+      try{
+        const mod=await import("@capacitor/push-notifications");
+        const PN=mod.PushNotifications;
+        const perm=await PN.requestPermissions();
+        if(perm.receive!=="granted")return;
+        await PN.register();
+        sub1=await PN.addListener("registration",(t)=>{try{supabase.from("device_tokens").upsert({user_id:user.id,token:t.value,platform:"ios"},{onConflict:"user_id,token"});}catch(e){}});
+        sub2=await PN.addListener("registrationError",()=>{});
+      }catch(e){/* web / no nativo: ignorar */}
+    })();
+    return ()=>{try{sub1&&sub1.remove();sub2&&sub2.remove();}catch(e){}};
+    /* eslint-disable-next-line */
+  },[user]);
 
   // CARGA: al iniciar sesión (jugador o admin), trae torneos y marketplace de Supabase
   useEffect(()=>{
