@@ -84,6 +84,7 @@ const MP_CATS=["Raqueta","Ropa","Tenis (calzado)","Pelotas","Bolsas / Mochilas",
 const MP_COND=["Nuevo","Como nuevo","Buen estado","Usado"];
 const COACH_SPECIALTIES=["Técnica","Estrategia","Servicio","Resto","Volea","Físico","Mental","Juniors","Principiantes","Avanzados","Dobles","Singles"];
 const COACH_FREQ=[{v:"once",l:"Una vez"},{v:"weekly",l:"Semanal"},{v:"biweekly",l:"2x semana"},{v:"intensive",l:"Intensivo"}];
+const FISIO_SPECIALTIES=["Rehabilitación","Prevención de lesiones","Masaje deportivo","Vendaje funcional","Punción seca","Codo de tenista","Hombro","Rodilla","Espalda","Movilidad","Fuerza y acondicionamiento","Recuperación"];
 
 const playRacket=()=>{try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;const ctx=new Ctx(),now=ctx.currentTime;
   // 1. Impulso inicial fuerte de las cuerdas (frecuencia alta-media)
@@ -754,6 +755,7 @@ export default function App(){
   const [coachApplications,setCoachApplications]=useState([]); // solicitudes para ser coach
   const [coachRequests,setCoachRequests]=useState([]); // solicitudes de entrenamiento
   const [showCoachApply,setShowCoachApply]=useState(false);
+  const [showFisioApply,setShowFisioApply]=useState(false);
   const [coachDraft,setCoachDraft]=useState({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
   const [showCoachRequest,setShowCoachRequest]=useState(null);
   const [coachRequestForm,setCoachRequestForm]=useState({frequency:"weekly",when:"weekend",time:"morning",msg:""});
@@ -1740,29 +1742,30 @@ export default function App(){
     if(coachDraft.specialties.length===0){alert("Selecciona al menos una especialidad.");return;}
     if(!coachDraft.hourlyRate||parseFloat(coachDraft.hourlyRate)<=0){alert("Ingresa tarifa por hora válida.");return;}
     if(!user.phone){alert("Agrega tu número de celular en tu perfil para ser coach.");return;}
-    const existing=coachApplications.find(c=>c.playerId===user.id&&(c.status==="pending"||c.status==="approved"));
-    if(existing){alert(existing.status==="approved"?"Ya eres coach aprobado. Edita tu perfil de coach desde el botón EDITAR PERFIL DE COACH.":"Ya tienes una solicitud pendiente.");return;}
-    setCoachApplications(prev=>[...prev,{id:`coach-${Date.now()}`,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,playerCity:user.city||"—",playerCategory:user.category,playerSex:user.sex,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:coachDraft.availability.trim(),languages:[...coachDraft.languages],status:"pending",time:Date.now()}]);
-    setShowCoachApply(false);
+    const K=coachDraft.kind||"coach";
+    const existing=coachApplications.find(c=>c.playerId===user.id&&(c.kind||"coach")===K&&(c.status==="pending"||c.status==="approved"));
+    if(existing){alert(existing.status==="approved"?("Ya eres "+(K==="fisio"?"físio":"coach")+" aprobado. Edita tu perfil desde EDITAR PERFIL."):"Ya tienes una solicitud pendiente.");return;}
+    setCoachApplications(prev=>[...prev,{id:`${K}-${Date.now()}`,kind:K,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,playerCity:user.city||"—",playerCategory:user.category,playerSex:user.sex,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:coachDraft.availability.trim(),languages:[...coachDraft.languages],status:"pending",time:Date.now()}]);
+    setShowCoachApply(false);setShowFisioApply(false);
     setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
-    alert("✓ Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como coach.");
+    alert("✓ Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como "+(K==="fisio"?"físio":"coach")+".");
   };
-  const approveCoachApp=(cid,approve)=>{const ca=coachApplications.find(x=>x.id===cid);setCoachApplications(prev=>prev.map(x=>x.id===cid?{...x,status:approve?"approved":"rejected"}:x));if(ca)createNotif(ca.playerId,{type:"approval",title:approve?"¡Aprobado como coach!":"Solicitud de coach rechazada",body:approve?"Ya apareces en Buscar Coach.":"Tu solicitud de coach no fue aprobada esta vez.",link:"coach"});};
+  const approveCoachApp=(cid,approve)=>{const ca=coachApplications.find(x=>x.id===cid);setCoachApplications(prev=>prev.map(x=>x.id===cid?{...x,status:approve?"approved":"rejected"}:x));if(ca){const kf=ca.kind==="fisio";createNotif(ca.playerId,{type:"approval",title:approve?("¡Aprobado como "+(kf?"físio!":"coach!")):("Solicitud de "+(kf?"físio":"coach")+" rechazada"),body:approve?("Ya apareces en Buscar "+(kf?"Físio":"Coach")+"."):("Tu solicitud de "+(kf?"físio":"coach")+" no fue aprobada esta vez."),link:kf?"fisio":"coach"});}};
   const requestCoachSession=(coachAppId)=>{if(gate("Crea tu cuenta gratis para reservar clases con un coach."))return;
     const coach=coachApplications.find(x=>x.id===coachAppId);if(!coach)return;
     if(coach.playerId===user.id){alert("No puedes solicitarte a ti mismo.");return;}
     if(!user.phone){alert("Agrega tu número de celular en tu perfil para solicitar coach.");return;}
     const exists=coachRequests.find(r=>r.coachAppId===coachAppId&&r.playerId===user.id&&r.status==="pending");
     if(exists){alert("Ya enviaste una solicitud a este coach.");return;}
-    setCoachRequests(prev=>[...prev,{id:`creq-${Date.now()}`,coachAppId,coachPlayerId:coach.playerId,coachName:coach.playerName,coachPhone:coach.playerPhone,coachHourlyRate:coach.hourlyRate,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,frequency:coachRequestForm.frequency,when:coachRequestForm.when,time:coachRequestForm.time,msg:coachRequestForm.msg.trim(),status:"pending",createdAt:Date.now()}]);
+    setCoachRequests(prev=>[...prev,{id:`creq-${Date.now()}`,coachAppId,coachPlayerId:coach.playerId,coachName:coach.playerName,coachPhone:coach.playerPhone,coachHourlyRate:coach.hourlyRate,kind:coach.kind||"coach",playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,frequency:coachRequestForm.frequency,when:coachRequestForm.when,time:coachRequestForm.time,msg:coachRequestForm.msg.trim(),status:"pending",createdAt:Date.now()}]);
     setShowCoachRequest(null);
     setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});
-    alert("✓ Solicitud enviada al coach.");
+    alert("✓ Solicitud enviada al "+(coach.kind==="fisio"?"físio":"coach")+".");
   };
   const respondCoachRequest=(rid,accept)=>{
     const r=coachRequests.find(x=>x.id===rid);if(!r)return;
     setCoachRequests(prev=>prev.map(x=>x.id===rid?{...x,status:accept?"accepted":"rejected"}:x));
-    if(accept){setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone,playerName:r.playerName,playerPhone:r.playerPhone,hourlyRate:r.coachHourlyRate,frequency:r.frequency});}
+    if(accept){setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone,playerName:r.playerName,playerPhone:r.playerPhone,hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:r.kind||"coach"});}
   };
 
   const handlePhoto=(e)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const url=r.result;if(viewP&&isAdmin&&viewP.id!==user?.id){updateAccount({...viewP,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",viewP.id);}catch(er){}}else if(user){updateUser({...user,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",user.id);}catch(er){}}};r.onerror=()=>alert("Error al cargar imagen");r.readAsDataURL(f);e.target.value="";};
@@ -1884,7 +1887,7 @@ export default function App(){
       else if(k==="profile-tab"){setViewP(user);setScreen("player-card");}
       else setScreen(k);
     };
-    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
+    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
     return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,maxWidth:720,margin:"0 auto",background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
       <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start",padding:"8px 2px 4px",maxWidth:640,margin:"0 auto"}}>
         {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="tab-btn" style={{flex:1,background:"transparent",border:"none",padding:"6px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",fontFamily:F.ios,minHeight:60,minWidth:0}}>
@@ -2805,11 +2808,11 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
           </div>)}
           <div style={{height:24}}/>
-          <SL color="#A78BFA">Solicitudes COACH ({coachApplications.filter(r=>r.status==="pending").length})</SL>
+          <SL color="#A78BFA">Solicitudes COACH / FÍSIO ({coachApplications.filter(r=>r.status==="pending").length})</SL>
           {coachApplications.filter(r=>r.status==="pending").length===0?<Sub style={{padding:"14px 0"}}>Sin pendientes.</Sub>:coachApplications.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{padding:14,background:`linear-gradient(135deg,rgba(167,139,250,0.10),${C.surface})`,border:`1px solid rgba(167,139,250,0.35)`,borderRadius:14,marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
               <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={44}/>
-              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.playerName}</div><Sub style={{fontSize:11}}>quiere publicarse como COACH · {r.playerCity}</Sub></div>
+              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.playerName}</div><Sub style={{fontSize:11}}>quiere publicarse como {r.kind==="fisio"?"FÍSIO":"COACH"} · {r.playerCity}</Sub></div>
               <div style={{background:"rgba(167,139,250,0.18)",border:"1px solid rgba(167,139,250,0.4)",padding:"4px 10px",borderRadius:8,fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:"#A78BFA",fontWeight:700}}>${r.hourlyRate}/HR</div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
@@ -2822,7 +2825,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             <div style={{padding:"10px 12px",background:C.surface2,borderRadius:8,marginBottom:12,fontFamily:F.ios,fontSize:13,color:C.text,fontStyle:"italic",lineHeight:1.5}}>"{r.bio}"</div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveCoachApp(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR COACH</button>
+              <button onClick={()=>approveCoachApp(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR {r.kind==="fisio"?"FÍSIO":"COACH"}</button>
               <button onClick={()=>approveCoachApp(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
             </div>
           </div>)}
@@ -3555,7 +3558,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <T size={32}>FIND A</T><Sub style={{marginTop:4,marginBottom:20}}>¿Qué estás buscando?</Sub>
           <HubCard emoji="🎾" title="Buscar Partido" desc="Encuentra rival de tu nivel para jugar" onClick={()=>setScreen("find-match")}/>
           <HubCard emoji="🎓" title="Buscar Coach" desc="Reserva clases con entrenadores certificados" onClick={()=>setScreen("coach")}/>
-          <HubCard emoji="🩹" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" soon/>
+          <HubCard emoji="🩹" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" onClick={()=>setScreen("fisio")}/>
         </div>
         <TabSpacer/>
       </div>
@@ -3705,6 +3708,141 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   }
 
   // COACH
+  if(screen==="fisio"){
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
+        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
+      </div>
+      <ShowTabBar/>
+    </div>;}
+    const approvedFisios=coachApplications.filter(c=>c.status==="approved"&&c.kind==="fisio");
+    const myFisioApp=coachApplications.find(c=>c.playerId===user?.id&&c.kind==="fisio");
+    const incomingFisioReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id&&r.kind==="fisio");
+    const myFisioReqs=coachRequests.filter(r=>r.playerId===user?.id&&r.kind==="fisio");
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/>
+        <Back to="find-hub" label="Find A"/>
+        <div style={{padding:"14px 18px"}}>
+          <div style={{position:"relative",overflow:"hidden",borderRadius:20,background:"linear-gradient(135deg,#2DD4BF 0%,#0D9488 50%,#0891B2 100%)",backgroundSize:"200% 200%",animation:"gradientShift 8s ease infinite",padding:"22px 20px",marginBottom:18}}>
+            <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:"rgba(255,255,255,0.10)",filter:"blur(20px)",animation:"floatSlow 7s ease-in-out infinite"}}/>
+            <div style={{position:"relative",zIndex:1}}>
+              <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.3em",color:"rgba(255,255,255,0.85)",fontWeight:700,marginBottom:6}}>FIND YOUR PHYSIO</div>
+              <div style={{fontFamily:F.bn,fontSize:34,color:"#fff",lineHeight:1,letterSpacing:"-0.02em",marginBottom:6,textShadow:"0 2px 12px rgba(0,0,0,0.2)"}}>FÍSIO</div>
+              <Sub style={{fontSize:13,color:"rgba(255,255,255,0.88)",marginTop:4}}>{approvedFisios.length} físio{approvedFisios.length!==1?"s":""} disponibles</Sub>
+            </div>
+          </div>
+          {!isAdmin&&<>
+            {!myFisioApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"],kind:"fisio"});setShowFisioApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:"linear-gradient(135deg,#0D9488,#2DD4BF)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(13,148,136,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}>🩹 SOLICITAR SER FÍSIO</button>}
+            {myFisioApp&&myFisioApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:"1px solid rgba(255,159,10,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD FÍSIO</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
+            {myFisioApp&&myFisioApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(45,212,191,0.10)",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}>✓</div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700}}>ERES FÍSIO SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myFisioApp.hourlyRate}/sesión</Sub></div></div>}
+            {myFisioApp&&myFisioApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:"1px solid rgba(255,59,48,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}>✕ SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myFisioApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
+            {(incomingFisioReqs.filter(r=>r.status==="pending").length>0||myFisioReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:"linear-gradient(135deg,rgba(45,212,191,0.10),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.30)",borderRadius:14,marginBottom:14}}>
+              {incomingFisioReqs.filter(r=>r.status==="pending").length>0&&<div style={{marginBottom:myFisioReqs.length>0?12:0}}>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700,marginBottom:8}}><Ico n="download"/>PACIENTES INTERESADOS</div>
+                {incomingFisioReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
+                  <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}{r.msg?" · "+r.msg.slice(0,40):""}</Sub></div>
+                  <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✓</button>
+                  <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✕</button>
+                </div>)}
+              </div>}
+              {myFisioReqs.filter(r=>r.status==="accepted").length>0&&<div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}>✓ FÍSIOS ACEPTARON</div>
+                {myFisioReqs.filter(r=>r.status==="accepted").map(r=><div key={r.id} onClick={()=>setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone||"—",playerName:user.name,playerPhone:user.phone||"—",hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:"fisio"})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
+                  <div style={{fontSize:18}}>📞</div>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.coachName}</div><Sub style={{fontSize:11}}>Toca para ver contacto</Sub></div>
+                  <span style={{color:C.muted,fontSize:18}}>›</span>
+                </div>)}
+              </div>}
+            </div>}
+          </>}
+          {approvedFisios.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}>🩹</div><Sub style={{fontSize:14}}>Aún no hay físios disponibles.</Sub>{!myFisioApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:"#2DD4BF"}}>¡Sé el primer físio SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {approvedFisios.map((f,i)=><div key={f.id} style={{position:"relative",background:"linear-gradient(135deg,rgba(45,212,191,0.06),"+C.surface+")",border:"1px solid rgba(45,212,191,0.20)",borderRadius:18,padding:14,overflow:"hidden",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
+              <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"radial-gradient(circle,rgba(45,212,191,0.18),transparent 70%)",pointerEvents:"none"}}/>
+              <div style={{display:"flex",gap:12,marginBottom:10,position:"relative"}}>
+                <PA photo={f.playerPhoto} avatar={f.playerAvatar} size={64} border="2px solid rgba(45,212,191,0.5)"/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                    <div style={{fontFamily:F.ios,fontSize:16,color:C.text,fontWeight:700}}>{f.playerName}</div>
+                    <div style={{background:"rgba(45,212,191,0.18)",border:"1px solid rgba(45,212,191,0.4)",padding:"2px 7px",borderRadius:6,fontFamily:F.bc,fontSize:8,letterSpacing:"0.18em",color:"#5EEAD4",fontWeight:700}}>FÍSIO</div>
+                  </div>
+                  <Sub style={{fontSize:11}}>{f.playerCity} · {f.experience}</Sub>
+                  <div style={{display:"flex",alignItems:"baseline",gap:4,marginTop:4}}>
+                    <div style={{fontFamily:F.bn,fontSize:22,color:"#5EEAD4",letterSpacing:"-0.01em"}}>${f.hourlyRate}</div>
+                    <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,fontWeight:600}}>MXN / SESIÓN</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{f.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:"rgba(45,212,191,0.12)",color:"#5EEAD4",border:"1px solid rgba(45,212,191,0.25)",fontWeight:500}}>{s}</span>)}{f.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{f.specialties.length-4}</span>}</div>
+              <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{f.bio.length>140?f.bio.slice(0,140)+"…":f.bio}"</Sub>
+              {f.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===f.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:f.playerName,coachPhone:f.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:f.hourlyRate,frequency:myReq.frequency,kind:"fisio"})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...f,kind:"fisio"});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:"linear-gradient(135deg,#2DD4BF,#0D9488)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(13,148,136,0.35)"}}>🩹 SOLICITAR FÍSIO</button>;})()}
+              {f.playerId===user?.id&&<div style={{padding:"8px 14px",background:"rgba(45,212,191,0.12)",border:"1px solid rgba(45,212,191,0.3)",borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:"#2DD4BF",fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
+              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este físio?")){setCoachApplications(prev=>prev.filter(x=>x.id!==f.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}>✕</button>}
+            </div>)}
+          </div>}
+          <div style={{height:32}}/>
+          <TabSpacer/>
+        </div>
+        {showFisioApply&&<Modal onClose={()=>setShowFisioApply(false)} large center>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR SER FÍSIO</T>
+          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>El admin revisará tu solicitud</Sub>
+          <FL>Años de experiencia *</FL>
+          <Seg options={["< 1 año","1-3 años","3-5 años","5-10 años","10+ años"]} value={coachDraft.experience} onChange={v=>setCoachDraft({...coachDraft,experience:v})} style={{marginBottom:14}}/>
+          <FL>Especialidades * (selecciona al menos una)</FL>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>{FISIO_SPECIALTIES.map(s=>{const sel=coachDraft.specialties.includes(s);return <button key={s} onClick={()=>setCoachDraft({...coachDraft,specialties:sel?coachDraft.specialties.filter(x=>x!==s):[...coachDraft.specialties,s]})} className="btn-press" style={{padding:"6px 12px",borderRadius:18,border:sel?"2px solid #2DD4BF":`1px solid ${C.borderS}`,background:sel?"rgba(45,212,191,0.18)":"transparent",color:sel?"#5EEAD4":C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>{s}</button>;})}</div>
+          <FL>Biografía corta *</FL>
+          <textarea value={coachDraft.bio} onChange={e=>setCoachDraft({...coachDraft,bio:e.target.value})} placeholder="Cuéntales a los pacientes sobre tu formación, método y experiencia con deportistas..." rows={3} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical",marginBottom:14}}/>
+          <FL>Precio por sesión (MXN) *</FL>
+          <TI type="number" value={coachDraft.hourlyRate} onChange={e=>setCoachDraft({...coachDraft,hourlyRate:e.target.value})} placeholder="600"/>
+          <div style={{height:12}}/>
+          <FL>Disponibilidad / consultorio (opcional)</FL>
+          <TI value={coachDraft.availability} onChange={e=>setCoachDraft({...coachDraft,availability:e.target.value})} placeholder="Consultorio en San Pedro · Lun-Vie 9am-7pm · a domicilio"/>
+          <BtnP onClick={submitCoachApplication}>ENVIAR SOLICITUD</BtnP>
+          <BtnX onClick={()=>setShowFisioApply(false)}>CANCELAR</BtnX>
+        </Modal>}
+        {showCoachRequest&&showCoachRequest.kind==="fisio"&&<Modal onClose={()=>setShowCoachRequest(null)} center>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR FÍSIO</T>
+          <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"linear-gradient(135deg,rgba(45,212,191,0.10),"+C.surface2+")",border:"1px solid rgba(45,212,191,0.30)",borderRadius:12,marginBottom:16}}>
+            <PA photo={showCoachRequest.playerPhoto} avatar={showCoachRequest.playerAvatar} size={42}/>
+            <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>{showCoachRequest.playerName}</div><div style={{fontFamily:F.bn,fontSize:18,color:"#5EEAD4",marginTop:2}}>${showCoachRequest.hourlyRate} <span style={{fontSize:11,color:C.muted}}>/ sesión</span></div></div>
+          </div>
+          <FL>¿Cuándo?</FL>
+          <Seg options={[{v:"weekday",l:"Entre semana"},{v:"weekend",l:"Fin de semana"},{v:"flexible",l:"Flexible"}]} value={coachRequestForm.when} onChange={v=>setCoachRequestForm({...coachRequestForm,when:v})} style={{marginBottom:14}}/>
+          <FL>Horario preferido</FL>
+          <Seg options={[{v:"morning",l:"Mañana"},{v:"afternoon",l:"Tarde"},{v:"night",l:"Noche"}]} value={coachRequestForm.time} onChange={v=>setCoachRequestForm({...coachRequestForm,time:v})} style={{marginBottom:14}}/>
+          <FL>¿Qué necesitas? (opcional)</FL>
+          <textarea value={coachRequestForm.msg} onChange={e=>setCoachRequestForm({...coachRequestForm,msg:e.target.value})} placeholder="Describe tu molestia o lo que buscas (rehabilitación, prevención, valoración)..." rows={3} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical"}}/>
+          <BtnP onClick={()=>requestCoachSession(showCoachRequest.id)}>ENVIAR SOLICITUD</BtnP>
+          <BtnX onClick={()=>setShowCoachRequest(null)}>CANCELAR</BtnX>
+        </Modal>}
+        {coachContactShare&&coachContactShare.kind==="fisio"&&<Modal onClose={()=>setCoachContactShare(null)} center>
+          <div style={{textAlign:"center",marginBottom:18}}>
+            <div style={{fontSize:48,marginBottom:10}}>🩹</div>
+            <T size={24}>¡FÍSIO CONFIRMADO!</T>
+            <Sub style={{marginTop:8}}>Contáctense para agendar la sesión</Sub>
+          </div>
+          <div style={{background:"rgba(45,212,191,0.12)",border:"1px solid rgba(45,212,191,0.30)",borderRadius:10,padding:12,marginBottom:14,textAlign:"center"}}>
+            <Sub style={{fontSize:11,letterSpacing:"0.18em",fontWeight:600}}>${coachContactShare.hourlyRate} / SESIÓN</Sub>
+          </div>
+          <div style={{background:"linear-gradient(135deg,rgba(45,212,191,0.15),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,padding:14,marginBottom:10}}>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#5EEAD4",marginBottom:4,fontWeight:600}}>🩹 FÍSIO</div>
+            <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.coachName}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:"#5EEAD4",letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
+          </div>
+          <div style={{background:"rgba(52,199,89,0.12)",border:"1px solid rgba(52,199,89,0.35)",borderRadius:14,padding:14}}>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}><Ico n="person"/>PACIENTE</div>
+            <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.playerName}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.playerPhone}</div>
+          </div>
+          <BtnP onClick={()=>setCoachContactShare(null)}>LISTO 🩹</BtnP>
+        </Modal>}
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
   if(screen==="coach"){
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
@@ -3713,10 +3851,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
       <ShowTabBar/>
     </div>;}
-    const approvedCoaches=coachApplications.filter(c=>c.status==="approved");
-    const myCoachApp=coachApplications.find(c=>c.playerId===user?.id);
-    const incomingCoachReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id);
-    const myCoachReqs=coachRequests.filter(r=>r.playerId===user?.id);
+    const approvedCoaches=coachApplications.filter(c=>c.status==="approved"&&(c.kind||"coach")==="coach");
+    const myCoachApp=coachApplications.find(c=>c.playerId===user?.id&&(c.kind||"coach")==="coach");
+    const incomingCoachReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id&&(r.kind||"coach")==="coach");
+    const myCoachReqs=coachRequests.filter(r=>r.playerId===user?.id&&(r.kind||"coach")==="coach");
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
