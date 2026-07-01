@@ -704,6 +704,11 @@ export default function App(){
   const [tournamentRequests,setTournamentRequests]=useState([]);
   const [createPermissions,setCreatePermissions]=useState({});
   const [media,setMedia]=useState([]);
+  const [news,setNews]=useState([]);
+  const [newsLoading,setNewsLoading]=useState(false);
+  const [newsErr,setNewsErr]=useState(false);
+  const loadNews=()=>{setNewsLoading(true);setNewsErr(false);fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent("https://news.google.com/rss/search?q=tenis%20ATP%20WTA&hl=es-419&gl=MX&ceid=MX:es")).then(r=>r.json()).then(d=>{if(d&&d.status==="ok"&&d.items&&d.items.length){setNews(d.items.slice(0,20));}else{setNewsErr(true);}}).catch(()=>setNewsErr(true)).finally(()=>setNewsLoading(false));};
+  useEffect(()=>{if(screen==="noticias"&&!news.length&&!newsLoading&&!newsErr)loadNews();},[screen]);
   const [matchRequests,setMatchRequests]=useState([]);
   const [reqCatModal,setReqCatModal]=useState(null);
   const [reqTourModal,setReqTourModal]=useState(false);
@@ -3285,6 +3290,38 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   // ==================== FIN SOCIAL: pantallas ====================
 
   // MEDIA
+  if(screen==="noticias"){
+    const cleanTitle=(t)=>String(t||"").replace(/\s*-\s*[^-]*$/,"").trim();
+    const sourceOf=(t)=>{const m=String(t||"").match(/-\s*([^-]+)\s*$/);return m?m[1].trim():"";};
+    const timeAgo=(d)=>{try{const t=new Date(String(d).replace(" ","T")+"Z").getTime();if(!t)return"";const s=(Date.now()-t)/1000;if(s<3600)return Math.max(1,Math.round(s/60))+" min";if(s<86400)return Math.round(s/3600)+" h";const dd=Math.round(s/86400);if(dd<30)return dd+" d";return Math.round(dd/30)+" mes";}catch(e){return"";}};
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/>
+        <Back to="media" label="Media"/>
+        <div style={{padding:"6px 18px 4px"}}>
+          <SL>Al día en el tenis</SL>
+          <T size={30}>NOTICIAS</T>
+          <Sub style={{marginTop:3}}>Lo último de ATP, WTA y el mundo del tenis</Sub>
+        </div>
+        <div style={{padding:"14px 14px 44px"}}>
+          {newsLoading&&<div style={{textAlign:"center",padding:44}}><div style={{fontSize:42,animation:"ballBounce 1.4s ease-in-out infinite"}}>🎾</div><Sub style={{marginTop:12}}>Cargando noticias…</Sub></div>}
+          {newsErr&&!newsLoading&&<div style={{textAlign:"center",padding:34}}><Sub>No se pudieron cargar las noticias. Revisa tu conexión.</Sub><div style={{marginTop:14}}><BtnG onClick={loadNews}>Reintentar</BtnG></div></div>}
+          {!newsLoading&&!newsErr&&news.map((n,i)=>{const src=sourceOf(n.title);return <div key={i} onClick={()=>{try{window.open(n.link,"_system");}catch(e){window.open(n.link,"_blank");}}} className="btn-press" style={{cursor:"pointer",marginBottom:10,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"14px 16px",animation:"slideUp 0.35s "+(i<8?(i*0.04):0)+"s both"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
+              <div style={{width:26,height:26,borderRadius:7,background:"linear-gradient(135deg,"+C.navy+","+C.cyan+")",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>
+              </div>
+              <div style={{fontFamily:F.bc,fontSize:10.5,letterSpacing:"0.12em",color:C.cyan,fontWeight:700,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{src||"Tenis"}</div>
+              <div style={{marginLeft:"auto",fontFamily:F.ios,fontSize:11,color:C.muted,flexShrink:0}}>{timeAgo(n.pubDate)}</div>
+            </div>
+            <div style={{fontFamily:F.ios,fontSize:14.5,fontWeight:600,color:C.text,lineHeight:1.42}}>{cleanTitle(n.title)}</div>
+          </div>;})}
+          {!newsLoading&&!newsErr&&news.length>0&&<div style={{textAlign:"center",marginTop:12}}><Sub style={{fontSize:11}}>Fuente: Google Noticias · se abre en tu navegador</Sub></div>}
+        </div>
+      </div>
+    </div>;
+  }
   if(screen==="media"){
     // PROTECCIÓN DE MENORES: los menores no pueden ver Media
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
@@ -3311,6 +3348,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:"#000",color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style>
       <Nav/>
+      <button onClick={()=>setScreen("noticias")} className="btn-press" style={{position:"fixed",top:70,right:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"8px 13px",borderRadius:20,border:"1px solid rgba(255,255,255,0.28)",background:"rgba(255,255,255,0.14)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",color:"#fff",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 2px 12px rgba(0,0,0,0.45)"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Noticias</button>
       {/* FEED a pantalla completa con snap vertical */}
       <div className="tk-feed" style={{position:"fixed",top:60,bottom:0,left:0,right:0,maxWidth:720,margin:"0 auto",overflowY:"auto",scrollSnapType:"y mandatory",background:"#000",WebkitOverflowScrolling:"touch",zIndex:1}}>
         {media.length===0?<div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:24}}>
