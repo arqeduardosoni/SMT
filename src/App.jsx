@@ -259,7 +259,7 @@ const profileToPlayer=(r)=>({
   ranking:r.ranking||0, points:r.points||0, wins:r.wins||0, losses:r.losses||0, titles:r.titles||0,
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
-  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false,
+  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false,
 });
 const playerToProfile=(p,authId)=>({
   id:authId||p.id, auth_id:authId||p.id, email:(p.email||"").toLowerCase(),
@@ -270,7 +270,7 @@ const playerToProfile=(p,authId)=>({
   photo_url:p.photo||null, avatar:p.avatar||ini(p.name||""),
   ranking:p.ranking||0, points:p.points||0, wins:p.wins||0, losses:p.losses||0, titles:p.titles||0,
   hand:p.hand||"Diestro", racket:p.racket||"Wilson Pro Staff", stats:p.stats||{},
-  require_password_change:p.requirePasswordChange||false,
+  require_password_change:p.requirePasswordChange||false, premium:p.premium||false,
   privacy_accepted_at:p.privacyAcceptedAt?new Date(p.privacyAcceptedAt).toISOString():new Date().toISOString(),
 });
 
@@ -396,16 +396,16 @@ const T=({children,size,style})=><div style={{fontFamily:F.bn,fontSize:size||28,
 const Sub=({children,style})=><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,...style}}>{children}</div>;
 
 function Ico({n,s=15,c="currentColor"}){
-  const paths={edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",chart:"M3 21h18M7 21v-7M12 21V8M17 21v-4",star:"M12 2.5l2.9 6 6.6.8-4.8 4.5 1.2 6.5L12 18.8 6.1 20.3l1.2-6.5L2.5 9.3l6.6-.8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0",cart:"M5 5h2l1.5 9h9l1.5-6H7M9 19a1 1 0 1 0 .01 0M17 19a1 1 0 1 0 .01 0",play:"M6 4l13 8-13 8z",trophy:"M7 4h10v4a5 5 0 0 1-10 0zM4 5h3M17 5h3M10 18h4M12 14v4M8 21h8",film:"M3 4h18v16H3zM3 9h18M3 15h18M8 4v16M16 4v16",upload:"M12 16V4M8 8l4-4 4 4M5 20h14",download:"M12 4v12M8 12l4 4 4-4M5 20h14",settings:"M12 9a3 3 0 1 0 .01 0M12 2v3M12 19v3M4.5 4.5l2 2M17.5 17.5l2 2M2 12h3M19 12h3M4.5 19.5l2-2M17.5 6.5l2-2",doc:"M14 3v5h5M14 3H6v18h12V8zM9 13h6M9 17h4",link:"M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1",bolt:"M13 2L4 14h7l-1 8 9-12h-7z",people:"M9 11a3.5 3.5 0 1 0 .01 0M2 20a7 7 0 0 1 14 0M17 11.5a3 3 0 1 0-1-5.8M22 20a6 6 0 0 0-5-5.9",person:"M12 12a4 4 0 1 0 .01 0M4 21a8 8 0 0 1 16 0",phone:"M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",lock:"M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5zM12 15v3",cap:"M2 9l10-4 10 4-10 4zM6 11v5c0 1.3 3 2.4 6 2.4s6-1.1 6-2.4v-5",clock:"M12 7v5l3 2M12 3a9 9 0 1 0 .01 0",trash:"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6",search:"M11 4a7 7 0 1 0 .01 0M21 21l-5-5",camera:"M4 8h3l1.5-2h7L17 8h3v11H4zM12 16a3 3 0 1 0 .01 0",mail:"M3 6h18v12H3zM3 7l9 6 9-6",clip:"M9 4h6v2H9zM7 4H6v16h12V4h-1M9 12h6M9 16h4"};
+  const paths={edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",chart:"M3 21h18M7 21v-7M12 21V8M17 21v-4",star:"M12 2.5l2.9 6 6.6.8-4.8 4.5 1.2 6.5L12 18.8 6.1 20.3l1.2-6.5L2.5 9.3l6.6-.8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0",cart:"M5 5h2l1.5 9h9l1.5-6H7M9 19a1 1 0 1 0 .01 0M17 19a1 1 0 1 0 .01 0",play:"M6 4l13 8-13 8z",trophy:"M7 4h10v4a5 5 0 0 1-10 0zM4 5h3M17 5h3M10 18h4M12 14v4M8 21h8",film:"M3 4h18v16H3zM3 9h18M3 15h18M8 4v16M16 4v16",upload:"M12 16V4M8 8l4-4 4 4M5 20h14",download:"M12 4v12M8 12l4 4 4-4M5 20h14",settings:"M12 9a3 3 0 1 0 .01 0M12 2v3M12 19v3M4.5 4.5l2 2M17.5 17.5l2 2M2 12h3M19 12h3M4.5 19.5l2-2M17.5 6.5l2-2",doc:"M14 3v5h5M14 3H6v18h12V8zM9 13h6M9 17h4",link:"M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1",bolt:"M13 2L4 14h7l-1 8 9-12h-7z",people:"M9 11a3.5 3.5 0 1 0 .01 0M2 20a7 7 0 0 1 14 0M17 11.5a3 3 0 1 0-1-5.8M22 20a6 6 0 0 0-5-5.9",person:"M12 12a4 4 0 1 0 .01 0M4 21a8 8 0 0 1 16 0",phone:"M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",lock:"M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5zM12 15v3",cap:"M2 9l10-4 10 4-10 4zM6 11v5c0 1.3 3 2.4 6 2.4s6-1.1 6-2.4v-5",clock:"M12 7v5l3 2M12 3a9 9 0 1 0 .01 0",trash:"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6",search:"M11 4a7 7 0 1 0 .01 0M21 21l-5-5",camera:"M4 8h3l1.5-2h7L17 8h3v11H4zM12 16a3 3 0 1 0 .01 0",mail:"M3 6h18v12H3zM3 7l9 6 9-6",clip:"M9 4h6v2H9zM7 4H6v16h12V4h-1M9 12h6M9 16h4",shield:"M12 3l7 3v6c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V6z",cross:"M9 3h6v6h6v6h-6v6H9v-6H3V9h6z",check:"M4 12l5 5L20 6",x:"M6 6l12 12M18 6L6 18",male:"M10 14a5 5 0 1 0 0-.01M14 4h6v6M20 4l-7 7",female:"M12 3a5 5 0 1 0 0 .01M12 13v8M8 17h8",mixed:"M12 9a3 3 0 1 0 0 .01M12 12v7M9 16h6M10 6l-3-3M7 3H5M7 3v2",sun:"M12 8a4 4 0 1 0 0 .01M12 2v2M12 20v2M4 4l1.5 1.5M18.5 18.5L20 20M2 12h2M20 12h2M4 20l1.5-1.5M18.5 5.5L20 4",moon:"M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z",fire:"M12 3c0 4-4 4-4 8a4 4 0 0 0 8 0c0-2-1-3-2-4 0 2-1 2-2 1s0-3 0-5z",calendar:"M4 6h16v15H4zM4 10h16M8 3v4M16 3v4",party:"M4 20l5-13 8 8zM15 4c1 1 1 2 0 3M18 8c1 0 2 1 2 2M14 3l.5 2M20 5l-2 .5",handshake:"M12 8l-3 3 2 2 3-3M2 11l5-5 4 3M22 11l-5-5-3 2",ban:"M6 6l12 12M12 3a9 9 0 1 0 0 .01",vs:"M5 4l7 7-7 7M19 4l-7 7 7 7",key:"M15 7a4 4 0 1 0-4.5 4L4 17.5V20h2.5l1-1H10v-2h2l1.5-1.5A4 4 0 0 0 15 7z",warn:"M12 3l9 17H3zM12 9v5M12 17.5v.1",stadium:"M3 8c0-1.7 4-3 9-3s9 1.3 9 3-4 3-9 3-9-1.3-9-3zM3 8v7c0 1.7 4 3 9 3s9-1.3 9-3V8",globe:"M12 3a9 9 0 1 0 0 .01M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",news:"M4 5h13v13a2 2 0 0 0 4 0V9h-2M4 5v13a2 2 0 0 0 2 2h13M7 9h7M7 12h7M7 15h4",mobile:"M7 3h10v18H7zM10.5 18h3",like:"M7 10v9H3v-9zM7 10l3-7c1.5 0 2.5 1 2 2.5L11 9h6c1.2 0 2 1 1.8 2.2l-1 6c-.2 1-1 1.8-2 1.8H7",heart:"M12 20l-7.5-7.5a4.5 4.5 0 0 1 7.5-5 4.5 4.5 0 0 1 7.5 5z",send:"M4 12l16-8-6 16-2.5-6.5z",pin:"M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11zM12 10a2 2 0 1 0 0 .01",chevronDown:"M6 9l6 6 6-6",arrowLeft:"M19 12H5M11 6l-6 6 6 6",arrowRight:"M5 12h14M13 6l6 6-6 6",arrowUp:"M12 19V5M6 11l6-6 6 6",back:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",chat:"M4 5h16v11H9l-5 4z",ball:"M12 3a9 9 0 1 0 0 .01M5 6c4 2 4 10 0 12M19 6c-4 2-4 10 0 12",medal:"M8 3l4 6 4-6M12 12a5 5 0 1 0 0 .01M10 17l-1 4 3-2 3 2-1-4",whistle:"M11 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM15 10h6M15 10V8h3M7 12H3",hand:"M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 11V6a1.5 1.5 0 0 1 3 0v6c0 4-2 7-6 7s-5-3-6-5l-1-2c-.3-1 1-2 2-1z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 .01",snow:"M12 2v20M4 6l16 12M20 6L4 18",reply:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",info:"M12 8h.01M11 11.5h1v5h1M12 3a9 9 0 1 0 0 .01"};
   return <svg width={s} height={s} viewBox="0 0 24 24" fill={n==="star"?c:"none"} stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:6,flexShrink:0}}><path d={paths[n]}/></svg>;
 }
 // ===== SMT PREMIUM (panel de beneficios) =====
 function PremiumPanel({onClose}){
   const benefits=[
-    ["🎓","Feedback de un coach","Mándale tus videos y mensajes. Te responde con video, mensajes y notas de voz para mejorar tu juego."],
-    ["🩹","Feedback de un fisioterapeuta","Prevén y atiende lesiones con un profesional."],
-    ["🏆","Torneos privados","Crea tu torneo con tus amigos e invítalos por QR."],
-    ["🚫","Sin anuncios","Disfruta la app sin publicidad."],
+    ["cap","Feedback de un coach","Mándale tus videos y mensajes. Te responde con video, mensajes y notas de voz para mejorar tu juego."],
+    ["cross","Feedback de un fisioterapeuta","Prevén y atiende lesiones con un profesional."],
+    ["trophy","Torneos privados","Crea tu torneo con tus amigos e invítalos por QR."],
+    ["ban","Sin anuncios","Disfruta la app sin publicidad."],
   ];
   return <div style={{position:"fixed",inset:0,zIndex:950,background:"rgba(2,6,16,0.9)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",textAlign:"center",animation:"scaleIn 0.3s"}}>
@@ -415,7 +415,7 @@ function PremiumPanel({onClose}){
       <div style={{display:"inline-block",background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",color:"#FFD15C",fontFamily:F.bc,fontSize:11,letterSpacing:"0.12em",fontWeight:700,padding:"5px 12px",borderRadius:999,marginBottom:18}}>MUY PRONTO · PRUEBA GRATIS 7 DÍAS</div>
       <div style={{textAlign:"left",marginBottom:18}}>
         {benefits.map((b,i)=><div key={i} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:i<benefits.length-1?`1px solid ${C.borderS}`:"none"}}>
-          <div style={{fontSize:24,flexShrink:0}}>{b[0]}</div>
+          <div style={{flexShrink:0,color:"#FFD15C",lineHeight:0}}><Ico n={b[0]} s={24} c="#FFD15C"/></div>
           <div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{b[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted,marginTop:2,lineHeight:1.4}}>{b[2]}</div></div>
         </div>)}
       </div>
@@ -423,7 +423,7 @@ function PremiumPanel({onClose}){
         <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$79</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al mes</div></div>
         <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$799</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al año · ahorra 2 meses</div></div>
       </div>
-      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible. 🎾");onClose();}}>Quiero enterarme</BtnP>
+      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible.");onClose();}}>Quiero enterarme</BtnP>
       <button onClick={onClose} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Ahora no</button>
     </div>
   </div>;
@@ -433,12 +433,12 @@ function PremiumPanel({onClose}){
 function Onboarding({onClose,onGoProfile,onShowPremium}){
   const [step,setStep]=useState(0);
   const steps=[
-    {icon:"🎾",title:"¡BIENVENIDO A SMT!",body:"Tu comunidad de tenis: torneos, retas, coaches y marketplace. Te muestro lo básico en 30 segundos."},
-    {icon:"👤",title:"COMPLETA TU PERFIL",body:"Agrega tu foto, categoría, club y número de celular. Es lo que necesitas para inscribirte a torneos y para que otros jugadores te encuentren y te reten.",note:"Lo llenas en la pestaña “Perfil”, botón “Editar perfil”."},
-    {icon:"🏆",title:"LO QUE PUEDES HACER",list:[["🎾","Inscribirte a torneos","por QR o link, al instante"],["⚔️","Retar jugadores","de tu mismo nivel"],["🎓","Buscar coaches","y reservar clases"],["🛒","Vender en el marketplace","tu equipo de tenis"]]},
-    {icon:"⭐",title:"SMT PREMIUM",body:"Muy pronto: feedback directo de un coach y un fisio (con video y notas de voz), torneos privados con tus amigos y app sin anuncios. Con prueba gratis de 7 días.",premium:true},
-    {icon:"🏆",title:"PREMIO ANUAL",body:"Al cerrar el año, el jugador #1 del ranking de cada categoría se gana $2,000. Exclusivo para cuentas Premium. ¡Sube en tu ranking y llévatelo!"},
-    {icon:"✅",title:"¡TODO LISTO!",body:"Empieza por completar tu perfil para poder inscribirte y jugar. ¡Nos vemos en la cancha!",final:true},
+    {icon:"ball",title:"¡BIENVENIDO A SMT!",body:"Tu comunidad de tenis: torneos, retas, coaches y marketplace. Te muestro lo básico en 30 segundos."},
+    {icon:"person",title:"COMPLETA TU PERFIL",body:"Agrega tu foto, categoría, club y número de celular. Es lo que necesitas para inscribirte a torneos y para que otros jugadores te encuentren y te reten.",note:"Lo llenas en la pestaña “Perfil”, botón “Editar perfil”."},
+    {icon:"trophy",title:"LO QUE PUEDES HACER",list:[["ball","Inscribirte a torneos","por QR o link, al instante"],["vs","Retar jugadores","de tu mismo nivel"],["cap","Buscar coaches","y reservar clases"],["cart","Vender en el marketplace","tu equipo de tenis"]]},
+    {icon:"star",title:"SMT PREMIUM",body:"Muy pronto: feedback directo de un coach y un fisio (con video y notas de voz), torneos privados con tus amigos y app sin anuncios. Con prueba gratis de 7 días.",premium:true},
+    {icon:"trophy",title:"PREMIO ANUAL",body:"Al cerrar el año, el jugador #1 del ranking de cada categoría se gana $2,000. Exclusivo para cuentas Premium. ¡Sube en tu ranking y llévatelo!"},
+    {icon:"check",title:"¡TODO LISTO!",body:"Empieza por completar tu perfil para poder inscribirte y jugar. ¡Nos vemos en la cancha!",final:true},
   ];
   const s=steps[step];const last=step===steps.length-1;
   return <div style={{position:"fixed",inset:0,zIndex:940,background:`linear-gradient(180deg,${C.bg},${C.surface2||C.bg})`,display:"flex",flexDirection:"column",padding:"max(46px,env(safe-area-inset-top)) 24px 30px"}}>
@@ -447,11 +447,11 @@ function Onboarding({onClose,onGoProfile,onShowPremium}){
       {!last&&<button onClick={onClose} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,cursor:"pointer"}}>Saltar</button>}
     </div>
     <div key={step} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",textAlign:"center",animation:"fadeIn .35s"}}>
-      <div style={{fontSize:64,marginBottom:18}}>{s.icon}</div>
+      <div style={{marginBottom:18,color:C.cyan,lineHeight:0}}><Ico n={s.icon} s={64} c={C.cyan}/></div>
       <T size={32} style={{marginBottom:12}}>{s.title}</T>
       {s.body&&<Sub style={{fontSize:15,lineHeight:1.6,maxWidth:340,margin:"0 auto",color:C.text}}>{s.body}</Sub>}
       {s.note&&<div style={{marginTop:12,fontFamily:F.ios,fontSize:13,color:C.cyan}}>{s.note}</div>}
-      {s.list&&<div style={{marginTop:8,textAlign:"left",maxWidth:340,margin:"8px auto 0",width:"100%"}}>{s.list.map((it,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"center",padding:"11px 0",borderBottom:i<s.list.length-1?`1px solid ${C.borderS}`:"none"}}><div style={{fontSize:24}}>{it[0]}</div><div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{it[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted}}>{it[2]}</div></div></div>)}</div>}
+      {s.list&&<div style={{marginTop:8,textAlign:"left",maxWidth:340,margin:"8px auto 0",width:"100%"}}>{s.list.map((it,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"center",padding:"11px 0",borderBottom:i<s.list.length-1?`1px solid ${C.borderS}`:"none"}}><div style={{color:C.cyan,lineHeight:0,flexShrink:0}}><Ico n={it[0]} s={24} c={C.cyan}/></div><div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{it[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted}}>{it[2]}</div></div></div>)}</div>}
       {s.premium&&<button onClick={onShowPremium} className="btn-press" style={{marginTop:18,alignSelf:"center",background:"rgba(255,209,92,0.14)",border:"1px solid rgba(255,209,92,0.45)",color:"#FFD15C",fontFamily:F.ios,fontSize:14,fontWeight:700,padding:"11px 20px",borderRadius:14,cursor:"pointer"}}>Ver beneficios Premium</button>}
     </div>
     <div style={{display:"flex",gap:10}}>
@@ -475,7 +475,7 @@ function WelcomeAnim({user,isAdmin,onDone}){
     {[0,1,2,3].map(i=><div key={i} style={{position:"absolute",left:"50%",top:"40%",width:200,height:200,borderRadius:"50%",border:`2px solid ${C.cyan}`,marginLeft:-100,marginTop:-100,animation:`ringPulse 2.5s ${i*0.4}s ease-out infinite`,zIndex:1}}/>)}
     <Beam/>
     <div style={{animation:"scaleInBig 0.9s",position:"relative",zIndex:2}}><Logo size={210} glow/></div>
-    <div style={{marginTop:36,position:"relative",zIndex:2,animation:"fadeIn 0.5s 0.8s backwards"}}><div style={{fontFamily:F.bc,fontSize:13,letterSpacing:"0.4em",color:C.cyan,textTransform:"uppercase",fontWeight:600}}>{isAdmin?"Panel de Control":"Bienvenido"}{!isAdmin&&<span style={{display:"inline-block",animation:"wave 1.2s infinite",transformOrigin:"70% 70%",marginLeft:8}}>👋</span>}</div></div>
+    <div style={{marginTop:36,position:"relative",zIndex:2,animation:"fadeIn 0.5s 0.8s backwards"}}><div style={{fontFamily:F.bc,fontSize:13,letterSpacing:"0.4em",color:C.cyan,textTransform:"uppercase",fontWeight:600}}>{isAdmin?"Panel de Control":"Bienvenido"}{!isAdmin&&<span style={{display:"inline-block",animation:"wave 1.2s infinite",transformOrigin:"70% 70%",marginLeft:8,lineHeight:0}}><Ico n="hand" s={30} c={C.gold}/></span>}</div></div>
     <div style={{marginTop:14,position:"relative",zIndex:2,overflow:"hidden",padding:"0 24px"}}><T size={70} style={{textAlign:"center",lineHeight:0.95,textShadow:`0 0 60px rgba(79,195,247,0.55)`,animation:"reveal 0.9s 1s backwards"}}>{greet}</T></div>
     {!isAdmin&&user&&<div style={{marginTop:18,animation:"slideUp 0.6s 1.5s backwards",position:"relative",zIndex:2}}><Chip type="cyan" style={{padding:"6px 18px",fontSize:11}}>RANKING #{user.ranking||"—"} · {user.points||0} PTS</Chip></div>}
     <div style={{position:"absolute",bottom:36,fontFamily:F.bc,fontSize:10,letterSpacing:"0.3em",color:"rgba(255,255,255,0.32)",textTransform:"uppercase",animation:"blink 1.5s 2s infinite backwards",zIndex:2,fontWeight:600}}>SOCIEDAD MEXICANA DE TENIS</div>
@@ -515,7 +515,7 @@ function TIntro({tourney,onDone}){
     <div style={{position:"absolute",top:-60,right:-40,fontFamily:F.bn,fontSize:340,color:"rgba(79,195,247,0.05)",lineHeight:1,letterSpacing:"-0.05em",userSelect:"none",zIndex:1}}>26</div>
     <div style={{position:"absolute",top:24,left:0,right:0,display:"flex",justifyContent:"center",animation:"slideDown 0.5s",zIndex:3}}><Logo size={64} glow/></div>
     {tourney.image&&step>=1&&<div style={{position:"absolute",top:108,left:"50%",transform:"translateX(-50%)",width:130,height:130,borderRadius:"50%",overflow:"hidden",border:`3px solid ${C.cyanBdr}`,animation:"scaleIn 0.6s",boxShadow:`0 0 60px rgba(79,195,247,0.5)`,zIndex:3}}><img src={tourney.image} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathing 4s infinite"}} alt=""/></div>}
-    {step>=1&&<div style={{position:"absolute",top:tourney.image?252:118,left:0,right:0,textAlign:"center",animation:"fadeIn 0.5s",zIndex:3}}><Chip type="cyan" style={{fontSize:11,letterSpacing:"0.4em",padding:"6px 22px",background:`${sc}20`,color:sc,borderColor:`${sc}55`}}>{tourney.surface} · {tourney.modality==="doubles"?"DOBLES":"SINGLES"} {tourney.gender==="F"?"♀":tourney.gender==="Mixed"?"⚥":"♂"}</Chip></div>}
+    {step>=1&&<div style={{position:"absolute",top:tourney.image?252:118,left:0,right:0,textAlign:"center",animation:"fadeIn 0.5s",zIndex:3}}><Chip type="cyan" style={{fontSize:11,letterSpacing:"0.4em",padding:"6px 22px",background:`${sc}20`,color:sc,borderColor:`${sc}55`}}>{tourney.surface} · {tourney.modality==="doubles"?"DOBLES":"SINGLES"} {tourney.gender==="F"?<Ico n="female" s={12}/>:tourney.gender==="Mixed"?<Ico n="mixed" s={12}/>:<Ico n="male" s={12}/>}</Chip></div>}
     {step>=1&&<div style={{position:"absolute",top:tourney.image?292:154,left:0,right:0,textAlign:"center",padding:"0 20px",animation:"slideUp 0.6s 0.1s backwards",zIndex:3}}>
       <T size={54} style={{textShadow:`0 0 60px rgba(79,195,247,0.5)`}}>{tourney.name}</T>
       <div style={{fontFamily:F.bc,fontSize:13,color:C.cyan,letterSpacing:"0.26em",textTransform:"uppercase",marginTop:10,fontWeight:600}}>{tourney.date} · {tourney.prize}</div>
@@ -544,7 +544,7 @@ function ChampScreen({champion,tourney,onClose}){
     <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at 50% 38%,rgba(201,168,76,0.22) 0%,transparent 65%)`}}/>
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",minHeight:"100vh",padding:"30px 24px 40px",position:"relative",zIndex:3}}>
       <Logo size={56} glow/>
-      <div style={{fontSize:80,animation:"trophy 1s 0.3s backwards",margin:"16px 0 12px"}}>🏆</div>
+      <div style={{fontSize:80,animation:"trophy 1s 0.3s backwards",margin:"16px 0 12px"}}><Ico n="trophy" s={44} c={C.gold}/></div>
       <div style={{width:200,height:200,borderRadius:"50%",border:`4px solid ${C.gold}`,overflow:"hidden",marginBottom:18,animation:"scaleIn 0.7s 0.5s backwards, goldGlow 2.5s 1.2s infinite"}}>
         {champion.photo?<img src={champion.photo} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",animation:"breathing 4s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",background:C.goldDim,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:80,color:C.gold}}>{champion.avatar}</div>}
       </div>
@@ -816,9 +816,9 @@ export default function App(){
         const {data:prof,error:pErr}=await supabase.from("profiles").select("*").eq("auth_id",data.user.id).single();
         if(pErr||!prof){setAuthErr("No se encontró tu perfil. Contacta al administrador.");return;}
         const p=profileToPlayer(prof);
-        if(p.isBanned){await supabase.auth.signOut();setAuthErr("⛔ Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
+        if(p.isBanned){await supabase.auth.signOut();setAuthErr("Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
         setAuthErr("");setUser(p);setIsAdmin(false);
-        if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("🔐 Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
+        if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
         setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();
       }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
     }else if(authMode==="admin-login"){
@@ -883,7 +883,7 @@ export default function App(){
       const adminEmail="smt.tennismx@gmail.com";
       const code=String(Math.floor(100000+Math.random()*900000));
       setRecoveryFlow({email:adminEmail,code,target:"admin",step:"verify"});
-      alert(`📧 EMAIL ENVIADO\n\nEnviamos un código de verificación a:\n${adminEmail}\n\nRevisa tu bandeja de entrada (y carpeta spam).\n\n[Modo demo - código generado: ${code}]\n\nEn producción este código solo aparecería en tu correo.`);
+      alert(`EMAIL ENVIADO\n\nEnviamos un código de verificación a:\n${adminEmail}\n\nRevisa tu bandeja de entrada (y carpeta spam).\n\n[Modo demo - código generado: ${code}]\n\nEn producción este código solo aparecería en tu correo.`);
       return;
     }
     // FLUJO JUGADOR: correo de recuperación nativo de Supabase (seguro y automático)
@@ -908,7 +908,7 @@ export default function App(){
     if(!/[A-Z]/.test(newRecPass)||!/[0-9]/.test(newRecPass)){alert("La contraseña debe incluir al menos una letra mayúscula y un número.");return;}
     if(recoveryFlow.target==="admin"){
       setAdminPass(newRecPass);
-      alert("✓ Contraseña de administrador actualizada.\n\nYa puedes iniciar sesión con tu nueva contraseña.");
+      alert("Contraseña de administrador actualizada.\n\nYa puedes iniciar sesión con tu nueva contraseña.");
     }
     setRecoveryFlow(null);
     setNewRecPass("");
@@ -978,12 +978,12 @@ export default function App(){
     if((t.players||[]).find(p=>p.id===user.id)){openT(t);return;}
     const ph=(t.players||[]).find(p=>typeof p.id==="string"&&p.id.startsWith("imp-")&&tnorm(p.name)===tnorm(user.name));
     let nt;
-    if(ph){nt=swapTPlayer(t,ph.id,{...user});setTimeout(()=>alert(`✅ ¡Listo, ${user.firstName||(user.name||"").split(" ")[0]}! Quedaste vinculado a tu lugar en "${t.name}". Tus partidos y resultados ya aparecen en la app.`),350);}
-    else{nt={...t,players:[...(t.players||[]),user]};setTimeout(()=>alert(`✅ ¡Quedaste inscrito en "${t.name}"!`),350);}
+    if(ph){nt=swapTPlayer(t,ph.id,{...user});setTimeout(()=>alert(`¡Listo, ${user.firstName||(user.name||"").split(" ")[0]}! Quedaste vinculado a tu lugar en "${t.name}". Tus partidos y resultados ya aparecen en la app.`),350);}
+    else{nt={...t,players:[...(t.players||[]),user]};setTimeout(()=>alert(`¡Quedaste inscrito en "${t.name}"!`),350);}
     setTournaments(prev=>prev.map(x=>x.id===t.id?nt:x));
     openT(nt);
   };
-  const reqReg=(tid)=>{if(gate("Crea tu cuenta gratis para inscribirte a torneos."))return;const t=tournaments.find(x=>x.id===tid);if(!t)return;if(t.players.find(p=>p.id===user.id)||t.pendingPlayers.find(p=>p.id===user.id))return;if(t.players.length+t.pendingPlayers.length>=parseInt(t.maxPlayers))return;const userIsMinor=isMinor(user.birthdate);if(!isAdmin&&userIsMinor&&!t.forMinors){alert("Este torneo es para mayores de edad. No puedes inscribirte.");return;}if(!isAdmin&&!userIsMinor&&t.forMinors){alert("Este torneo es exclusivo para menores de edad.");return;}if(t.gender&&t.gender!=="Mixed"&&user.sex&&user.sex!==t.gender){alert(`Este torneo es exclusivo para categoría ${t.gender==="M"?"masculino ♂":"femenino ♀"}.`);return;}if(!isAdmin&&t.category){if(!user.category){alert("Debes seleccionar tu categoría en tu perfil antes de inscribirte a torneos.");return;}const userCatIdx=CATS.indexOf(user.category),tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx){alert(`No puedes inscribirte a torneos de categoría inferior. Tu categoría es ${user.category}, este torneo es ${t.category}.`);return;}}if(isAdmin)setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,user]}:x));else setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:[...x.pendingPlayers,user]}:x));};
+  const reqReg=(tid)=>{if(gate("Crea tu cuenta gratis para inscribirte a torneos."))return;const t=tournaments.find(x=>x.id===tid);if(!t)return;if(t.players.find(p=>p.id===user.id)||t.pendingPlayers.find(p=>p.id===user.id))return;if(t.players.length+t.pendingPlayers.length>=parseInt(t.maxPlayers))return;const userIsMinor=isMinor(user.birthdate);if(!isAdmin&&userIsMinor&&!t.forMinors){alert("Este torneo es para mayores de edad. No puedes inscribirte.");return;}if(!isAdmin&&!userIsMinor&&t.forMinors){alert("Este torneo es exclusivo para menores de edad.");return;}if(t.gender&&t.gender!=="Mixed"&&user.sex&&user.sex!==t.gender){alert(`Este torneo es exclusivo para categoría ${t.gender==="M"?"masculino":"femenino"}.`);return;}if(!isAdmin&&t.category){if(!user.category){alert("Debes seleccionar tu categoría en tu perfil antes de inscribirte a torneos.");return;}const userCatIdx=CATS.indexOf(user.category),tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx){alert(`No puedes inscribirte a torneos de categoría inferior. Tu categoría es ${user.category}, este torneo es ${t.category}.`);return;}}if(isAdmin)setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,user]}:x));else setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:[...x.pendingPlayers,user]}:x));};
   const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));if(p)createNotif(p.id,{type:"approval",title:"¡Inscripción aprobada!",body:`Ya estás dentro del torneo "${t?.name}". ¡Mucha suerte!`,link:"home"});};
   const adminReject=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:x.pendingPlayers.filter(p=>p.id!==pid)}:x));
   const adminAdd=(tid,pid)=>{const p=accounts.find(a=>a.id===pid);setTournaments(prev=>prev.map(x=>{if(x.id!==tid)return x;if(x.players.find(pp=>pp.id===pid))return x;return{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)};}));};
@@ -996,7 +996,7 @@ export default function App(){
     if(!subData||!picked)return;
     const{tid,kind,ri,gi,match}=subData;
     // SEGURIDAD: validar que el usuario actual es jugador del partido o admin
-    if(!isAdmin&&user&&match.p1?.id!==user.id&&match.p2?.id!==user.id){alert("⛔ No puedes registrar el resultado de un partido en el que no participas.");setSubData(null);setSubStep("pick");setPicked(null);return;}
+    if(!isAdmin&&user&&match.p1?.id!==user.id&&match.p2?.id!==user.id){alert("No puedes registrar el resultado de un partido en el que no participas.");setSubData(null);setSubStep("pick");setPicked(null);return;}
     // Calcular sets ganados desde los games
     const validSets=setScores.filter(s=>s.a!==""&&s.b!==""&&!isNaN(parseInt(s.a))&&!isNaN(parseInt(s.b)));
     if(validSets.length===0){alert("Ingresa al menos un set válido.");return;}
@@ -1118,7 +1118,7 @@ export default function App(){
   };
 
   const createGroupFn=async()=>{if(gate("Crea tu cuenta gratis para crear grupos."))return;
-    if(!newGroup.name.trim()){alert("Ponle un nombre a tu grupo 🎾");return;}
+    if(!newGroup.name.trim()){alert("Ponle un nombre a tu grupo");return;}
     setCreatingGroup(true);
     try{
       const code=newGroup.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"").slice(0,12)+"-"+Math.random().toString(36).slice(2,6);
@@ -1379,7 +1379,7 @@ export default function App(){
       if(error&&!(error.message||"").toLowerCase().includes("duplicate"))throw error;
       // Notifica al creador del grupo que alguien se unió (si no soy yo el creador)
       if(g.created_by&&g.created_by!==user.id){
-        createNotif(g.created_by,{type:"group_join",title:"Nuevo miembro 👥",body:`${user.name} se unió a tu grupo "${g.name}"`,link:"social"});
+        createNotif(g.created_by,{type:"group_join",title:"Nuevo miembro",body:`${user.name} se unió a tu grupo "${g.name}"`,link:"social"});
       }
       await loadSocial();
       openGroup(g);
@@ -1424,7 +1424,7 @@ export default function App(){
 
   const replyFields=()=>{
     if(!replyingTo)return {};
-    return {reply_to_id:replyingTo.id,reply_to_name:replyingTo.sender_name||"Miembro",reply_to_text:replyingTo.text||(replyingTo.media_type==="video"?"🎥 Video":"📷 Foto")};
+    return {reply_to_id:replyingTo.id,reply_to_name:replyingTo.sender_name||"Miembro",reply_to_text:replyingTo.text||(replyingTo.media_type==="video"?"Video":"Foto")};
   };
 
   const sendMsg=async()=>{if(gate("Crea tu cuenta gratis para enviar mensajes."))return;
@@ -1469,7 +1469,7 @@ export default function App(){
 
   const shareInviteWhatsApp=(g)=>{
     const url=buildInviteUrl(g);
-    const text=`¡Únete a mi grupo "${g.name}" en SMT (Sociedad Mexicana de Tenis)! 🎾\n\n${url}`;
+    const text=`¡Únete a mi grupo "${g.name}" en SMT (Sociedad Mexicana de Tenis)!\n\n${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
   };
 
@@ -1688,7 +1688,7 @@ export default function App(){
         if(currentStrikes>=2){
           // Expulsión automática
           setBannedUsers(prev=>[...prev,user.id]);
-          setTimeout(()=>{alert(`⛔ EXPULSIÓN AUTOMÁTICA\n\nHas intentado subir contenido inapropiado en múltiples ocasiones. Tu cuenta ha sido suspendida.\n\nLa app se cerrará.`);doLogout();},2500);
+          setTimeout(()=>{alert(`EXPULSIÓN AUTOMÁTICA\n\nHas intentado subir contenido inapropiado en múltiples ocasiones. Tu cuenta ha sido suspendida.\n\nLa app se cerrará.`);doLogout();},2500);
         }
         return;
       }
@@ -1748,7 +1748,7 @@ export default function App(){
     setCoachApplications(prev=>[...prev,{id:`${K}-${Date.now()}`,kind:K,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,playerCity:user.city||"—",playerCategory:user.category,playerSex:user.sex,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:coachDraft.availability.trim(),languages:[...coachDraft.languages],status:"pending",time:Date.now()}]);
     setShowCoachApply(false);setShowFisioApply(false);
     setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
-    alert("✓ Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como "+(K==="fisio"?"físio":"coach")+".");
+    alert("Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como "+(K==="fisio"?"físio":"coach")+".");
   };
   const approveCoachApp=(cid,approve)=>{const ca=coachApplications.find(x=>x.id===cid);setCoachApplications(prev=>prev.map(x=>x.id===cid?{...x,status:approve?"approved":"rejected"}:x));if(ca){const kf=ca.kind==="fisio";createNotif(ca.playerId,{type:"approval",title:approve?("¡Aprobado como "+(kf?"físio!":"coach!")):("Solicitud de "+(kf?"físio":"coach")+" rechazada"),body:approve?("Ya apareces en Buscar "+(kf?"Físio":"Coach")+"."):("Tu solicitud de "+(kf?"físio":"coach")+" no fue aprobada esta vez."),link:kf?"fisio":"coach"});}};
   const requestCoachSession=(coachAppId)=>{if(gate("Crea tu cuenta gratis para reservar clases con un coach."))return;
@@ -1760,7 +1760,7 @@ export default function App(){
     setCoachRequests(prev=>[...prev,{id:`creq-${Date.now()}`,coachAppId,coachPlayerId:coach.playerId,coachName:coach.playerName,coachPhone:coach.playerPhone,coachHourlyRate:coach.hourlyRate,kind:coach.kind||"coach",playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,frequency:coachRequestForm.frequency,when:coachRequestForm.when,time:coachRequestForm.time,msg:coachRequestForm.msg.trim(),status:"pending",createdAt:Date.now()}]);
     setShowCoachRequest(null);
     setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});
-    alert("✓ Solicitud enviada al "+(coach.kind==="fisio"?"físio":"coach")+".");
+    alert("Solicitud enviada al "+(coach.kind==="fisio"?"físio":"coach")+".");
   };
   const respondCoachRequest=(rid,accept)=>{
     const r=coachRequests.find(x=>x.id===rid);if(!r)return;
@@ -1776,14 +1776,14 @@ export default function App(){
       if(passForm.old!==adminPass)return alert("Contraseña actual incorrecta");
       if(passForm.new.length<8)return alert("Mínimo 8 caracteres");
       if(!/[A-Z]/.test(passForm.new)||!/[0-9]/.test(passForm.new))return alert("La contraseña debe incluir mayúscula y número");
-      setAdminPass(passForm.new);setShowChangePass(false);setPassForm({old:"",new:""});alert("✓ Contraseña actualizada");
+      setAdminPass(passForm.new);setShowChangePass(false);setPassForm({old:"",new:""});alert("Contraseña actualizada");
     }else{
       if(passForm.old!==user.password)return alert("Contraseña actual incorrecta");
       if(passForm.new.length<8)return alert("Mínimo 8 caracteres");
       if(!/[A-Z]/.test(passForm.new)||!/[0-9]/.test(passForm.new))return alert("La contraseña debe incluir mayúscula y número");
       updateUser({...user,password:passForm.new,requirePasswordChange:false});
       setShowChangePass(false);setPassForm({old:"",new:""});
-      alert("✓ Contraseña actualizada");
+      alert("Contraseña actualizada");
     }
   };
 
@@ -1812,7 +1812,7 @@ export default function App(){
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         {isAdmin&&<Chip type="cyan">ADMIN</Chip>}
         {isAdmin&&(pendRegs()+pendRes())>0&&<button onClick={()=>setScreen("admin-inbox")} className="btn-press" style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,padding:"6px 10px",borderRadius:10,cursor:"pointer",fontFamily:F.ios,fontSize:12,color:C.amber,fontWeight:600}}><Ico n="bell"/>{pendRegs()+pendRes()}</button>}
-        {user&&!isAdmin&&!guest&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,fontSize:20,lineHeight:1}}>🔔
+        {user&&!isAdmin&&!guest&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,lineHeight:0}}><Ico n="bell" s={20}/>
           {notifications.filter(n=>!n.read).length>0&&<span style={{position:"absolute",top:-2,right:-2,minWidth:17,height:17,padding:"0 4px",background:C.red||"#FF453A",color:"#fff",fontSize:10,fontWeight:700,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.ios}}>{notifications.filter(n=>!n.read).length}</span>}
         </button>}
         {guest?<button onClick={()=>guestToAuth("player-login")} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"8px 14px",borderRadius:12,cursor:"pointer",fontFamily:F.ios,fontSize:13,fontWeight:700}}>Entrar</button>:<PA photo={user?.photo} avatar={user?.avatar} size={36} onClick={()=>{if(!isAdmin){setViewP(user);setScreen("player-card");}else setScreen("admin-settings");}}/>}
@@ -1822,9 +1822,9 @@ export default function App(){
       <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:64,right:10,width:"min(360px,92vw)",maxHeight:"72vh",overflowY:"auto",background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,boxShadow:"0 20px 60px rgba(0,0,0,0.55)",animation:"fadeIn 0.2s"}}>
         <div style={{padding:"14px 16px",borderBottom:`1px solid ${C.borderS}`,display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,background:C.surface}}>
           <div style={{fontWeight:700,fontSize:16,color:C.text}}>Notificaciones</div>
-          <button onClick={()=>setShowNotifs(false)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}>✕</button>
+          <button onClick={()=>setShowNotifs(false)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}><Ico n="x" s={16}/></button>
         </div>
-        {notifications.length===0?<div style={{padding:"34px 20px",textAlign:"center",color:C.muted,fontSize:14}}>No tienes notificaciones todavía 🎾</div>:
+        {notifications.length===0?<div style={{padding:"34px 20px",textAlign:"center",color:C.muted,fontSize:14}}>No tienes notificaciones todavía</div>:
           notifications.map(n=><div key={n.id} onClick={()=>openNotif(n)} className="btn-press" style={{padding:"12px 16px",borderBottom:`1px solid ${C.borderS}`,cursor:"pointer"}}>
             <div style={{fontWeight:600,fontSize:14,marginBottom:2,color:C.text}}>{n.title}</div>
             {n.body&&<div style={{fontSize:13,color:C.muted,lineHeight:1.4}}>{n.body}</div>}
@@ -1836,7 +1836,7 @@ export default function App(){
     {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
-        <div style={{fontSize:38,marginBottom:10}}>🎾</div>
+        <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={38} c={C.cyan}/></div>
         <div style={{fontFamily:F.bn,fontSize:22,color:C.text,marginBottom:8}}>ÚNETE A LA SMT</div>
         <div style={{fontFamily:F.ios,fontSize:14,color:C.muted,lineHeight:1.5,marginBottom:20}}>{guestPrompt}</div>
         <button onClick={()=>guestToAuth("player-register")} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"15px",fontFamily:F.ios,fontSize:16,fontWeight:700,cursor:"pointer",borderRadius:16,marginBottom:10,boxShadow:"0 10px 26px rgba(2,136,209,0.4)"}}>Crear cuenta gratis</button>
@@ -1846,7 +1846,7 @@ export default function App(){
     </div>}
     </>;
   }
-  const Back=({to,label})=><button onClick={()=>setScreen(to)} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← {label||"Volver"}</button>;
+  const Back=({to,label})=><button onClick={()=>setScreen(to)} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}><Ico n="arrowLeft" s={16}/>{label||"Volver"}</button>;
 
   // TAB BAR iOS-STYLE (fixed bottom)
   // SF-Symbol style icon components (nativos iOS look)
@@ -1915,11 +1915,11 @@ export default function App(){
       <div style={{animation:"scaleInBig 0.9s"}}><Logo size={220} glow/></div>
       <T size={52} style={{textAlign:"center",marginTop:24,animation:"slideUp 0.6s 0.4s backwards"}}>SOCIEDAD<br/><span style={{background:`linear-gradient(135deg,${C.cyan},#A78BFA,${C.cyan})`,backgroundSize:"200% 100%",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",animation:"gradientShift 4s ease infinite"}}>MEXICANA</span><br/>DE TENIS</T>
       <div style={{display:"flex",flexDirection:"column",gap:12,width:"100%",maxWidth:300,marginTop:54}}>
-        <button onClick={()=>{setAuthMode("player-login");setScreen("auth");}} className="btn-press" style={{position:"relative",overflow:"hidden",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"16px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 0.9s backwards",boxShadow:"0 12px 30px rgba(2,136,209,0.4)",letterSpacing:"-0.01em"}}>🎾  INGRESAR COMO JUGADOR</button>
+        <button onClick={()=>{setAuthMode("player-login");setScreen("auth");}} className="btn-press" style={{position:"relative",overflow:"hidden",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"16px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 0.9s backwards",boxShadow:"0 12px 30px rgba(2,136,209,0.4)",letterSpacing:"-0.01em"}}> INGRESAR COMO JUGADOR</button>
         <button onClick={()=>{setAuthMode("player-register");setScreen("auth");}} className="btn-press" style={{background:"rgba(79,195,247,0.08)",backdropFilter:"blur(20px)",border:`1px solid ${C.cyanBdr}`,color:C.cyan,padding:"15px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 1s backwards"}}>＋  Crear cuenta</button>
         <button onClick={enterGuest} className="btn-press" style={{background:"none",border:"none",color:"rgba(240,237,232,0.7)",padding:"12px",fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",animation:"fadeIn 0.6s 1.2s backwards",textDecoration:"underline",textUnderlineOffset:4}}>Explorar sin cuenta →</button>
       </div>
-      <button onClick={()=>{setAuthMode("admin-login");setScreen("auth");}} className="btn-press" style={{position:"absolute",bottom:24,background:"rgba(118,118,128,0.16)",border:`0.5px solid ${C.borderS}`,color:"rgba(240,237,232,0.5)",width:36,height:36,borderRadius:18,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.6s 1.4s backwards"}} title="Acceso administrador">⚙</button>
+      <button onClick={()=>{setAuthMode("admin-login");setScreen("auth");}} className="btn-press" style={{position:"absolute",bottom:24,background:"rgba(118,118,128,0.16)",border:`0.5px solid ${C.borderS}`,color:"rgba(240,237,232,0.5)",width:36,height:36,borderRadius:18,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.6s 1.4s backwards"}} title="Acceso administrador"><Ico n="settings" s={16}/></button>
     </div>
   </div>;
 
@@ -1928,7 +1928,7 @@ export default function App(){
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style>
       <Aurora intense={1.0}/>
-      <button onClick={()=>{setScreen("welcome");setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(null);}} className="btn-press" style={{position:"absolute",top:18,left:18,background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",zIndex:5}}>← Inicio</button>
+      <button onClick={()=>{setScreen("welcome");setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(null);}} className="btn-press" style={{position:"absolute",top:18,left:18,background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",zIndex:5}}><Ico n="arrowLeft" s={15}/> Inicio</button>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px 40px",position:"relative",zIndex:1}}>
         <Logo size={88} glow/>
         <div style={{width:"100%",maxWidth:360,background:"rgba(10,27,61,0.85)",backdropFilter:"blur(20px)",border:`0.5px solid ${C.cyanBdr}`,borderRadius:20,padding:28,marginTop:24,animation:"slideUp 0.4s",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}>
@@ -1944,10 +1944,10 @@ export default function App(){
               <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{fontFamily:F.ios,fontSize:13,color:C.text,lineHeight:1.45,flex:1}}>Acepto el <span onClick={(e)=>{e.stopPropagation();setShowPrivacyModal(true);}} style={{color:C.cyan,fontWeight:600,textDecoration:"underline"}}>Aviso de Privacidad y Términos de Uso</span> de Sociedad Mexicana de Tenis</div>
             </label>
           </div>}
-          {authErr&&<Sub style={{color:C.red,marginTop:8,fontSize:13}}>⚠ {authErr}</Sub>}
+          {authErr&&<Sub style={{color:C.red,marginTop:8,fontSize:13}}>{authErr}</Sub>}
           {/* Flujo JUGADOR: solicitud al admin */}
           {authMode==="player-recover"&&resetRequestSent&&<div style={{marginTop:14,background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.40)`,padding:18,borderRadius:14,textAlign:"center"}}>
-            <div style={{fontSize:38,marginBottom:10}}>📩</div>
+            <div style={{fontSize:38,marginBottom:10}}><Ico n="mail" s={38} c={C.cyan}/></div>
             <div style={{fontFamily:F.bc,color:C.green,letterSpacing:"0.18em",fontSize:11,fontWeight:700,marginBottom:8}}>CORREO ENVIADO</div>
             <Sub style={{fontSize:13,color:C.text,lineHeight:1.5,marginBottom:14}}>Si <b style={{color:C.cyan}}>{authForm.email}</b> está registrado, te llegará un correo con un enlace para crear una <b>contraseña nueva</b>. Revisa tu bandeja de entrada (y la carpeta de spam).</Sub>
             <button onClick={()=>{setResetRequestSent(false);setAuthMode("player-login");setAuthForm({email:"",password:"",name:""});}} className="btn-press" style={{background:C.cyan,color:"#fff",border:"none",padding:"11px 22px",fontFamily:F.ios,fontSize:13,cursor:"pointer",borderRadius:12,fontWeight:600}}>VOLVER AL INICIO</button>
@@ -1959,10 +1959,10 @@ export default function App(){
             <FL>Código de verificación</FL>
             <TI value={recoveryCode} onChange={e=>setRecoveryCode(e.target.value)} placeholder="000000" autoFocus onKeyDown={e=>e.key==="Enter"&&verifyRecoveryCode()}/>
             <BtnP onClick={verifyRecoveryCode}>VERIFICAR CÓDIGO</BtnP>
-            <button onClick={()=>{setRecoveryFlow(null);setRecoveryCode("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",marginTop:8,width:"100%"}}>← Cancelar</button>
+            <button onClick={()=>{setRecoveryFlow(null);setRecoveryCode("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",marginTop:8,width:"100%"}}><Ico n="arrowLeft" s={15}/> Cancelar</button>
           </div>}
           {recoveryFlow&&recoveryFlow.step==="reset"&&<div style={{marginTop:14,background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.35)`,padding:16,borderRadius:14}}>
-            <div style={{fontFamily:F.bc,color:C.green,letterSpacing:"0.18em",fontSize:10,marginBottom:8,fontWeight:600}}>✓ CÓDIGO VERIFICADO</div>
+            <div style={{fontFamily:F.bc,color:C.green,letterSpacing:"0.18em",fontSize:10,marginBottom:8,fontWeight:600}}><Ico n="check" s={14}/>CÓDIGO VERIFICADO</div>
             <Sub style={{fontSize:12,color:C.text,marginBottom:10}}>Crea una contraseña nueva y segura: mínimo 8 caracteres, una mayúscula y un número.</Sub>
             <FL>Nueva contraseña</FL>
             <TI type="password" value={newRecPass} onChange={e=>setNewRecPass(e.target.value)} placeholder="••••••••" autoFocus onKeyDown={e=>e.key==="Enter"&&resetRecoveredPassword()}/>
@@ -1975,9 +1975,9 @@ export default function App(){
           <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6,alignItems:"center"}}>
             {authMode==="player-login"&&!recoveryFlow&&<><button onClick={()=>{setAuthMode("player-recover");setRecoveryFlow(null);setResetRequestSent(false);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste tu contraseña?</button><button onClick={()=>{setAuthMode("player-register");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿No tienes cuenta? <span style={{color:C.cyan}}>Crear cuenta</span></button></>}
             {authMode==="player-register"&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Ya tienes cuenta? <span style={{color:C.cyan}}>Iniciar sesión</span></button>}
-            {authMode==="player-recover"&&!resetRequestSent&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>← Volver a iniciar sesión</button>}
+            {authMode==="player-recover"&&!resetRequestSent&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}><Ico n="arrowLeft" s={15}/> Volver a iniciar sesión</button>}
             {authMode==="admin-login"&&!recoveryFlow&&<button onClick={()=>{setAuthMode("admin-recover");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste la contraseña?</button>}
-            {authMode==="admin-recover"&&<button onClick={()=>{setAuthMode("admin-login");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>← Volver</button>}
+            {authMode==="admin-recover"&&<button onClick={()=>{setAuthMode("admin-login");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}><Ico n="arrowLeft" s={15}/> Volver</button>}
           </div>
         </div>
       </div>
@@ -2052,7 +2052,7 @@ export default function App(){
           <p style={{margin:0,marginBottom:14}}>Para cualquier duda sobre este aviso o el manejo de tus datos: <b style={{color:C.cyan}}>smt.tennismx@gmail.com</b></p>
         </div>
         <div style={{marginTop:16,display:"flex",gap:8}}>
-          <button onClick={()=>{setAcceptedPrivacy(true);setShowPrivacyModal(false);}} className="btn-press" style={{flex:1,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"14px",fontFamily:F.ios,fontSize:15,fontWeight:700,cursor:"pointer",borderRadius:14,boxShadow:`0 8px 22px rgba(2,136,209,0.4)`}}>✓ HE LEÍDO Y ACEPTO</button>
+          <button onClick={()=>{setAcceptedPrivacy(true);setShowPrivacyModal(false);}} className="btn-press" style={{flex:1,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"14px",fontFamily:F.ios,fontSize:15,fontWeight:700,cursor:"pointer",borderRadius:14,boxShadow:`0 8px 22px rgba(2,136,209,0.4)`}}><Ico n="check" s={14}/>HE LEÍDO Y ACEPTO</button>
         </div>
         <button onClick={()=>setShowPrivacyModal(false)} className="btn-press" style={{width:"100%",background:"transparent",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer",marginTop:8,padding:8}}>Cerrar sin aceptar</button>
       </Modal>}
@@ -2081,7 +2081,7 @@ export default function App(){
     for(let i=myMatches.length-1;i>=0;i--){const w=myMatches[i].m.winner?.id===p.id;if(streakW===null){streakW=w;streak=1;}else if(w===streakW)streak++;else break;}
     // Por superficie
     const surfaces={};myMatches.forEach(x=>{const s=x.t.surface||"Otra";surfaces[s]=surfaces[s]||{w:0,l:0};if(x.m.winner?.id===p.id)surfaces[s].w++;else surfaces[s].l++;});
-    const surfEmoji={Clay:"🟧",Hard:"🟦",Grass:"🟩",Carpet:"🟪"};
+    const _sd=(c)=><span style={{display:"inline-block",width:11,height:11,borderRadius:3,background:c,verticalAlign:"middle"}}/>;const surfEmoji={Clay:_sd("#C17B4A"),Hard:_sd("#4FC3F7"),Grass:_sd("#5BAD6F"),Carpet:_sd("#8B65C1")};
     const surfName=s=>s==="Clay"?"Arcilla":s==="Hard"?"Dura":s==="Grass"?"Pasto":s;
     // Mejor victoria (rival con mejor ranking vencido)
     let bestWin=null;
@@ -2129,7 +2129,7 @@ export default function App(){
           {/* RACHA + FORMA RECIENTE */}
           {total>0&&<div style={{display:"flex",gap:10,marginBottom:14}}>
             <div style={{flex:"0 0 auto",background:streakW?"rgba(52,199,89,0.10)":"rgba(255,59,48,0.10)",border:`1px solid ${streakW?"rgba(52,199,89,0.35)":"rgba(255,59,48,0.35)"}`,borderRadius:18,padding:"12px 16px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"slideLeft 0.5s 0.15s backwards"}}>
-              <div style={{fontSize:28,animation:streakW?"flameWob 1.6s ease-in-out infinite":"floatSlow 3s ease-in-out infinite"}}>{streakW?"🔥":"❄️"}</div>
+              <div style={{fontSize:28,animation:streakW?"flameWob 1.6s ease-in-out infinite":"floatSlow 3s ease-in-out infinite"}}>{streakW?<Ico n="fire" s={16} c={C.amber}/>:<Ico n="snow" s={16} c={C.cyan}/>}</div>
               <div style={{fontSize:24,fontWeight:800,fontFamily:F.bn,color:streakW?C.green:C.red,lineHeight:1,marginTop:4}}><CountUp target={streak} duration={800}/></div>
               <div style={{fontSize:9.5,color:C.muted,letterSpacing:"0.08em",fontWeight:700,marginTop:2}}>{streakW?"RACHA W":"RACHA L"}</div>
             </div>
@@ -2143,14 +2143,14 @@ export default function App(){
                 </div>;})}
               </div>
               <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
-                <div style={{fontSize:9.5,color:C.muted}}>← anteriores</div>
+                <div style={{fontSize:9.5,color:C.muted}}><Ico n="arrowLeft" s={15}/> anteriores</div>
                 <div style={{fontSize:9.5,color:C.muted}}>último →</div>
               </div>
             </div>
           </div>}
 
           {total===0&&<div style={{background:C.surface,border:`1px dashed ${C.borderS}`,borderRadius:18,padding:"34px 20px",textAlign:"center",marginBottom:14}}>
-            <div style={{fontSize:40,marginBottom:8,animation:"ballBounce 1.2s ease-in-out infinite",display:"inline-block"}}>🎾</div>
+            <div style={{fontSize:40,marginBottom:8,animation:"ballBounce 1.2s ease-in-out infinite",display:"inline-flex",lineHeight:0}}><Ico n="ball" s={22} c={C.cyan}/></div>
             <div style={{fontWeight:700,fontSize:16,marginBottom:6}}>Aún no hay partidos registrados</div>
             <Sub style={{fontSize:13,lineHeight:1.5}}>Las estadísticas se generan automáticamente cuando juegas torneos en SMT. ¡Inscríbete a un torneo para empezar!</Sub>
           </div>}
@@ -2188,14 +2188,14 @@ export default function App(){
           {Object.keys(surfaces).length>0&&<div style={{background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"16px",marginBottom:14,animation:"statPop 0.55s 0.3s backwards"}}>
             <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.muted,marginBottom:14}}>RENDIMIENTO POR SUPERFICIE</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-              {Object.entries(surfaces).map(([s,d],i)=><SurfRing key={s} label={surfName(s)} emoji={surfEmoji[s]||"⬜"} w={d.w} l={d.l} delay={0.35+i*0.12}/>)}
+              {Object.entries(surfaces).map(([s,d],i)=><SurfRing key={s} label={surfName(s)} emoji={surfEmoji[s]||_sd(C.muted)} w={d.w} l={d.l} delay={0.35+i*0.12}/>)}
             </div>
           </div>}
 
           {/* MEJOR VICTORIA */}
           {bestWin&&<div style={{background:`linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.04))`,border:`1px solid ${C.goldBdr}`,borderRadius:20,padding:"16px",marginBottom:14,position:"relative",overflow:"hidden",animation:"statPop 0.55s 0.35s backwards"}}>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(105deg,transparent 40%,rgba(255,235,180,0.10) 50%,transparent 60%)",animation:"shimmer 3.2s ease-in-out infinite",pointerEvents:"none"}}/>
-            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.gold,marginBottom:10}}>⭐ MEJOR VICTORIA</div>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.gold,marginBottom:10}}>MEJOR VICTORIA</div>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <PA photo={bestWin.opp?.photo} avatar={bestWin.opp?.avatar} size={44}/>
               <div style={{flex:1,minWidth:0}}>
@@ -2233,7 +2233,7 @@ export default function App(){
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
-            <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
+            <div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div>
             <T size={28}>PERFIL NO DISPONIBLE</T>
             <Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No puedes ver perfiles de menores de edad.</Sub>
           </div>
@@ -2246,7 +2246,7 @@ export default function App(){
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
-            <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
+            <div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div>
             <T size={28}>PERFIL NO DISPONIBLE</T>
             <Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Por seguridad, no puedes ver perfiles de jugadores mayores.</Sub>
           </div>
@@ -2267,18 +2267,18 @@ export default function App(){
         <Back to={selT?"tournament":"home"} label="Volver"/>
         <div style={{position:"relative",margin:"14px 16px 0",borderRadius:18,overflow:"hidden",border:`1px solid ${C.cyanBdr}`,boxShadow:`0 12px 50px rgba(2,136,209,0.25)`,animation:"slideUp 0.5s"}}>
           <div style={{position:"relative",aspectRatio:"3/4",maxHeight:540,overflow:"hidden"}}>
-            {pIsMinor?<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14}}><div style={{fontSize:90}}>🛡️</div><div style={{fontFamily:F.bn,fontSize:60,color:C.cyan,letterSpacing:"0.08em"}}>{p.avatar}</div><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:"rgba(255,255,255,0.5)",fontWeight:600,textAlign:"center",padding:"0 20px"}}>MENOR DE EDAD<br/>FOTO NO DISPONIBLE</div></div>:(p.photo?<img src={p.photo} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",animation:"parallaxY 7s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:130,color:C.cyan}}>{p.avatar}</div>)}
+            {pIsMinor?<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14}}><div style={{lineHeight:0}}><Ico n="shield" s={90} c={C.cyan}/></div><div style={{fontFamily:F.bn,fontSize:60,color:C.cyan,letterSpacing:"0.08em"}}>{p.avatar}</div><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:"rgba(255,255,255,0.5)",fontWeight:600,textAlign:"center",padding:"0 20px"}}>MENOR DE EDAD<br/>FOTO NO DISPONIBLE</div></div>:(p.photo?<img src={p.photo} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",animation:"parallaxY 7s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:130,color:C.cyan}}>{p.avatar}</div>)}
             {canEditPhoto&&!pIsMinor&&<>
               <label htmlFor={photoId} className="btn-press" style={{position:"absolute",top:14,right:14,padding:"10px 16px",borderRadius:24,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",border:`2px solid ${C.bg}`,fontSize:13,fontFamily:F.ios,color:"#fff",fontWeight:600,boxShadow:"0 4px 14px rgba(2,136,209,0.45)",userSelect:"none",zIndex:5}}><Ico n="camera"/>SUBIR FOTO</label>
               <input id={photoId} type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handlePhoto}/>
             </>}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 45%,rgba(4,10,24,0.5) 70%,rgba(4,10,24,0.97))"}}/>
-            <div style={{position:"absolute",top:14,left:14,display:"flex",gap:6}}><Chip type="cyan" style={{fontSize:10,padding:"4px 10px"}}>{p.country||"México"}</Chip>{p.sex&&<Chip style={{fontSize:10,padding:"4px 10px"}}>{p.sex==="F"?"♀ FEM":"♂ MAS"}</Chip>}{pIsMinor&&<Chip type="green" style={{fontSize:10,padding:"4px 10px"}}>🛡️ MENOR</Chip>}</div>
+            <div style={{position:"absolute",top:14,left:14,display:"flex",gap:6}}><Chip type="cyan" style={{fontSize:10,padding:"4px 10px"}}>{p.country||"México"}</Chip>{p.sex&&<Chip style={{fontSize:10,padding:"4px 10px"}}>{p.sex==="F"?"FEM":"MAS"}</Chip>}{pIsMinor&&<Chip type="green" style={{fontSize:10,padding:"4px 10px"}}>MENOR</Chip>}</div>
             <div style={{position:"absolute",left:0,right:0,bottom:0,padding:22}}>
               <div style={{fontFamily:F.bc,color:C.cyan,letterSpacing:"0.32em",textTransform:"uppercase",fontSize:11,marginBottom:6,fontWeight:600}}>RANKING #{p.ranking||"—"} · {p.points||0} PTS</div>
               <T size={36} style={{lineHeight:0.95,marginBottom:4}}>{(p.firstName||p.name?.split(" ")[0]||"").toUpperCase()}</T>
               <T size={36} style={{lineHeight:0.95,color:C.cyan}}>{(p.lastName||p.name?.split(" ").slice(1).join(" ")||"").toUpperCase()}</T>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}><Chip>{p.club||"—"}</Chip><Chip>{p.hand||"—"}</Chip>{p.category&&<Chip type="gold" style={{background:`${CAT_C[p.category]}25`,color:CAT_C[p.category],borderColor:`${CAT_C[p.category]}55`}}>CAT {p.category}</Chip>}{p.racket&&<Chip type="cyan">🎾 {p.racket}</Chip>}</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}><Chip>{p.club||"—"}</Chip><Chip>{p.hand||"—"}</Chip>{p.category&&<Chip type="gold" style={{background:`${CAT_C[p.category]}25`,color:CAT_C[p.category],borderColor:`${CAT_C[p.category]}55`}}>CAT {p.category}</Chip>}{p.racket&&<Chip type="cyan">{p.racket}</Chip>}</div>
             </div>
           </div>
         </div>
@@ -2326,7 +2326,7 @@ export default function App(){
           <Row label="Fecha de nacimiento" val={p.birthdate||"—"}/>
         </div>
         {isMe&&<div style={{padding:"24px 16px 16px"}}>
-          <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}>↩  CERRAR SESIÓN</button>
+          <button onClick={doLogout} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}><Ico n="back" s={15}/> CERRAR SESIÓN</button>
           <button onClick={()=>{setDeleteConfirmText("");setShowDeleteAccount(true);}} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid rgba(255,59,48,0.25)`,color:"rgba(255,99,99,0.85)",padding:"14px 18px",fontFamily:F.ios,fontSize:15,fontWeight:600,cursor:"pointer",borderRadius:14}}><Ico n="trash"/> ELIMINAR MI CUENTA</button>
         </div>}
         <div style={{height:32}}/>
@@ -2334,7 +2334,7 @@ export default function App(){
 
         {showDeleteAccount&&<Modal onClose={()=>{setShowDeleteAccount(false);setDeleteConfirmText("");}} center>
           <div style={{textAlign:"center",marginBottom:8}}>
-            <div style={{fontSize:40,marginBottom:6}}>⚠️</div>
+            <div style={{marginBottom:6,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="warn" s={40} c={C.amber}/></div>
             <T size={22}>ELIMINAR CUENTA</T>
           </div>
           <Sub style={{textAlign:"center",fontSize:14,lineHeight:1.5,marginBottom:16}}>Esta acción es permanente y no se puede deshacer. Se eliminarán tu perfil, estadísticas, inscripciones a torneos, publicaciones del marketplace y todos tus datos.</Sub>
@@ -2349,26 +2349,26 @@ export default function App(){
           {!editAsAdmin&&<div style={{height:14}}/>}
           {[["Nombre(s)","firstName","text"],["Apellido(s)","lastName","text"],["Club sede","club","text"],["País","country","text"],["Ciudad","city","text"],["Fecha de nacimiento","birthdate","date"]].map(([l,k,t])=><div key={k} style={{marginBottom:14}}><FL>{l}</FL><TI type={t} value={editProfile[k]||""} onChange={e=>setEditProfile({...editProfile,[k]:e.target.value})}/></div>)}
           <div style={{marginBottom:14}}><FL>Estado</FL><select value={editProfile.state||""} onChange={e=>setEditProfile({...editProfile,state:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer"}}><option value="">— Selecciona estado —</option>{MX_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-          <div style={{marginBottom:14}}><FL>Sexo</FL><Seg options={[{v:"M",l:"♂ Masculino"},{v:"F",l:"♀ Femenino"}]} value={editProfile.sex} onChange={v=>setEditProfile({...editProfile,sex:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Sexo</FL><Seg options={[{v:"M",l:"Masculino"},{v:"F",l:"Femenino"}]} value={editProfile.sex} onChange={v=>setEditProfile({...editProfile,sex:v})}/></div>
           <div style={{marginBottom:14}}><FL>Mano hábil</FL><Seg options={["Diestro","Zurdo"]} value={editProfile.hand} onChange={v=>setEditProfile({...editProfile,hand:v})}/></div>
           <div style={{marginBottom:14}}><FL>Raqueta</FL><select value={editProfile.racket||""} onChange={e=>setEditProfile({...editProfile,racket:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer"}}><option value="">— Selecciona —</option>{RACKETS.map(r=><option key={r} value={r}>{r}</option>)}</select></div>
           <div style={{marginBottom:14}}><FL>Teléfono celular {!editAsAdmin&&"(para FIND A MATCH)"}</FL><TI type="tel" value={editProfile.phone||""} onChange={e=>setEditProfile({...editProfile,phone:e.target.value})} placeholder="+528112345678"/></div>
           <div style={{marginBottom:14}}>
-            <FL>Categoría {editProfile.categoryLocked&&!editAsAdmin&&"🔒"}</FL>
+            <FL>Categoría {editProfile.categoryLocked&&!editAsAdmin&&<Ico n="lock" s={12}/>}</FL>
             {editProfile.categoryLocked&&!editAsAdmin?<>
               <Seg options={CATS} value={editProfile.category||"B"} onChange={v=>setEditProfile({...editProfile,category:v})}/>
-              <Sub style={{marginTop:6,fontSize:12,color:C.amber}}>⚠️ Cambiar tu categoría enviará una solicitud al administrador. Solo se aplicará si la aprueba.</Sub>
+              <Sub style={{marginTop:6,fontSize:12,color:C.amber}}>Cambiar tu categoría enviará una solicitud al administrador. Solo se aplicará si la aprueba.</Sub>
             </>:<>
               <Seg options={CATS} value={editProfile.category||"B"} onChange={v=>setEditProfile({...editProfile,category:v})}/>
-              {!editProfile.categoryLocked&&!editAsAdmin&&<Sub style={{marginTop:6,fontSize:12,color:C.cyan}}>ℹ️ Una vez guardada tu categoría, solo el administrador podrá modificarla por solicitud.</Sub>}
+              {!editProfile.categoryLocked&&!editAsAdmin&&<Sub style={{marginTop:6,fontSize:12,color:C.cyan}}><Ico n="info" s={13} c={C.cyan}/> Una vez guardada tu categoría, solo el administrador podrá modificarla por solicitud.</Sub>}
             </>}
           </div>
           <div style={{marginTop:24,padding:"14px 0",borderTop:`0.5px solid ${C.borderS}`}}>
             <SL>SwingVision · Habilidades</SL>
             {!editAsAdmin?<>
               <div style={{background:C.surface2,border:`1px solid ${C.cyanBdr}`,borderRadius:12,padding:14,marginBottom:10}}>
-                <div style={{fontFamily:F.ios,fontSize:13,color:C.text,marginBottom:6,fontWeight:600}}>📱 Cómo subir tus datos de SwingVision</div>
-                <Sub style={{fontSize:12,lineHeight:1.5}}>1. Abre la app de SwingVision en tu teléfono.<br/>2. Toma un screenshot DIRECTO donde aparezcan tus valores de Servicio, Resto, Derecha y Revés.<br/>3. Cierra este modal y presiona "📊 SUBIR DATOS SWINGVISION" en tu perfil para enviar la solicitud al administrador. Las habilidades aparecerán solo cuando él apruebe.</Sub>
+                <div style={{fontFamily:F.ios,fontSize:13,color:C.text,marginBottom:6,fontWeight:600}}><Ico n="mobile" s={15}/> Cómo subir tus datos de SwingVision</div>
+                <Sub style={{fontSize:12,lineHeight:1.5}}>1. Abre la app de SwingVision en tu teléfono.<br/>2. Toma un screenshot DIRECTO donde aparezcan tus valores de Servicio, Resto, Derecha y Revés.<br/>3. Cierra este modal y presiona "SUBIR DATOS SWINGVISION" en tu perfil para enviar la solicitud al administrador. Las habilidades aparecerán solo cuando él apruebe.</Sub>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px 12px"}}>
                 {[["serve","Servicio"],["return","Resto"],["forehand","Derecha"],["backhand","Revés"]].map(([k,l])=>{const v=editProfile.stats?.[k]||0;return <div key={k} style={{background:C.surface3,borderRadius:10,padding:"8px 10px"}}>
@@ -2393,6 +2393,10 @@ export default function App(){
               <div style={{fontFamily:F.ios,fontSize:14,color:C.text,flex:1,fontWeight:500}}>{l}</div>
               <input type="number" min="0" style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseInt(e.target.value)||0}})}/>
             </div>)}
+            <div style={{marginTop:6,display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderTop:`0.5px solid ${C.borderS}`}}>
+              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Cuenta Premium</div><Sub style={{fontSize:11,marginTop:1}}>Elegible al premio anual del ranking</Sub></div>
+              <button onClick={()=>setEditProfile({...editProfile,premium:!editProfile.premium})} className="btn-press" style={{width:52,height:30,borderRadius:15,border:"none",cursor:"pointer",background:editProfile.premium?C.gold:C.iosField,position:"relative",transition:"all .2s"}}><span style={{position:"absolute",top:3,left:editProfile.premium?25:3,width:24,height:24,borderRadius:"50%",background:"#fff",transition:"all .2s"}}/></button>
+            </div>
           </div>}
           <BtnP onClick={saveProfile}>GUARDAR</BtnP>
           <BtnX onClick={()=>{setShowProfileEdit(false);setEditAsAdmin(false);}}>CANCELAR</BtnX>
@@ -2407,15 +2411,15 @@ export default function App(){
           <T size={22} style={{textAlign:"center",marginBottom:8}}>SUBIR DATOS SWINGVISION</T>
           <Sub style={{textAlign:"center",marginBottom:14,fontSize:13}}>Tus habilidades aparecerán solo cuando el admin las apruebe</Sub>
           <div style={{background:C.surface2,border:`1px solid ${C.cyanBdr}`,borderRadius:12,padding:14,marginBottom:16}}>
-            <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,marginBottom:6}}>📱 INSTRUCCIONES</div>
+            <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,marginBottom:6}}>INSTRUCCIONES</div>
             <Sub style={{fontSize:12,lineHeight:1.5,color:C.text}}>1. Abre la app de <b style={{color:C.cyan}}>SwingVision</b> en tu teléfono.<br/>2. Toma un <b>screenshot directo</b> donde aparezcan tus valores de Servicio, Resto, Derecha y Revés.<br/>3. Sube esa imagen aquí junto con los valores que aparezcan.<br/>4. El administrador verá tu imagen y valores para aprobar o rechazar.</Sub>
           </div>
           <FL>Screenshot de SwingVision *</FL>
           <label htmlFor="svImgUp" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:12,padding:svDraft.image?0:24,background:C.iosField,textAlign:"center",overflow:"hidden",display:"block",marginBottom:14}}>
-            {svDraft.image?<img src={svDraft.image} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<><div style={{fontSize:34,marginBottom:8}}>📸</div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Subir screenshot de SwingVision</div><Sub style={{fontSize:12,marginTop:4}}>JPG o PNG</Sub></>}
+            {svDraft.image?<img src={svDraft.image} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<><div style={{fontSize:34,marginBottom:8}}><Ico n="camera" s={32} c={C.cyan}/></div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Subir screenshot de SwingVision</div><Sub style={{fontSize:12,marginTop:4}}>JPG o PNG</Sub></>}
           </label>
           <input id="svImgUp" type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleSvImage}/>
-          {svDraft.image&&<button onClick={()=>setSvDraft({...svDraft,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Cambiar imagen</button>}
+          {svDraft.image&&<button onClick={()=>setSvDraft({...svDraft,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}><Ico n="x" s={14}/>Cambiar imagen</button>}
           <FL>Valores que aparecen en SwingVision (0–10)</FL>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:8}}>
             {[["serve","Servicio"],["return","Resto"],["forehand","Derecha"],["backhand","Revés"]].map(([k,l])=><div key={k}>
@@ -2440,7 +2444,7 @@ export default function App(){
         <Nav/>
         {welcomeAnim&&<WelcomeAnim user={user} isAdmin={isAdmin} onDone={()=>setWelcomeAnim(false)}/>}
         {guest&&<div onClick={()=>guestToAuth("player-register")} className="btn-press" style={{margin:"12px 18px 0",background:`linear-gradient(135deg,rgba(2,136,209,0.22),rgba(79,195,247,0.10))`,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
-          <div style={{fontSize:22}}>👋</div>
+          <div style={{fontSize:22}}><Ico n="hand" s={40} c={C.cyan}/></div>
           <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:700}}>Estás explorando como invitado</div><div style={{fontFamily:F.ios,fontSize:12,color:C.muted,marginTop:2}}>Crea tu cuenta gratis para jugar torneos, vender y conectar.</div></div>
           <div style={{fontFamily:F.ios,fontSize:13,color:C.cyan,fontWeight:700,whiteSpace:"nowrap"}}>Crear →</div>
         </div>}
@@ -2469,7 +2473,7 @@ export default function App(){
             <div style={{position:"absolute",top:-30,right:-30,opacity:0.08,animation:"breathing 6s infinite"}}><Logo size={200}/></div>
             <SL>Bienvenido de vuelta</SL>
             <div style={{display:"flex",alignItems:"center",gap:14,marginTop:6}}>
-              {isMinor(user?.birthdate)?<div style={{width:84,height:84,borderRadius:"50%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,border:`2px solid ${C.cyan}`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",animation:"breathSubtle 4.5s infinite"}}><div style={{fontSize:26}}>🛡️</div><div style={{fontFamily:F.bn,fontSize:18,color:C.cyan}}>{user?.avatar}</div></div>:<PA photo={user?.photo} avatar={user?.avatar} size={84} border={`2px solid ${C.cyan}`}/>}
+              {isMinor(user?.birthdate)?<div style={{width:84,height:84,borderRadius:"50%",background:`linear-gradient(160deg,${C.cyanDim},${C.surface3})`,border:`2px solid ${C.cyan}`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",animation:"breathSubtle 4.5s infinite"}}><div style={{lineHeight:0}}><Ico n="shield" s={26} c={C.cyan}/></div><div style={{fontFamily:F.bn,fontSize:18,color:C.cyan}}>{user?.avatar}</div></div>:<PA photo={user?.photo} avatar={user?.avatar} size={84} border={`2px solid ${C.cyan}`}/>}
               <div>
                 <T size={36}>{(user?.firstName||user?.name?.split(" ")[0])?.toUpperCase()}</T>
                 <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}><Chip type="cyan">#{user?.ranking||"—"}</Chip><Chip>{user?.points||0} PTS</Chip></div>
@@ -2486,7 +2490,7 @@ export default function App(){
               <BtnG onClick={()=>setShowPremium(true)} style={{borderColor:"rgba(255,209,92,0.5)",color:"#FFD15C",background:"rgba(255,209,92,0.10)"}}><Ico n="star" c="#FFD15C"/>SMT PREMIUM</BtnG>
             </div>
             {isMinor(user?.birthdate)&&<div style={{marginTop:14,background:"rgba(91,173,111,0.12)",border:`1px solid rgba(91,173,111,0.4)`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
-              <div style={{fontSize:22}}>🛡️</div>
+              <div style={{lineHeight:0}}><Ico n="shield" s={22} c={C.cyan}/></div>
               <div><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:"#5BAD6F",fontWeight:700}}>MODO MENOR DE EDAD</div><Sub style={{fontSize:12,marginTop:2}}>Versión segura activada. Solo ves contenido y torneos apropiados para tu edad.</Sub></div>
             </div>}
           </div>
@@ -2502,7 +2506,7 @@ export default function App(){
             <BtnG onClick={()=>setScreen("marketplace")}><Ico n="cart"/>MARKETPLACE</BtnG>
             <BtnG onClick={()=>setMediaUploadModal(true)}><Ico n="upload"/>SUBIR MEDIA</BtnG>
             <BtnG onClick={()=>setScreen("admin-settings")}><Ico n="settings"/>AJUSTES</BtnG>
-            <BtnG onClick={doLogout}>↩ SALIR</BtnG>
+            <BtnG onClick={doLogout}><Ico n="back" s={15}/>SALIR</BtnG>
           </div>
         </div>}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"22px 18px 12px"}}>
@@ -2520,7 +2524,7 @@ export default function App(){
             {CATS.map(c=><button key={c} onClick={()=>setTFilters({...tFilters,category:c})} className="btn-press" style={{padding:"6px 10px",fontSize:11,borderRadius:8,border:`1px solid ${tFilters.category===c?CAT_C[c]:C.borderS}`,background:tFilters.category===c?`${CAT_C[c]}25`:"transparent",color:tFilters.category===c?CAT_C[c]:C.muted,fontFamily:F.bc,letterSpacing:"0.1em",cursor:"pointer",fontWeight:600}}>{c}</button>)}
           </div>
           <FL>Género</FL>
-          <Seg options={[{v:"",l:"Todos"},{v:"M",l:"♂ Varonil"},{v:"F",l:"♀ Femenil"},{v:"Mixed",l:"⚥ Mixto"}]} value={tFilters.gender} onChange={v=>setTFilters({...tFilters,gender:v})} style={{marginBottom:10}}/>
+          <Seg options={[{v:"",l:"Todos"},{v:"M",l:"Varonil"},{v:"F",l:"Femenil"},{v:"Mixed",l:"Mixto"}]} value={tFilters.gender} onChange={v=>setTFilters({...tFilters,gender:v})} style={{marginBottom:10}}/>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
             <div><FL>País</FL><TI value={tFilters.country} onChange={e=>setTFilters({...tFilters,country:e.target.value})} placeholder="México" style={{fontSize:13,padding:"10px 12px"}}/></div>
             <div><FL>Ciudad</FL><TI value={tFilters.city} onChange={e=>setTFilters({...tFilters,city:e.target.value})} placeholder="Monterrey" style={{fontSize:13,padding:"10px 12px"}}/></div>
@@ -2529,7 +2533,7 @@ export default function App(){
           <select value={tFilters.state} onChange={e=>setTFilters({...tFilters,state:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"10px 12px",color:C.text,fontFamily:F.ios,fontSize:13,outline:"none",cursor:"pointer",marginBottom:10}}><option value="">Todos los estados</option>{MX_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select>
           <FL>Club</FL>
           <TI value={tFilters.club} onChange={e=>setTFilters({...tFilters,club:e.target.value})} placeholder="Club Campestre" style={{fontSize:13,padding:"10px 12px"}}/>
-          <button onClick={()=>setTFilters({category:"",gender:"",country:"",state:"",city:"",club:""})} className="btn-press" style={{marginTop:10,background:"none",border:"none",color:C.red,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:500}}>✕ Limpiar filtros</button>
+          <button onClick={()=>setTFilters({category:"",gender:"",country:"",state:"",city:"",club:""})} className="btn-press" style={{marginTop:10,background:"none",border:"none",color:C.red,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:500}}><Ico n="x" s={14}/>Limpiar filtros</button>
         </div>}
         {(()=>{const userIsMinor=!isAdmin&&isMinor(user?.birthdate);const userCat=user?.category;const userCatIdx=userCat?CATS.indexOf(userCat):-1;return tournaments.filter(t=>{if(isAdmin)return true;if(userIsMinor?!t.forMinors:!!t.forMinors)return false;// Categoría: solo torneos de su misma categoría o MAYOR (índice menor en CATS porque Abierta=0 es la mayor)
 if(t.category&&userCatIdx>=0){const tCatIdx=CATS.indexOf(t.category);if(tCatIdx>userCatIdx)return false;}// Si jugador no tiene categoría, no ve torneos con categoría
@@ -2555,16 +2559,16 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                     {isReg&&<Chip type="green">INSCRITO</Chip>}
                     {isPending&&<Chip type="amber">PEND</Chip>}
                     {isAdmin&&<>
-                      <button onClick={e=>{e.stopPropagation();setEditTourney({...t});}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.borderS}`,color:C.muted,fontSize:13,cursor:"pointer",padding:"5px 9px",borderRadius:8}}>✏️</button>
-                      <button onClick={e=>{e.stopPropagation();setDeleteTId(t.id);}} className="btn-press" style={{background:"transparent",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,fontSize:11,cursor:"pointer",padding:"5px 9px",borderRadius:8}}>✕</button>
+                      <button onClick={e=>{e.stopPropagation();setEditTourney({...t});}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.borderS}`,color:C.muted,fontSize:13,cursor:"pointer",padding:"5px 9px",borderRadius:8}}><Ico n="edit" s={14}/></button>
+                      <button onClick={e=>{e.stopPropagation();setDeleteTId(t.id);}} className="btn-press" style={{background:"transparent",border:`1px solid rgba(255,59,48,0.4)`,color:C.red,fontSize:11,cursor:"pointer",padding:"5px 9px",borderRadius:8}}><Ico n="x" s={16}/></button>
                     </>}
                   </div>
                 </div>
                 <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
                   <span style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,background:`${sc}18`,color:sc,border:`1px solid ${sc}44`,fontWeight:600}}>{t.surface}</span>
                   <Chip type="cyan">{t.modality==="doubles"?"DOBLES":"SINGLES"}</Chip>
-                  <Chip>{t.gender==="F"?"♀":t.gender==="Mixed"?"⚥":"♂"}</Chip>
-                  {t.forMinors&&<Chip type="green">🛡️ MENORES</Chip>}
+                  <Chip>{t.gender==="F"?<Ico n="female" s={12}/>:t.gender==="Mixed"?<Ico n="mixed" s={12}/>:<Ico n="male" s={12}/>}</Chip>
+                  {t.forMinors&&<Chip type="green">MENORES</Chip>}
                   {t.category&&<span style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,background:`${CAT_C[t.category]}25`,color:CAT_C[t.category],border:`1px solid ${CAT_C[t.category]}55`,fontWeight:700}}>CAT {t.category}</span>}
                   <Chip type="gold">{t.prize}</Chip>
                 </div>
@@ -2583,7 +2587,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               {champ&&<div style={{flexShrink:0,width:78,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:5,padding:"4px 0",borderLeft:`0.5px solid ${C.goldBdr}`,marginLeft:4,paddingLeft:10,background:`linear-gradient(90deg,transparent,rgba(201,168,76,0.06))`}}>
                 <div style={{position:"relative"}}>
                   <PA photo={champ.photo} avatar={champ.avatar} size={54} border={`2.5px solid ${C.gold}`} animated/>
-                  <div style={{position:"absolute",top:-4,right:-4,fontSize:14,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"}}>🏆</div>
+                  <div style={{position:"absolute",top:-4,right:-4,fontSize:14,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"}}><Ico n="trophy" s={44} c={C.gold}/></div>
                 </div>
                 <div style={{fontFamily:F.bc,color:C.gold,letterSpacing:"0.18em",textTransform:"uppercase",fontSize:8,textAlign:"center",marginTop:2,fontWeight:700}}>CAMPEÓN</div>
                 <div style={{fontFamily:F.bn,fontSize:11,color:C.text,textAlign:"center",lineHeight:1.05,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>{champ.firstName?.[0]||""}. {champ.lastName||champ.firstName}</div>
@@ -2599,10 +2603,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{marginBottom:14}}>
             <FL>Imagen del torneo</FL>
             <label htmlFor="newTimg" style={{cursor:"pointer",border:`1px dashed ${C.cyanBdr}`,borderRadius:12,padding:newT.image?0:18,background:C.iosField,textAlign:"center",overflow:"hidden",aspectRatio:newT.image?"16/9":"auto",display:"block"}}>
-              {newT.image?<img src={newT.image} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<><div style={{fontSize:28,marginBottom:6}}>📷</div><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,fontWeight:500}}>Subir imagen del torneo</div></>}
+              {newT.image?<img src={newT.image} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<><div style={{marginBottom:6,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="camera" s={28} c={C.cyan}/></div><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,fontWeight:500}}>Subir imagen del torneo</div></>}
             </label>
             <input id="newTimg" type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={e=>handleTImg(e,"new")}/>
-            {newT.image&&<button onClick={()=>setNewT({...newT,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginTop:8,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Quitar imagen</button>}
+            {newT.image&&<button onClick={()=>setNewT({...newT,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginTop:8,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}><Ico n="x" s={14}/>Quitar imagen</button>}
           </div>
           {[["Nombre","name","text","Monterrey Open"],["Fecha","date","date",""],["Sede","location","text","Club / Dirección"],["Premio","prize","text","$5,000 MXN"]].map(([l,k,t,ph])=><div key={k} style={{marginBottom:14}}><FL>{l}</FL><TI type={t} value={newT[k]} onChange={e=>setNewT({...newT,[k]:e.target.value})} placeholder={ph}/></div>)}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
@@ -2611,9 +2615,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           <div style={{marginBottom:14}}><FL>Estado</FL><select value={newT.state} onChange={e=>setNewT({...newT,state:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer"}}>{MX_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
           <div style={{marginBottom:14}}><FL>Modalidad</FL><Seg options={[{v:"singles",l:"Singles"},{v:"doubles",l:"Dobles"}]} value={newT.modality} onChange={v=>setNewT({...newT,modality:v})}/></div>
-          <div style={{marginBottom:14}}><FL>Edad de jugadores</FL><Seg options={[{v:false,l:"👤 Mayores"},{v:true,l:"🛡️ Menores"}]} value={!!newT.forMinors} onChange={v=>setNewT({...newT,forMinors:v})}/><Sub style={{fontSize:12,marginTop:6}}>Los torneos para menores solo serán visibles para usuarios menores de edad.</Sub></div>
+          <div style={{marginBottom:14}}><FL>Edad de jugadores</FL><Seg options={[{v:false,l:"Mayores"},{v:true,l:"Menores"}]} value={!!newT.forMinors} onChange={v=>setNewT({...newT,forMinors:v})}/><Sub style={{fontSize:12,marginTop:6}}>Los torneos para menores solo serán visibles para usuarios menores de edad.</Sub></div>
           <div style={{marginBottom:14}}><FL>Categoría del torneo</FL><Seg options={CATS} value={newT.category} onChange={v=>setNewT({...newT,category:v})}/><Sub style={{marginTop:6,fontSize:12}}>Solo jugadores de esta categoría podrán inscribirse</Sub></div>
-          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"♂ Masc"},{v:"F",l:"♀ Fem"},{v:"Mixed",l:"⚥ Mix"}]} value={newT.gender} onChange={v=>setNewT({...newT,gender:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"Masc"},{v:"F",l:"Fem"},{v:"Mixed",l:"Mix"}]} value={newT.gender} onChange={v=>setNewT({...newT,gender:v})}/></div>
           <div style={{marginBottom:14}}><FL>Superficie</FL><Seg options={["Clay","Hard","Grass","Indoor"]} value={newT.surface} onChange={v=>setNewT({...newT,surface:v})}/></div>
           <div style={{marginBottom:14}}><FL>Formato</FL><Seg options={[{v:"groups+ko",l:"Grupos + Elim."},{v:"ko",l:"Eliminatoria"}]} value={newT.format} onChange={v=>setNewT({...newT,format:v})}/></div>
           <div style={{marginBottom:14}}><FL>Máx jugadores</FL><Seg options={[{v:"4",l:"4"},{v:"8",l:"8"},{v:"16",l:"16"},{v:"32",l:"32"}]} value={newT.maxPlayers} onChange={v=>setNewT({...newT,maxPlayers:v})}/></div>
@@ -2624,10 +2628,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{marginBottom:14}}>
             <FL>Imagen del torneo</FL>
             <label htmlFor="editTimg" style={{cursor:"pointer",border:`1px dashed ${C.cyanBdr}`,borderRadius:12,padding:editTourney.image?0:18,background:C.iosField,textAlign:"center",overflow:"hidden",aspectRatio:editTourney.image?"16/9":"auto",display:"block"}}>
-              {editTourney.image?<img src={editTourney.image} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<><div style={{fontSize:28,marginBottom:6}}>📷</div><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,fontWeight:500}}>Subir imagen</div></>}
+              {editTourney.image?<img src={editTourney.image} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<><div style={{marginBottom:6,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="camera" s={28} c={C.cyan}/></div><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,fontWeight:500}}>Subir imagen</div></>}
             </label>
             <input id="editTimg" type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={e=>handleTImg(e,"edit")}/>
-            {editTourney.image&&<button onClick={()=>setEditTourney({...editTourney,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginTop:8,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Quitar imagen</button>}
+            {editTourney.image&&<button onClick={()=>setEditTourney({...editTourney,image:null})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginTop:8,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}><Ico n="x" s={14}/>Quitar imagen</button>}
           </div>
           {[["Nombre","name","text"],["Fecha","date","date"],["Sede","location","text"],["Premio","prize","text"]].map(([l,k,t])=><div key={k} style={{marginBottom:14}}><FL>{l}</FL><TI type={t} value={editTourney[k]||""} onChange={e=>setEditTourney({...editTourney,[k]:e.target.value})}/></div>)}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
@@ -2636,13 +2640,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           <div style={{marginBottom:14}}><FL>Estado</FL><select value={editTourney.state||"Nuevo León"} onChange={e=>setEditTourney({...editTourney,state:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer"}}>{MX_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
           <div style={{marginBottom:14}}><FL>Modalidad</FL><Seg options={[{v:"singles",l:"Singles"},{v:"doubles",l:"Dobles"}]} value={editTourney.modality||"singles"} onChange={v=>setEditTourney({...editTourney,modality:v})}/></div>
-          <div style={{marginBottom:14}}><FL>Edad de jugadores</FL><Seg options={[{v:false,l:"👤 Mayores"},{v:true,l:"🛡️ Menores"}]} value={!!editTourney.forMinors} onChange={v=>setEditTourney({...editTourney,forMinors:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Edad de jugadores</FL><Seg options={[{v:false,l:"Mayores"},{v:true,l:"Menores"}]} value={!!editTourney.forMinors} onChange={v=>setEditTourney({...editTourney,forMinors:v})}/></div>
           <div style={{marginBottom:14}}><FL>Categoría del torneo</FL><Seg options={CATS} value={editTourney.category||"B"} onChange={v=>setEditTourney({...editTourney,category:v})}/></div>
-          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"♂ Masc"},{v:"F",l:"♀ Fem"},{v:"Mixed",l:"⚥ Mix"}]} value={editTourney.gender||"M"} onChange={v=>setEditTourney({...editTourney,gender:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"Masc"},{v:"F",l:"Fem"},{v:"Mixed",l:"Mix"}]} value={editTourney.gender||"M"} onChange={v=>setEditTourney({...editTourney,gender:v})}/></div>
           <BtnP onClick={saveTEdit}>GUARDAR</BtnP><BtnX onClick={()=>setEditTourney(null)}>CANCELAR</BtnX>
         </Modal>}
         {deleteTId&&<Modal onClose={()=>setDeleteTId(null)}>
-          <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:40,marginBottom:12}}>⚠️</div><T size={24}>ELIMINAR TORNEO</T><Sub style={{marginTop:8}}>No se puede deshacer.</Sub></div>
+          <div style={{textAlign:"center",marginBottom:20}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="warn" s={40} c={C.amber}/></div><T size={24}>ELIMINAR TORNEO</T><Sub style={{marginTop:8}}>No se puede deshacer.</Sub></div>
           <button onClick={confDelT} className="btn-press" style={{width:"100%",background:C.red,color:"#fff",border:"none",padding:"15px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:14}}>SÍ, ELIMINAR</button>
           <BtnX onClick={()=>setDeleteTId(null)}>CANCELAR</BtnX>
         </Modal>}
@@ -2654,7 +2658,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{marginBottom:14}}><FL>Modalidad</FL><Seg options={[{v:"singles",l:"Singles"},{v:"doubles",l:"Dobles"}]} value={newReqT.modality} onChange={v=>setNewReqT({...newReqT,modality:v})}/></div>
           <div style={{marginBottom:14}}><FL>Formato de juego</FL><Seg options={[{v:"groups+ko",l:"Grupos + Elim."},{v:"ko",l:"Eliminatoria"}]} value={newReqT.format||"groups+ko"} onChange={v=>setNewReqT({...newReqT,format:v})}/></div>
           <div style={{marginBottom:14}}><FL>Categoría</FL><Seg options={CATS} value={newReqT.category} onChange={v=>setNewReqT({...newReqT,category:v})}/></div>
-          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"♂ Masc"},{v:"F",l:"♀ Fem"},{v:"Mixed",l:"⚥ Mix"}]} value={newReqT.gender} onChange={v=>setNewReqT({...newReqT,gender:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Categoría sexo</FL><Seg options={[{v:"M",l:"Masc"},{v:"F",l:"Fem"},{v:"Mixed",l:"Mix"}]} value={newReqT.gender} onChange={v=>setNewReqT({...newReqT,gender:v})}/></div>
           <BtnP onClick={submitTournamentRequest}>ENVIAR SOLICITUD</BtnP>
           <BtnX onClick={()=>setReqTourModal(false)}>CANCELAR</BtnX>
         </Modal>}
@@ -2662,7 +2666,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <T size={24} style={{textAlign:"center",marginBottom:8}}>SUBIR MEDIA</T>
           <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Imagen o video. Visible para todos.</Sub>
           <label htmlFor="mediaFileHome" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:36,background:C.iosField,textAlign:"center",display:"block"}}>
-            <div style={{fontSize:42,marginBottom:10}}>📤</div>
+            <div style={{fontSize:42,marginBottom:10}}><Ico n="upload" s={40} c={C.cyan}/></div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600}}>Selecciona archivo</div>
             <Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub>
           </label>
@@ -2688,8 +2692,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {areg.length===0?<Sub style={{padding:"14px 0"}}>Sin pendientes.</Sub>:areg.map(({tid,tName,player},i)=><div key={`${tid}-${player.id}`} style={{display:"flex",alignItems:"center",gap:12,padding:12,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,marginBottom:8,animation:`slideLeft 0.35s ${i*0.05}s backwards`}}>
             <PA photo={player.photo} avatar={player.avatar} size={42}/>
             <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{player.name}</div><Sub style={{fontSize:12,marginTop:2}}>quiere inscribirse a <span style={{color:C.cyan}}>{tName}</span></Sub></div>
-            <button onClick={()=>adminApprove(tid,player.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"8px 14px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓</button>
-            <button onClick={()=>adminReject(tid,player.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"7px 11px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕</button>
+            <button onClick={()=>adminApprove(tid,player.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"8px 14px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+            <button onClick={()=>adminReject(tid,player.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"7px 11px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
           </div>)}
           <div style={{height:24}}/>
           <SL>Resultados pendientes ({apr.length})</SL>
@@ -2698,13 +2702,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{display:"flex",gap:8,marginBottom:8}}>
               {[match.p1,match.p2].map((p,pi)=>{const w=match.pendingResult.winner.id===p.id;return <div key={pi} style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:8,background:w?"rgba(52,199,89,0.1)":C.surface2,borderRadius:8,border:`1px solid ${w?"rgba(52,199,89,0.3)":C.borderS}`}}>
                 <PA photo={p.photo} avatar={p.avatar} size={28}/>
-                <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:w?C.green:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</div><Sub style={{fontSize:11}}>{w?"🏆 Ganador":""}</Sub></div>
+                <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:w?C.green:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</div><Sub style={{fontSize:11}}>{w?"Ganador":""}</Sub></div>
                 <div style={{fontFamily:F.bn,fontSize:18,color:w?C.cyan:C.muted}}>{match.pendingResult.score.split("-")[pi]}</div>
               </div>;})}
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>adminApproveResult(tid,kind,gi,ri,match.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR</button>
-              <button onClick={()=>adminApproveResult(tid,kind,gi,ri,match.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>adminApproveResult(tid,kind,gi,ri,match.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR</button>
+              <button onClick={()=>adminApproveResult(tid,kind,gi,ri,match.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>)}
           <div style={{height:24}}/>
@@ -2715,8 +2719,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.playerName}</div>
               <Sub style={{fontSize:12,marginTop:2}}>solicita cambio de categoría: <span style={{color:CAT_C[r.from]}}>{r.from}</span> → <span style={{color:CAT_C[r.to],fontWeight:700}}>{r.to}</span></Sub>
             </div>
-            <button onClick={()=>approveCategoryReq(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"8px 14px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓</button>
-            <button onClick={()=>approveCategoryReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"7px 11px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕</button>
+            <button onClick={()=>approveCategoryReq(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"8px 14px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+            <button onClick={()=>approveCategoryReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"7px 11px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
           </div>;})}
           <div style={{height:24}}/>
           <SL color={C.cyan}>Solicitudes de torneo ({tournamentRequests.filter(r=>r.status==="pending").length})</SL>
@@ -2728,11 +2732,11 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{background:C.surface2,padding:12,borderRadius:8,marginBottom:10}}>
               <div style={{fontFamily:F.bn,fontSize:18,color:C.cyan,marginBottom:6}}>{r.name}</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:4}}><Chip>{r.date||"sin fecha"}</Chip><Chip type="cyan">{r.surface}</Chip><Chip>CAT {r.category}</Chip><Chip type="gold">{r.prize||"TBD"}</Chip></div>
-              <Sub style={{fontSize:11,marginTop:4}}>{r.location||"—"} · {r.modality} · {r.gender==="F"?"♀":r.gender==="Mixed"?"⚥":"♂"}</Sub>
+              <Sub style={{fontSize:11,marginTop:4}}>{r.location||"—"} · {r.modality} · {r.gender==="F"?<Ico n="female" s={12}/>:r.gender==="Mixed"?<Ico n="mixed" s={12}/>:<Ico n="male" s={12}/>}</Sub>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{const n=parseInt(prompt(`¿Cuántos torneos puede crear ${r.playerName} en total?`,"1"));if(n&&n>0)approveTournamentReq(r.id,n);}} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR</button>
-              <button onClick={()=>rejectTournamentReq(r.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>{const n=parseInt(prompt(`¿Cuántos torneos puede crear ${r.playerName} en total?`,"1"));if(n&&n>0)approveTournamentReq(r.id,n);}} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR</button>
+              <button onClick={()=>rejectTournamentReq(r.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>;})}
           <div style={{height:24}}/>
@@ -2760,8 +2764,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>;})}
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveStatReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR</button>
-              <button onClick={()=>approveStatReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>approveStatReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR</button>
+              <button onClick={()=>approveStatReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>;})}
           <div style={{height:24}}/>
@@ -2785,8 +2789,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveSvReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR</button>
-              <button onClick={()=>approveSvReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>approveSvReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR</button>
+              <button onClick={()=>approveSvReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>;})}
           <div style={{height:24}}/>
@@ -2799,12 +2803,12 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             <div onClick={()=>setPreviewMediaReq(r)} style={{cursor:"pointer",borderRadius:10,overflow:"hidden",border:`1px solid ${C.cyanBdr}`,marginBottom:r.caption?10:12,background:"#000",aspectRatio:"16/10"}}>
               {r.type==="image"?<img src={r.url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<video src={r.url} style={{width:"100%",height:"100%",objectFit:"cover"}}/>}
-              <div style={{position:"relative",marginTop:-30,padding:"6px 10px",background:"linear-gradient(transparent,rgba(0,0,0,0.8))",fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:C.cyan,fontWeight:600,zIndex:2}}>{r.type==="video"?"🎥":"📷"} TOCA PARA REVISAR EN GRANDE</div>
+              <div style={{position:"relative",marginTop:-30,padding:"6px 10px",background:"linear-gradient(transparent,rgba(0,0,0,0.8))",fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:C.cyan,fontWeight:600,zIndex:2}}>{r.type==="video"?<Ico n="video" s={13}/>:<Ico n="camera" s={13}/>} TOCA PARA REVISAR EN GRANDE</div>
             </div>
             {r.caption&&<div style={{padding:"10px 12px",background:C.surface2,borderRadius:8,marginBottom:12,fontFamily:F.ios,fontSize:13,color:C.text,fontStyle:"italic"}}>"{r.caption}"</div>}
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveMediaReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR</button>
-              <button onClick={()=>approveMediaReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>approveMediaReq(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR</button>
+              <button onClick={()=>approveMediaReq(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>)}
           <div style={{height:24}}/>
@@ -2817,7 +2821,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
               <div style={{padding:"8px 10px",background:C.surface2,borderRadius:8}}><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.2em",color:C.muted,fontWeight:600}}>EXPERIENCIA</div><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600,marginTop:2}}>{r.experience}</div></div>
-              <div style={{padding:"8px 10px",background:C.surface2,borderRadius:8}}><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.2em",color:C.muted,fontWeight:600}}>CATEGORÍA</div><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600,marginTop:2}}>{r.playerCategory||"—"} · {r.playerSex==="F"?"♀":"♂"}</div></div>
+              <div style={{padding:"8px 10px",background:C.surface2,borderRadius:8}}><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.2em",color:C.muted,fontWeight:600}}>CATEGORÍA</div><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600,marginTop:2}}>{r.playerCategory||"—"} · {r.playerSex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</div></div>
             </div>
             <div style={{padding:"10px 12px",background:C.surface2,borderRadius:8,marginBottom:10}}>
               <div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.2em",color:C.muted,fontWeight:600,marginBottom:6}}>ESPECIALIDADES</div>
@@ -2825,8 +2829,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
             <div style={{padding:"10px 12px",background:C.surface2,borderRadius:8,marginBottom:12,fontFamily:F.ios,fontSize:13,color:C.text,fontStyle:"italic",lineHeight:1.5}}>"{r.bio}"</div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveCoachApp(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR {r.kind==="fisio"?"FÍSIO":"COACH"}</button>
-              <button onClick={()=>approveCoachApp(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>approveCoachApp(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR {r.kind==="fisio"?"FÍSIO":"COACH"}</button>
+              <button onClick={()=>approveCoachApp(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>)}
           <div style={{height:24}}/>
@@ -2845,8 +2849,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <Sub style={{fontSize:11,lineHeight:1.5}}>Al aprobar, la app genera una contraseña temporal segura, la asigna al jugador y se la mostrará en pantalla para que tú la envíes por correo o WhatsApp. El jugador deberá cambiarla al iniciar sesión.</Sub>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>approveResetRequest(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ APROBAR Y GENERAR</button>
-              <button onClick={()=>approveResetRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+              <button onClick={()=>approveResetRequest(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>APROBAR Y GENERAR</button>
+              <button onClick={()=>approveResetRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
             </div>
           </div>)}
           <div style={{height:32}}/>
@@ -2854,7 +2858,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         {viewSvImg&&<div onClick={()=>setViewSvImg(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",padding:20}}><img src={viewSvImg} style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}} alt=""/></div>}
         {tempPassDisplay&&<Modal onClose={()=>setTempPassDisplay(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:48,marginBottom:10}}>🔑</div>
+            <div style={{fontSize:48,marginBottom:10}}><Ico n="key" s={46} c={C.cyan}/></div>
             <T size={22}>CONTRASEÑA TEMPORAL GENERADA</T>
             <Sub style={{marginTop:8,fontSize:13,lineHeight:1.5}}>Envía esta contraseña a <b style={{color:C.cyan}}>{tempPassDisplay.playerName}</b> por correo o WhatsApp. Tendrá que cambiarla al iniciar sesión.</Sub>
           </div>
@@ -2868,7 +2872,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           <button onClick={()=>{
             const txt=`Hola ${tempPassDisplay.playerName.split(" ")[0]},\n\nTu contraseña temporal para Sociedad Mexicana de Tenis es:\n\n${tempPassDisplay.tempPass}\n\nÚsala para iniciar sesión y cámbiala desde tu perfil.\n\nSMT — smt.tennismx@gmail.com`;
-            if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert("✓ Mensaje copiado. Ahora pégalo en correo o WhatsApp del jugador."));}else{alert(txt);}
+            if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert("Mensaje copiado. Ahora pégalo en correo o WhatsApp del jugador."));}else{alert(txt);}
           }} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:14,fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14,marginBottom:8}}><Ico n="clip"/>COPIAR MENSAJE COMPLETO</button>
           <button onClick={()=>setTempPassDisplay(null)} className="btn-press" style={{width:"100%",background:"rgba(118,118,128,0.16)",border:"none",color:C.text,padding:14,fontFamily:F.ios,fontSize:14,fontWeight:500,cursor:"pointer",borderRadius:14}}>CERRAR</button>
         </Modal>}
@@ -2889,7 +2893,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0"}}><Sub style={{fontSize:14,color:C.text,fontWeight:500}}>Contraseña</Sub><BtnG onClick={()=>setShowChangePass(true)}>CAMBIAR</BtnG></div>
           </div>
           <div style={{background:C.surface,padding:18,borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
-            <SL>Sesión</SL><BtnG onClick={doLogout} style={{width:"100%",padding:13}}>↩ CERRAR SESIÓN</BtnG>
+            <SL>Sesión</SL><BtnG onClick={doLogout} style={{width:"100%",padding:13}}><Ico n="back" s={15}/> CERRAR SESIÓN</BtnG>
           </div>
         </div>
         {showChangePass&&<Modal onClose={()=>setShowChangePass(false)}>
@@ -2918,7 +2922,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       {champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}
       {shareTourney&&(()=>{const url=buildJoinTourneyUrl(shareTourney);return <div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShareTourney(null)}>
         <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:390,background:C.surface,borderRadius:22,border:`1px solid ${C.cyanBdr}`,padding:24,textAlign:"center",animation:"scaleIn 0.3s",maxHeight:"90vh",overflowY:"auto"}}>
-          <div style={{fontSize:30,marginBottom:6}}>🔗</div>
+          <div style={{fontSize:30,marginBottom:6}}><Ico n="link" s={30} c={C.cyan}/></div>
           <T size={22} style={{marginBottom:4}}>INSCRIPCIÓN DIRECTA</T>
           <Sub style={{marginBottom:16,lineHeight:1.5,fontSize:13}}>Comparte este QR o link con los jugadores de <b style={{color:C.cyan}}>{shareTourney.name}</b>. Al abrirlo entran <b>directo al torneo, sin que tú apruebes</b>. Si su nombre coincide con un jugador ya cargado, hereda sus partidos y resultados.</Sub>
           <div style={{background:"#fff",borderRadius:16,padding:12,display:"inline-block",marginBottom:16}}>
@@ -2926,21 +2930,21 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8,background:C.bg,border:`1px solid ${C.borderS}`,borderRadius:11,padding:"11px 13px",marginBottom:12}}>
             <span style={{flex:1,textAlign:"left",fontSize:12,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{url}</span>
-            <button onClick={()=>{try{navigator.clipboard.writeText(url);}catch(e){}setShareTCopied(true);setTimeout(()=>setShareTCopied(false),2000);}} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:shareTCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{shareTCopied?"✓ Copiado":"Copiar"}</button>
+            <button onClick={()=>{try{navigator.clipboard.writeText(url);}catch(e){}setShareTCopied(true);setTimeout(()=>setShareTCopied(false),2000);}} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:shareTCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{shareTCopied?"Copiado":"Copiar"}</button>
           </div>
-          <button onClick={()=>{const msg=`🎾 Inscríbete al torneo "${shareTourney.name}" de la Sociedad Mexicana de Tenis. Abre este link en tu celular:\n${url}\n\n(Primero descarga la app SMT del App Store)`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");}} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
+          <button onClick={()=>{const msg=`Inscríbete al torneo "${shareTourney.name}" de la Sociedad Mexicana de Tenis. Abre este link en tu celular:\n${url}\n\n(Primero descarga la app SMT del App Store)`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");}} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
           <button onClick={()=>setShareTourney(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"6px",cursor:"pointer"}}>Cerrar</button>
         </div>
       </div>;})()}
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
-        <button onClick={()=>{setScreen("home");setSelT(null);setShowIntro(false);}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← Torneos</button>
+        <button onClick={()=>{setScreen("home");setSelT(null);setShowIntro(false);}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}><Ico n="arrowLeft" s={15}/> Torneos</button>
         <div style={{padding:"14px 18px 18px",borderBottom:`0.5px solid ${C.borderS}`,animation:"slideUp 0.4s",display:"flex",gap:14,alignItems:"flex-start"}}>
           <div style={{width:96,height:128,flexShrink:0,borderRadius:12,overflow:"hidden",border:`1px solid ${C.cyanBdr}`,background:t.image?"transparent":`linear-gradient(135deg,${C.surface2},${C.surface3})`}}>
             {t.image?<img src={t.image} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathing 6s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}><Logo size={56}/></div>}
           </div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:F.bc,color:sc,textTransform:"uppercase",letterSpacing:"0.24em",marginBottom:4,fontSize:11,fontWeight:600}}>{t.surface} · {t.modality==="doubles"?"DOBLES":"SINGLES"} {t.gender==="F"?"♀":t.gender==="Mixed"?"⚥":"♂"}</div>
+            <div style={{fontFamily:F.bc,color:sc,textTransform:"uppercase",letterSpacing:"0.24em",marginBottom:4,fontSize:11,fontWeight:600}}>{t.surface} · {t.modality==="doubles"?"DOBLES":"SINGLES"} {t.gender==="F"?<Ico n="female" s={12}/>:t.gender==="Mixed"?<Ico n="mixed" s={12}/>:<Ico n="male" s={12}/>}</div>
             <T size={30}>{t.name}</T>
             <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}><Chip>{t.date}</Chip><Chip type="gold">{t.prize}</Chip></div>
             <Sub style={{marginTop:6,fontSize:12}}>{t.location}</Sub>
@@ -2949,10 +2953,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <div style={{padding:"14px 18px",display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
           {!isAdmin&&!isReg&&!isPending&&t.status==="open"&&!isFull&&<BtnG onClick={()=>reqReg(t.id)} style={{flex:1,padding:12}}>SOLICITAR INSCRIPCIÓN</BtnG>}
           {!isAdmin&&isPending&&<Chip type="amber"><Ico n="clock"/>ESPERANDO APROBACIÓN</Chip>}
-          {!isAdmin&&isReg&&<span style={{fontFamily:F.ios,fontSize:13,color:C.green,fontWeight:600}}>✓ Inscrito</span>}
+          {!isAdmin&&isReg&&<span style={{fontFamily:F.ios,fontSize:13,color:C.green,fontWeight:600}}><Ico n="check" s={14}/>Inscrito</span>}
           {isAdmin&&<BtnG onClick={()=>{setShareTourney(t);setShareTCopied(false);}} style={{flex:1,padding:12,background:C.cyanDim}}><Ico n="link"/>LINK / QR INSCRIPCIÓN</BtnG>}
           {isAdmin&&t.status==="open"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
-          {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"⚡ INICIAR GRUPOS":"⚡ GENERAR DRAW"}</BtnG>}
+          {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"INICIAR GRUPOS":"GENERAR DRAW"}</BtnG>}
           {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}><Ico n="bolt"/>GENERAR ELIMINATORIA</BtnG>}
           {isFull&&!isReg&&!isPending&&!isAdmin&&<Chip type="red">TORNEO LLENO</Chip>}
         </div>
@@ -2999,7 +3003,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           })}
         </div>}
 
-        {tab==="draw"&&(t.rounds.length===0?<div style={{padding:"48px 0",textAlign:"center"}}><div style={{fontSize:42,marginBottom:14}}>🎾</div><Sub style={{lineHeight:1.7,fontSize:14}}>{t.format==="groups+ko"&&t.status==="groups"?"Completa la fase de grupos primero.":t.players.length<2?`Mínimo 2 jugadores. (${t.players.length} inscrito${t.players.length!==1?"s":""})`:isAdmin?"Presiona GENERAR DRAW.":"Esperando que el admin genere el draw."}</Sub></div>:<Bracket rounds={t.rounds} canEdit={canEdit} onMatchClick={(match,ri)=>{setSubData({tid:t.id,kind:"ko",ri,match});setSubStep("pick");setPicked(null);}}/>)}
+        {tab==="draw"&&(t.rounds.length===0?<div style={{padding:"48px 0",textAlign:"center"}}><div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={42} c={C.cyan}/></div><Sub style={{lineHeight:1.7,fontSize:14}}>{t.format==="groups+ko"&&t.status==="groups"?"Completa la fase de grupos primero.":t.players.length<2?`Mínimo 2 jugadores. (${t.players.length} inscrito${t.players.length!==1?"s":""})`:isAdmin?"Presiona GENERAR DRAW.":"Esperando que el admin genere el draw."}</Sub></div>:<Bracket rounds={t.rounds} canEdit={canEdit} onMatchClick={(match,ri)=>{setSubData({tid:t.id,kind:"ko",ri,match});setSubStep("pick");setPicked(null);}}/>)}
 
         {tab==="players"&&<div style={{padding:"14px 18px"}}>
           {t.players.length===0&&t.pendingPlayers.length===0?<div style={{padding:"40px 0",textAlign:"center"}}><Sub>Sin jugadores inscritos.</Sub></div>:<>
@@ -3008,17 +3012,17 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               {t.pendingPlayers.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:12,background:C.surface,border:`1px solid rgba(255,159,10,0.2)`,borderRadius:10,marginBottom:8}}>
                 <PA photo={p.photo} avatar={p.avatar} size={36}/>
                 <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.text}}>{p.name}</div><Sub style={{fontSize:11}}>{p.email}</Sub></div>
-                <button onClick={()=>adminApprove(t.id,p.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✓</button>
-                <button onClick={()=>adminReject(t.id,p.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✕</button>
+                <button onClick={()=>adminApprove(t.id,p.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+                <button onClick={()=>adminReject(t.id,p.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
               </div>)}
               <div style={{height:14}}/>
             </>}
             <SL>Inscritos ({t.players.length})</SL>
             {t.players.map((p,i)=><div key={p.id} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:`0.5px solid ${C.borderS}`,animation:`slideLeft 0.35s ${i*0.04}s backwards`,cursor:"pointer"}} onClick={()=>{setViewP(p);setScreen("player-card");}}>
               <PA photo={p.photo} avatar={p.avatar} size={42} animated/>
-              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:600,color:C.text}}>{p.name}</div><Sub style={{marginTop:2,fontSize:12}}>{p.points} pts · {p.wins}W-{p.losses}L · {p.sex==="F"?"♀":"♂"}</Sub></div>
+              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:600,color:C.text}}>{p.name}</div><Sub style={{marginTop:2,fontSize:12}}>{p.points} pts · {p.wins}W-{p.losses}L · {p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</Sub></div>
               <div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:C.cyan}}>#{i+1}</div><div style={{fontFamily:F.bc,textTransform:"uppercase",letterSpacing:"0.14em",fontSize:10,color:C.muted,fontWeight:600}}>seed</div></div>
-              {isAdmin&&<button onClick={(e)=>{e.stopPropagation();adminRemove(t.id,p.id);}} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid rgba(255,59,48,0.4)`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:11,cursor:"pointer",fontWeight:600}}>✕</button>}
+              {isAdmin&&<button onClick={(e)=>{e.stopPropagation();adminRemove(t.id,p.id);}} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid rgba(255,59,48,0.4)`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:11,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>}
             </div>)}
           </>}
         </div>}
@@ -3026,7 +3030,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         {tab==="info"&&<div style={{padding:"14px 18px"}}>
           <Row label="Torneo" val={t.name}/><Row label="Fecha" val={t.date}/><Row label="Superficie" val={t.surface}/>
           <Row label="Modalidad" val={t.modality==="doubles"?"Dobles":"Singles"}/>
-          <Row label="Categoría" val={t.gender==="F"?"♀ Femenino":t.gender==="Mixed"?"⚥ Mixto":"♂ Masculino"}/>
+          <Row label="Categoría" val={t.gender==="F"?"Femenino":t.gender==="Mixed"?"Mixto":"Masculino"}/>
           <Row label="Sede" val={t.location}/><Row label="Premio" val={t.prize}/>
           <Row label="Formato" val={t.format==="groups+ko"?"Round Robin + Eliminatoria":"Eliminatoria directa"}/>
           <Row label="Jugadores" val={`${t.players.length}/${t.maxPlayers}`}/>
@@ -3035,13 +3039,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
 
         {addPlayerModal&&<Modal onClose={()=>setAddPlayerModal(null)}>
           <T size={24} style={{textAlign:"center",marginBottom:8}}>AGREGAR JUGADOR</T>
-          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Sin inscripción previa requerida{t.gender!=="Mixed"&&` (solo ${t.gender==="F"?"♀ femenino":"♂ masculino"})`}</Sub>
+          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Sin inscripción previa requerida{t.gender!=="Mixed"&&` (solo ${t.gender==="F"?"femenino":"masculino"})`}</Sub>
           <FL>Buscar jugador</FL>
           <TI value={addSearch} onChange={e=>setAddSearch(e.target.value)} placeholder="Nombre del jugador..." autoFocus/>
           <div style={{maxHeight:340,overflowY:"auto",marginTop:14,marginBottom:8}}>
             {avAccts.length===0?<Sub style={{textAlign:"center",padding:"24px 0"}}>{addSearch?"Sin resultados":"Sin jugadores disponibles"}</Sub>:avAccts.map(a=><div key={a.id} onClick={()=>{adminAdd(addPlayerModal.tid,a.id);setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:10,background:C.surface2,border:`0.5px solid ${C.borderS}`,borderRadius:10,marginBottom:6,cursor:"pointer"}}>
               <PA photo={a.photo} avatar={a.avatar} size={36}/>
-              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{a.name}</div><Sub style={{fontSize:11,marginTop:2}}>#{a.ranking} · {a.points} pts · {a.sex==="F"?"♀":"♂"}</Sub></div>
+              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{a.name}</div><Sub style={{fontSize:11,marginTop:2}}>#{a.ranking} · {a.points} pts · {a.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</Sub></div>
               <span style={{color:C.cyan,fontSize:18}}>+</span>
             </div>)}
           </div>
@@ -3076,13 +3080,13 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <input type="number" min="0" max="99" placeholder="—" value={s.a} onChange={e=>{const ns=[...setScores];ns[idx]={...ns[idx],a:e.target.value};setSetScores(ns);}} style={{flex:1,background:C.iosField,border:"none",borderRadius:10,padding:"10px 8px",color:C.text,fontFamily:F.bn,fontSize:28,textAlign:"center",outline:"none"}}/>
                 <div style={{fontFamily:F.bn,fontSize:22,color:C.muted}}>–</div>
                 <input type="number" min="0" max="99" placeholder="—" value={s.b} onChange={e=>{const ns=[...setScores];ns[idx]={...ns[idx],b:e.target.value};setSetScores(ns);}} style={{flex:1,background:C.iosField,border:"none",borderRadius:10,padding:"10px 8px",color:C.text,fontFamily:F.bn,fontSize:28,textAlign:"center",outline:"none"}}/>
-                {idx>=2&&idx===setScores.length-1&&<button onClick={()=>setSetScores(setScores.slice(0,-1))} className="btn-press" style={{background:"transparent",color:C.red,border:"none",fontSize:16,cursor:"pointer",padding:4}}>✕</button>}
+                {idx>=2&&idx===setScores.length-1&&<button onClick={()=>setSetScores(setScores.slice(0,-1))} className="btn-press" style={{background:"transparent",color:C.red,border:"none",fontSize:16,cursor:"pointer",padding:4}}><Ico n="x" s={16}/></button>}
               </div>)}
               {setScores.length<5&&<button onClick={()=>setSetScores([...setScores,{a:"",b:""}])} className="btn-press" style={{width:"100%",background:"transparent",border:`1px dashed ${C.cyanBdr}`,color:C.cyan,padding:"9px",fontFamily:F.ios,fontSize:13,cursor:"pointer",borderRadius:10,fontWeight:600,marginBottom:6}}>+ AGREGAR SET</button>}
               <Sub style={{textAlign:"center",fontSize:11,marginTop:8,marginBottom:6}}>Set típico: 6 juegos. Tie-break: 7. Deja sets vacíos si no se jugaron.</Sub>
             </>;})()}
-            <BtnP onClick={submitResult}>{isAdmin?"VER MATCH INSIGHTS 📊":"ENVIAR RESULTADO"}</BtnP>
-            <BtnX onClick={()=>setSubStep("pick")}>← VOLVER</BtnX>
+            <BtnP onClick={submitResult}>{isAdmin?"VER MATCH INSIGHTS":"ENVIAR RESULTADO"}</BtnP>
+            <BtnX onClick={()=>setSubStep("pick")}><Ico n="arrowLeft" s={15}/> VOLVER</BtnX>
           </>}
         </Modal>}
       </div>
@@ -3101,10 +3105,24 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <Nav/><Back to="home" label="Home"/>
         <div style={{padding:"14px 18px"}}>
           <T size={32}>RANKINGS</T><Sub style={{marginTop:4,marginBottom:14}}>Top 100 por categoría y género</Sub>
-          <Seg options={[{v:"M",l:"♂ Varonil"},{v:"F",l:"♀ Femenil"},{v:"All",l:"Todos"}]} value={rankingGender} onChange={setRankingGender} style={{marginBottom:14}}/>
+          <Seg options={[{v:"M",l:"Varonil"},{v:"F",l:"Femenil"},{v:"All",l:"Todos"}]} value={rankingGender} onChange={setRankingGender} style={{marginBottom:14}}/>
           <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:6}}>
             {CATS.map(cat=><button key={cat} onClick={()=>setRankingTab(cat)} className="btn-press" style={{padding:"9px 16px",borderRadius:10,border:rankingTab===cat?`2px solid ${CAT_C[cat]}`:`1px solid ${C.borderS}`,background:rankingTab===cat?`${CAT_C[cat]}25`:"transparent",color:rankingTab===cat?CAT_C[cat]:C.muted,fontFamily:F.bn,fontSize:16,letterSpacing:"0.1em",cursor:"pointer",whiteSpace:"nowrap",fontWeight:700}}>{cat}</button>)}
           </div>
+          {(()=>{const eoy=new Date(new Date().getFullYear(),11,31,23,59,59);const daysLeft=Math.max(0,Math.ceil((eoy-new Date())/86400000));const leader=inCat.filter(a=>a.premium)[0];const top=inCat[0];return <div style={{position:"relative",overflow:"hidden",borderRadius:18,padding:"16px",marginBottom:16,background:"linear-gradient(135deg,rgba(201,168,76,0.18),rgba(255,209,92,0.05))",border:"1px solid rgba(201,168,76,0.5)",boxShadow:"0 0 24px rgba(201,168,76,0.14)"}}>
+            <div style={{position:"absolute",top:-24,right:-24,opacity:0.16,animation:"breathing 5s infinite"}}><Ico n="trophy" s={120} c={C.gold}/></div>
+            <div style={{position:"relative",zIndex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><Ico n="trophy" s={18} c={C.gold}/><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:C.gold,fontWeight:700}}>PREMIO ANUAL {new Date().getFullYear()}</div></div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:3}}><div style={{fontFamily:F.bn,fontSize:30,color:C.gold,textShadow:"0 0 16px rgba(201,168,76,0.5)"}}>$2,000</div><div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.16em",color:C.muted,fontWeight:600}}>MXN · CAT {rankingTab}</div></div>
+              <Sub style={{fontSize:12,marginBottom:12}}>Al #1 Premium al cerrar el año · faltan {daysLeft} días</Sub>
+              {leader?<div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(0,0,0,0.20)",borderRadius:12,padding:"9px 11px"}}>
+                <PA photo={leader.photo} avatar={leader.avatar} size={40} border={`2px solid ${C.gold}`}/>
+                <div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{leader.name}</div><span style={{display:"inline-flex",flexShrink:0}}><Ico n="star" s={12} c={C.gold}/></span></div><Sub style={{fontSize:11,marginTop:1}}>Va ganando · {leader.points||0} pts</Sub></div>
+                <div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:C.gold,fontWeight:700,background:"rgba(201,168,76,0.18)",border:"1px solid rgba(201,168,76,0.4)",padding:"3px 8px",borderRadius:6,flexShrink:0}}>PREMIUM</div>
+              </div>:<div onClick={()=>setShowPremium(true)} className="btn-press" style={{cursor:"pointer",background:"rgba(0,0,0,0.20)",borderRadius:12,padding:"11px 12px",textAlign:"center"}}><Sub style={{fontSize:12.5,color:C.text}}>Aún no hay jugadores Premium en esta categoría.</Sub><div style={{fontFamily:F.ios,fontSize:12.5,color:C.gold,fontWeight:700,marginTop:4}}>Hazte Premium y compite por el premio</div></div>}
+              {leader&&top&&!top.premium&&<Sub style={{fontSize:10.5,marginTop:8,color:C.muted,fontStyle:"italic"}}>{top.name} va #1 general pero no es Premium — no califica.</Sub>}
+            </div>
+          </div>;})()}
           <div style={{background:C.surface,borderRadius:14,padding:"4px 0",border:`0.5px solid ${C.borderS}`,overflow:"hidden"}}>
             <div style={{padding:"12px 16px",borderBottom:`0.5px solid ${C.borderS}`,background:`${CAT_C[rankingTab]}15`}}>
               <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.22em",color:CAT_C[rankingTab],fontWeight:700,textTransform:"uppercase"}}>CAT {rankingTab} · {rankingGender==="M"?"VARONIL":rankingGender==="F"?"FEMENIL":"TODOS"}</div>
@@ -3115,7 +3133,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <PA photo={p.photo} avatar={p.avatar} size={42}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontFamily:F.ios,fontSize:15,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</div>
-                <Sub style={{fontSize:12,marginTop:2}}>{p.wins||0}W · {p.losses||0}L · {p.titles||0}🏆 · {p.sex==="F"?"♀":"♂"}</Sub>
+                <Sub style={{fontSize:12,marginTop:2}}>{p.wins||0}W · {p.losses||0}L · {p.titles||0}· {p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</Sub>
               </div>
               <div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:22,color:CAT_C[rankingTab]}}>{p.points||0}</div><div style={{fontFamily:F.bc,fontSize:9,color:C.muted,letterSpacing:"0.16em",fontWeight:600}}>PTS</div></div>
             </div>)}
@@ -3137,7 +3155,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <span style={{fontWeight:700,fontSize:15.5,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</span>
-            <span style={{flexShrink:0,fontSize:10,padding:"2px 7px",borderRadius:6,background:g.is_public?"rgba(79,195,247,0.14)":"rgba(124,58,237,0.18)",color:g.is_public?C.cyan:"#a78bfa"}}>{g.is_public?"Público":"🔒 Privado"}</span>
+            <span style={{flexShrink:0,fontSize:10,padding:"2px 7px",borderRadius:6,background:g.is_public?"rgba(79,195,247,0.14)":"rgba(124,58,237,0.18)",color:g.is_public?C.cyan:"#a78bfa"}}>{g.is_public?"Público":"Privado"}</span>
           </div>
           <div style={{fontSize:12.5,color:C.muted,marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.description||(joined?"Toca para abrir el chat":"Toca para unirte")}</div>
         </div>
@@ -3155,7 +3173,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {socialLoading?<div style={{textAlign:"center",color:C.muted,padding:"40px 0",fontSize:14}}>Cargando grupos…</div>:
             list.length===0?
               <div style={{textAlign:"center",padding:"36px 16px",background:C.surface2,borderRadius:16,border:`1px solid ${C.borderS}`}}>
-                <div style={{fontSize:38,marginBottom:8}}>{socialTab==="mine"?"🎾":"🔍"}</div>
+                <div style={{fontSize:38,marginBottom:8}}>{socialTab==="mine"?<Ico n="ball" s={38} c={C.cyan}/>:<Ico n="search" s={38} c={C.cyan}/>}</div>
                 <div style={{fontWeight:700,fontSize:16,marginBottom:5}}>{socialTab==="mine"?"Aún no estás en ningún grupo":"No hay grupos públicos todavía"}</div>
                 <div style={{fontSize:13.5,color:C.muted,lineHeight:1.5}}>{socialTab==="mine"?"Crea tu primer grupo o explora la pestaña Descubrir para unirte a la comunidad.":"¡Sé el primero! Crea un grupo público y empieza a invitar gente."}</div>
               </div>
@@ -3174,12 +3192,12 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <Sub style={{marginBottom:6}}>Descripción (opcional)</Sub>
           <input value={newGroup.description} onChange={e=>setNewGroup({...newGroup,description:e.target.value})} placeholder="¿De qué trata el grupo?" maxLength={80} style={{...fld,marginBottom:14}}/>
           <div style={{display:"flex",gap:8,marginBottom:18}}>
-            {[[true,"🌐 Público","Cualquiera puede encontrarlo y unirse"],[false,"🔒 Privado","Solo entran con el link de invitación"]].map(([v,l,d])=><button key={String(v)} onClick={()=>setNewGroup({...newGroup,isPublic:v})} className="btn-press" style={{flex:1,textAlign:"left",background:newGroup.isPublic===v?C.cyanDim:C.surface2,border:`1.5px solid ${newGroup.isPublic===v?C.cyanBdr:C.borderS}`,borderRadius:13,padding:"11px 12px",cursor:"pointer",fontFamily:F.ios}}>
+            {[[true,"Público","Cualquiera puede encontrarlo y unirse"],[false,"Privado","Solo entran con el link de invitación"]].map(([v,l,d])=><button key={String(v)} onClick={()=>setNewGroup({...newGroup,isPublic:v})} className="btn-press" style={{flex:1,textAlign:"left",background:newGroup.isPublic===v?C.cyanDim:C.surface2,border:`1.5px solid ${newGroup.isPublic===v?C.cyanBdr:C.borderS}`,borderRadius:13,padding:"11px 12px",cursor:"pointer",fontFamily:F.ios}}>
               <div style={{fontWeight:700,fontSize:14,color:newGroup.isPublic===v?C.cyan:C.text}}>{l}</div>
               <div style={{fontSize:11,color:C.muted,marginTop:3,lineHeight:1.35}}>{d}</div>
             </button>)}
           </div>
-          <BtnP onClick={createGroupFn} style={{marginTop:0,opacity:creatingGroup?0.6:1}}>{creatingGroup?"Creando…":"Crear grupo 🎾"}</BtnP>
+          <BtnP onClick={createGroupFn} style={{marginTop:0,opacity:creatingGroup?0.6:1}}>{creatingGroup?"Creando…":"Crear grupo"}</BtnP>
           <button onClick={()=>setShowCreateGroup(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cancelar</button>
         </div>
       </div>}
@@ -3205,7 +3223,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
 
       <div style={{flex:1,overflowY:"auto",padding:"14px 14px 6px",display:"flex",flexDirection:"column",gap:9}}>
-        {groupMsgs.length===0&&<div style={{textAlign:"center",color:C.muted,marginTop:30,fontSize:14}}>Sé el primero en escribir 🎾</div>}
+        {groupMsgs.length===0&&<div style={{textAlign:"center",color:C.muted,marginTop:30,fontSize:14}}>Sé el primero en escribir</div>}
         {groupMsgs.map(m=>{const mine=m.user_id===user?.id;const nm=m.sender_name||memName(m.user_id);const REMO=["👍","❤️","🔥","🎾","😂","👏"];const rx=Object.entries(m.reactions||{}).filter(([e,a])=>a&&a.length);return <div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:mine?"flex-end":"flex-start"}}>
           {!mine&&<div style={{fontSize:11,color:C.cyan,fontWeight:600,margin:"0 0 2px 4px"}}>{nm}</div>}
           <div style={{display:"flex",alignItems:"center",gap:6,flexDirection:mine?"row-reverse":"row",maxWidth:"90%"}}>
@@ -3219,8 +3237,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               {m.text&&<div style={{fontSize:15,lineHeight:1.35,padding:m.media_url?"6px 8px 2px":0,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{m.text}</div>}
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
-              <button onClick={()=>setReplyingTo(m)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Responder">↩</button>
-              <button onClick={()=>setReactPickerFor(reactPickerFor===m.id?null:m.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Reaccionar">😀</button>
+              <button onClick={()=>setReplyingTo(m)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Responder"><Ico n="reply" s={16}/></button>
+              <button onClick={()=>setReactPickerFor(reactPickerFor===m.id?null:m.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,padding:2,lineHeight:1}} title="Reaccionar"><Ico n="like" s={16}/></button>
             </div>
           </div>
           {reactPickerFor===m.id&&<div style={{display:"flex",gap:4,marginTop:4,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"5px 8px"}}>
@@ -3237,25 +3255,25 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <div style={{width:3,alignSelf:"stretch",background:C.cyan,borderRadius:2}}/>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:11.5,fontWeight:700,color:C.cyan}}>Respondiendo a {replyingTo.sender_name||"Miembro"}</div>
-          <div style={{fontSize:12.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{replyingTo.text||(replyingTo.media_type==="video"?"🎥 Video":"📷 Foto")}</div>
+          <div style={{fontSize:12.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{replyingTo.text||(replyingTo.media_type==="video"?"Video":"Foto")}</div>
         </div>
-        <button onClick={()=>setReplyingTo(null)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer",padding:2}}>✕</button>
+        <button onClick={()=>setReplyingTo(null)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer",padding:2}}><Ico n="x" s={16}/></button>
       </div>}
       <div style={{flexShrink:0,display:"flex",alignItems:"center",gap:9,padding:"10px 12px",background:C.surface,borderTop:`1px solid ${C.borderS}`,paddingBottom:"calc(10px + env(safe-area-inset-bottom))"}}>
         <input type="file" accept="image/*,video/*" id="chat-file-input" style={{display:"none"}} onChange={e=>{const f=e.target.files&&e.target.files[0];if(f)sendMedia(f);e.target.value="";}}/>
-        <button onClick={()=>document.getElementById("chat-file-input").click()} className="btn-press" disabled={chatSending} style={{flexShrink:0,background:C.surface2,border:`1px solid ${C.borderS}`,borderRadius:"50%",width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:C.cyan}}>📷</button>
+        <button onClick={()=>document.getElementById("chat-file-input").click()} className="btn-press" disabled={chatSending} style={{flexShrink:0,background:C.surface2,border:`1px solid ${C.borderS}`,borderRadius:"50%",width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",lineHeight:0,color:C.cyan}}><Ico n="camera" s={18} c={C.cyan}/></button>
         <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}} placeholder={chatSending?"Enviando…":"Mensaje…"} style={{flex:1,background:C.iosField,border:`1px solid ${C.borderS}`,borderRadius:20,padding:"11px 15px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none"}}/>
-        <button onClick={sendMsg} className="btn-press" disabled={chatSending||!chatInput.trim()} style={{flexShrink:0,background:chatInput.trim()?`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`:C.surface2,border:"none",borderRadius:"50%",width:42,height:42,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:"#fff"}}>➤</button>
+        <button onClick={sendMsg} className="btn-press" disabled={chatSending||!chatInput.trim()} style={{flexShrink:0,background:chatInput.trim()?`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`:C.surface2,border:"none",borderRadius:"50%",width:42,height:42,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:"#fff"}}><Ico n="send" s={18} c="#fff"/></button>
       </div>
 
       {inviteGroup&&<div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(2,6,16,0.8)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setInviteGroup(null)}>
         <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:380,background:C.surface,borderRadius:20,border:`1px solid ${C.borderS}`,padding:24,textAlign:"center",animation:"fadeIn 0.25s"}}>
-          <div style={{width:54,height:54,borderRadius:15,background:"rgba(52,199,89,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",fontSize:26}}>👥</div>
+          <div style={{width:54,height:54,borderRadius:15,background:"rgba(52,199,89,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",fontSize:26}}></div>
           <T size={24} style={{marginBottom:6}}>INVITA A TUS AMIGOS</T>
           <Sub style={{marginBottom:18,lineHeight:1.5}}>Comparte el link. Tus amigos abren SMT y entran directo a “{inviteGroup.name}”.</Sub>
           <div style={{display:"flex",alignItems:"center",gap:8,background:C.bg,border:`1px solid ${C.borderS}`,borderRadius:11,padding:"11px 13px",marginBottom:14}}>
             <span style={{flex:1,textAlign:"left",fontSize:12.5,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{buildInviteUrl(inviteGroup)}</span>
-            <button onClick={()=>copyInvite(inviteGroup)} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:inviteCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{inviteCopied?"✓ Copiado":"Copiar"}</button>
+            <button onClick={()=>copyInvite(inviteGroup)} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:inviteCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{inviteCopied?"Copiado":"Copiar"}</button>
           </div>
           <button onClick={()=>shareInviteWhatsApp(inviteGroup)} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
           <button onClick={()=>setInviteGroup(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"6px",cursor:"pointer"}}>Cerrar</button>
@@ -3284,7 +3302,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           </div>
           {(isCreator||isAdmin)
             ?<button onClick={()=>deleteGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}><Ico n="trash"/> ELIMINAR GRUPO</button>
-            :<button onClick={()=>leaveGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}>↩  SALIR DEL GRUPO</button>}
+            :<button onClick={()=>leaveGroupFn(g)} className="btn-press" style={{width:"100%",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.35)`,color:C.red,fontFamily:F.ios,fontSize:14.5,fontWeight:700,padding:"13px",borderRadius:13,cursor:"pointer"}}><Ico n="back" s={15}/> SALIR DEL GRUPO</button>}
           <button onClick={()=>setShowGroupInfo(false)} className="btn-press" style={{width:"100%",marginTop:10,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Cerrar</button>
         </div>
       </div>}
@@ -3308,7 +3326,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <Sub style={{marginTop:3}}>Lo último de ATP, WTA y el mundo del tenis</Sub>
         </div>
         <div style={{padding:"14px 14px 44px"}}>
-          {newsLoading&&<div style={{textAlign:"center",padding:44}}><div style={{fontSize:42,animation:"ballBounce 1.4s ease-in-out infinite"}}>🎾</div><Sub style={{marginTop:12}}>Cargando noticias…</Sub></div>}
+          {newsLoading&&<div style={{textAlign:"center",padding:44}}><div style={{lineHeight:0,display:"flex",justifyContent:"center",animation:"ballBounce 1.4s ease-in-out infinite"}}><Ico n="ball" s={42} c={C.cyan}/></div><Sub style={{marginTop:12}}>Cargando noticias…</Sub></div>}
           {newsErr&&!newsLoading&&<div style={{textAlign:"center",padding:34}}><Sub>No se pudieron cargar las noticias. Revisa tu conexión.</Sub><div style={{marginTop:14}}><BtnG onClick={loadNews}>Reintentar</BtnG></div></div>}
           {!newsLoading&&!newsErr&&news.map((n,i)=>{const src=sourceOf(n.title);return <div key={i} onClick={()=>{try{window.open(n.link,"_system");}catch(e){window.open(n.link,"_blank");}}} className="btn-press" style={{cursor:"pointer",marginBottom:10,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"14px 16px",animation:"slideUp 0.35s "+(i<8?(i*0.04):0)+"s both"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
@@ -3331,7 +3349,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
+          <div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div>
           <T size={28}>NO DISPONIBLE</T>
           <Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub>
         </div>
@@ -3355,7 +3373,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       {/* FEED a pantalla completa con snap vertical */}
       <div className="tk-feed" style={{position:"fixed",top:60,bottom:0,left:0,right:0,maxWidth:720,margin:"0 auto",overflowY:"auto",scrollSnapType:"y mandatory",background:"#000",WebkitOverflowScrolling:"touch",zIndex:1}}>
         {media.length===0?<div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:24}}>
-          <div style={{fontSize:52,marginBottom:14,animation:"ballBounce 1.4s ease-in-out infinite"}}>🎬</div>
+          <div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center",animation:"ballBounce 1.4s ease-in-out infinite"}}><Ico n="video" s={52} c={C.cyan}/></div>
           <T size={26}>AÚN NO HAY POSTS</T>
           <Sub style={{fontSize:14,marginTop:8,marginBottom:20}}>{isAdmin?"Sube el primer post con el botón SUBIR.":"¡Sé el primero en publicar!"}</Sub>
           {!isAdmin&&<BtnG onClick={()=>{setMediaDraft({type:null,url:null,caption:""});setPostMediaModal(true);}}><Ico n="doc"/>POSTEAR</BtnG>}
@@ -3393,12 +3411,12 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </RailBtn>}
           </div>
           {/* Indicador de scroll en el primer post */}
-          {i===0&&media.length>1&&<div style={{position:"absolute",bottom:96,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.75)",fontSize:20,animation:"ballBounce 1.6s ease-in-out infinite",pointerEvents:"none",textShadow:"0 1px 5px rgba(0,0,0,0.7)"}}>⌄</div>}
+          {i===0&&media.length>1&&<div style={{position:"absolute",bottom:96,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.75)",fontSize:20,animation:"ballBounce 1.6s ease-in-out infinite",pointerEvents:"none",textShadow:"0 1px 5px rgba(0,0,0,0.7)"}}><Ico n="chevronDown" s={20}/></div>}
         </div>;})}
       </div>
       {/* Barra superior flotante: volver + Instagram + postear */}
       <div style={{position:"fixed",top:66,left:0,right:0,maxWidth:720,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 12px",zIndex:5,pointerEvents:"none"}}>
-        <button onClick={()=>setScreen("home")} className="btn-press" style={{pointerEvents:"auto",background:"rgba(0,0,0,0.45)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer"}}>← Home</button>
+        <button onClick={()=>setScreen("home")} className="btn-press" style={{pointerEvents:"auto",background:"rgba(0,0,0,0.45)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:20,padding:"7px 13px",fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer"}}><Ico n="arrowLeft" s={15}/> Home</button>
         <div style={{display:"flex",gap:8}}>
           <a href="https://www.instagram.com/tennis.smt/" target="_blank" rel="noopener noreferrer" className="btn-press" style={{pointerEvents:"auto",textDecoration:"none",background:"linear-gradient(135deg,#833AB4,#FD1D1D,#FCB045)",border:"none",color:"#fff",borderRadius:20,padding:"8px 13px",fontFamily:F.ios,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
@@ -3410,14 +3428,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
       {/* MODAL DE COMENTARIOS (hoja inferior) */}
       {comM&&<Modal onClose={()=>{setCommentsMedia(null);setCommentDraft("");}}>
-        <SL>💬 Comentarios ({(mediaComments[comM.id]||[]).length})</SL>
+        <SL>Comentarios ({(mediaComments[comM.id]||[]).length})</SL>
         <div style={{maxHeight:"42vh",overflowY:"auto"}}>
           {(mediaComments[comM.id]||[]).length===0?<Sub style={{padding:"18px 0",textAlign:"center"}}>Sé el primero en comentar.</Sub>:(mediaComments[comM.id]||[]).map(co=><div key={co.id} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
             <PA photo={co.userPhoto} avatar={co.userAvatar} size={32}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
                 <div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.cyan}}>{co.userName}</div>
-                {(isAdmin||co.userId===user?.id)&&<button onClick={()=>deleteComment(comM.id,co.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",padding:2}}>✕</button>}
+                {(isAdmin||co.userId===user?.id)&&<button onClick={()=>deleteComment(comM.id,co.id)} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",padding:2}}><Ico n="x" s={16}/></button>}
               </div>
               <div style={{fontFamily:F.ios,fontSize:14,color:C.text,marginTop:2,lineHeight:1.4,wordBreak:"break-word"}}>{co.text}</div>
             </div>
@@ -3426,20 +3444,20 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <div style={{display:"flex",gap:8,marginTop:14,alignItems:"center"}}>
           <PA photo={user?.photo} avatar={user?.avatar} size={36}/>
           <input value={commentDraft} onChange={e=>setCommentDraft(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addComment(comM.id)} placeholder="Escribe un comentario..." autoFocus style={{flex:1,background:C.iosField,border:"none",borderRadius:20,padding:"10px 16px",color:C.text,fontFamily:F.ios,fontSize:14,outline:"none"}}/>
-          <button onClick={()=>addComment(comM.id)} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:18,fontWeight:600}}>↑</button>
+          <button onClick={()=>addComment(comM.id)} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:18,fontWeight:600}}><Ico n="arrowUp" s={18}/></button>
         </div>
       </Modal>}
       {/* MODAL DE COMPARTIR CON QR */}
       {shareM&&<Modal onClose={()=>setShareMedia(null)} center>
         <T size={24} style={{textAlign:"center",marginBottom:6}}>COMPARTIR POST</T>
-        <Sub style={{textAlign:"center",marginBottom:18,fontSize:13,lineHeight:1.5}}>Quien escanee el QR descarga la app SMT<br/>y entra directo a ver este post 🎾</Sub>
+        <Sub style={{textAlign:"center",marginBottom:18,fontSize:13,lineHeight:1.5}}>Quien escanee el QR descarga la app SMT<br/>y entra directo a ver este post</Sub>
         <div style={{background:"#fff",borderRadius:18,padding:14,width:228,margin:"0 auto",boxShadow:"0 12px 36px rgba(0,0,0,0.45)"}}>
           <img src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&color=040A18&data=${encodeURIComponent(shareUrl)}`} alt="QR del post" style={{width:200,height:200,display:"block"}}/>
         </div>
         <div style={{textAlign:"center",marginTop:12,fontFamily:F.bc,fontSize:11,letterSpacing:"0.18em",color:C.muted}}>SOCIEDAD MEXICANA DE TENIS</div>
         <BtnP onClick={async()=>{
           try{
-            if(navigator.share){await navigator.share({title:"SMT · Sociedad Mexicana de Tenis",text:"Mira este post en la app SMT 🎾",url:shareUrl});}
+            if(navigator.share){await navigator.share({title:"SMT · Sociedad Mexicana de Tenis",text:"Mira este post en la app SMT",url:shareUrl});}
             else{await navigator.clipboard.writeText(shareUrl);alert("¡Link copiado! Pégalo donde quieras compartirlo.");}
           }catch(e){}
         }}>COMPARTIR LINK</BtnP>
@@ -3449,7 +3467,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <T size={24} style={{textAlign:"center",marginBottom:8}}>SUBIR MEDIA</T>
         <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Imagen o video. Visible para todos los jugadores.</Sub>
         <label htmlFor="mediaFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:36,background:C.iosField,textAlign:"center",display:"block"}}>
-          <div style={{fontSize:42,marginBottom:10}}>📤</div>
+          <div style={{fontSize:42,marginBottom:10}}><Ico n="upload" s={40} c={C.cyan}/></div>
           <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600}}>Selecciona archivo</div>
           <Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub>
         </label>
@@ -3461,14 +3479,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <Sub style={{textAlign:"center",marginBottom:14,fontSize:13}}>Tu post aparecerá cuando el admin lo apruebe</Sub>
         <FL>Imagen o video *</FL>
         <label htmlFor="mediaDraftFile" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:14,padding:mediaDraft.url?0:24,background:C.iosField,textAlign:"center",display:"block",marginBottom:14,overflow:"hidden"}}>
-          {mediaDraft.url?(mediaDraft.type==="image"?<img src={mediaDraft.url} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<video src={mediaDraft.url} controls style={{width:"100%",maxHeight:280,display:"block",background:"#000"}}/>):<><div style={{fontSize:36,marginBottom:8}}>📤</div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Selecciona archivo</div><Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub></>}
+          {mediaDraft.url?(mediaDraft.type==="image"?<img src={mediaDraft.url} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block"}} alt=""/>:<video src={mediaDraft.url} controls style={{width:"100%",maxHeight:280,display:"block",background:"#000"}}/>):<><div style={{fontSize:36,marginBottom:8}}><Ico n="upload" s={40} c={C.cyan}/></div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Selecciona archivo</div><Sub style={{fontSize:12,marginTop:4}}>JPG, PNG, MP4, MOV</Sub></>}
         </label>
         <input id="mediaDraftFile" type="file" accept="image/*,video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMediaDraftFile}/>
-        {mediaDraft.url&&<button onClick={()=>setMediaDraft({type:null,url:null,caption:""})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}>✕ Cambiar archivo</button>}
+        {mediaDraft.url&&<button onClick={()=>setMediaDraft({type:null,url:null,caption:""})} className="btn-press" style={{background:"none",border:"none",color:C.red,fontSize:13,marginBottom:14,cursor:"pointer",fontFamily:F.ios,fontWeight:500}}><Ico n="x" s={14}/>Cambiar archivo</button>}
         <FL>Descripción (opcional)</FL>
         <TI value={mediaDraft.caption} onChange={e=>setMediaDraft({...mediaDraft,caption:e.target.value})} placeholder="Comparte algo sobre tu post..."/>
         <div style={{background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.3)`,borderRadius:10,padding:10,marginTop:14}}>
-          <Sub style={{fontSize:12,color:C.amber}}>⚠️ El admin revisará y aprobará tu post antes de que sea público.</Sub>
+          <Sub style={{fontSize:12,color:C.amber}}>El admin revisará y aprobará tu post antes de que sea público.</Sub>
         </div>
         <BtnP onClick={submitMediaRequest}>ENVIAR PARA REVISIÓN</BtnP>
         <BtnX onClick={()=>setPostMediaModal(false)}>CANCELAR</BtnX>
@@ -3503,7 +3521,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               {phase&&<div style={{textAlign:"center",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",fontWeight:800,fontSize:13,letterSpacing:"0.1em",padding:"7px"}}>{phase}</div>}
               {[0,1].map(i=>{const isW=sb.winner===i;const oppI=i===0?1:0;return <div key={i} style={{display:"flex",alignItems:"center",padding:"16px",borderBottom:i===0?`1px solid ${C.borderS}`:"none",background:isW?"rgba(52,199,89,0.10)":"transparent"}}>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:18,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i===0?sb.p1:sb.p2}{isW&&" 🏆"}</div>
+                  <div style={{fontSize:18,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i===0?sb.p1:sb.p2}{isW&&""}</div>
                 </div>
                 <div style={{display:"flex",gap:6,alignItems:"center",marginRight:14}}>
                   {sb.sets.map((st,idx)=><div key={idx} style={{minWidth:20,textAlign:"center",fontSize:15,fontWeight:700,color:(st[i]>st[oppI])?C.cyan:C.muted}}>{st[i]}</div>)}
@@ -3513,7 +3531,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>;})}
             </div>
             {w?<div style={{textAlign:"center",marginTop:22}}>
-              <div style={{fontSize:46,marginBottom:6}}>🏆</div>
+              <div style={{fontSize:46,marginBottom:6}}><Ico n="trophy" s={44} c={C.gold}/></div>
               <T size={26}>GANADOR</T>
               <div style={{fontSize:20,fontWeight:700,color:C.cyan,marginTop:4}}>{sb.winner===0?sb.p1:sb.p2}</div>
               <BtnP onClick={sbReset} style={{marginTop:22}}>NUEVO PARTIDO</BtnP>
@@ -3522,8 +3540,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 {[0,1].map(i=><button key={i} onClick={()=>sbPoint(i)} className="btn-press" style={{flex:1,minWidth:0,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",borderRadius:16,padding:"18px 10px",color:"#fff",fontFamily:F.ios,fontWeight:700,fontSize:15,cursor:"pointer",boxShadow:`0 8px 22px rgba(2,136,209,0.35)`}}>+1 PUNTO<div style={{fontSize:12,fontWeight:500,opacity:0.9,marginTop:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{i===0?sb.p1:sb.p2}</div></button>)}
               </div>
               <div style={{display:"flex",gap:10,marginTop:12}}>
-                <BtnG onClick={sbUndo} style={{flex:1,textAlign:"center",opacity:sbHist.length?1:0.5}}>↩ DESHACER</BtnG>
-                <BtnG onClick={()=>{if(window.confirm("¿Terminar el partido y empezar de nuevo?"))sbReset();}} style={{flex:1,textAlign:"center"}}>✕ TERMINAR</BtnG>
+                <BtnG onClick={sbUndo} style={{flex:1,textAlign:"center",opacity:sbHist.length?1:0.5}}><Ico n="back" s={15}/> DESHACER</BtnG>
+                <BtnG onClick={()=>{if(window.confirm("¿Terminar el partido y empezar de nuevo?"))sbReset();}} style={{flex:1,textAlign:"center"}}><Ico n="x" s={14}/>TERMINAR</BtnG>
               </div>
             </>}
           </div>}
@@ -3538,12 +3556,12 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
-        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub></div>
+        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub></div>
       </div>
       <ShowTabBar/>
     </div>;}
-    const HubCard=({emoji,title,desc,onClick,soon})=><div className={soon?"":"btn-press"} onClick={soon?undefined:onClick} style={{display:"flex",alignItems:"center",gap:15,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,padding:"18px 16px",marginBottom:13,cursor:soon?"default":"pointer",opacity:soon?0.55:1}}>
-      <div style={{width:54,height:54,borderRadius:15,flexShrink:0,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26}}>{emoji}</div>
+    const HubCard=({icon,title,desc,onClick,soon})=><div className={soon?"":"btn-press"} onClick={soon?undefined:onClick} style={{display:"flex",alignItems:"center",gap:15,background:C.surface,border:`1px solid ${C.borderS}`,borderRadius:18,padding:"18px 16px",marginBottom:13,cursor:soon?"default":"pointer",opacity:soon?0.55:1}}>
+      <div style={{width:54,height:54,borderRadius:15,flexShrink:0,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n={icon} s={26} c="#fff"/></div>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontWeight:700,fontSize:17,marginBottom:3}}>{title}{soon&&<span style={{fontSize:10,fontWeight:700,color:C.amber,marginLeft:8,background:"rgba(255,159,10,0.14)",padding:"2px 7px",borderRadius:6,verticalAlign:"middle"}}>PRÓXIMAMENTE</span>}</div>
         <div style={{fontSize:13,color:C.muted,lineHeight:1.4}}>{desc}</div>
@@ -3556,9 +3574,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <Nav/><Back to="home" label="Home"/>
         <div style={{padding:"14px 18px"}}>
           <T size={32}>FIND A</T><Sub style={{marginTop:4,marginBottom:20}}>¿Qué estás buscando?</Sub>
-          <HubCard emoji="🎾" title="Buscar Partido" desc="Encuentra rival de tu nivel para jugar" onClick={()=>setScreen("find-match")}/>
-          <HubCard emoji="🎓" title="Buscar Coach" desc="Reserva clases con entrenadores certificados" onClick={()=>setScreen("coach")}/>
-          <HubCard emoji="🩹" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" onClick={()=>setScreen("fisio")}/>
+          <HubCard icon="ball" title="Buscar Partido" desc="Encuentra rival de tu nivel para jugar" onClick={()=>setScreen("find-match")}/>
+          <HubCard icon="cap" title="Buscar Coach" desc="Reserva clases con entrenadores certificados" onClick={()=>setScreen("coach")}/>
+          <HubCard icon="cross" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" onClick={()=>setScreen("fisio")}/>
         </div>
         <TabSpacer/>
       </div>
@@ -3572,7 +3590,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
+          <div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div>
           <T size={28}>NO DISPONIBLE</T>
           <Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub>
         </div>
@@ -3589,9 +3607,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         <div style={{padding:"14px 18px 120px"}}>
           <T size={32}>FIND A MATCH</T><Sub style={{marginTop:4,marginBottom:18}}>Encuentra rival para jugar</Sub>
           {!user?.phone&&!isAdmin&&<div style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,borderRadius:12,padding:12,marginBottom:14}}>
-            <Sub style={{color:C.amber,fontSize:13,fontWeight:600}}>⚠️ Agrega tu número de celular en tu perfil para usar Find a Match.</Sub>
+            <Sub style={{color:C.amber,fontSize:13,fontWeight:600}}>Agrega tu número de celular en tu perfil para usar Find a Match.</Sub>
           </div>}
-          <Seg options={[{v:"players",l:`👥 Jugadores`},{v:"requests",l:`📥 Solicitudes (${incoming.filter(r=>r.status==="pending").length})`},{v:"sent",l:`📤 Enviadas (${myReqs.length})`}]} value={findMatchTab} onChange={setFindMatchTab} style={{marginBottom:16}}/>
+          <Seg options={[{v:"players",l:` Jugadores`},{v:"requests",l:`Solicitudes (${incoming.filter(r=>r.status==="pending").length})`},{v:"sent",l:`Enviadas (${myReqs.length})`}]} value={findMatchTab} onChange={setFindMatchTab} style={{marginBottom:16}}/>
           {findMatchTab==="players"&&<div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
               <Sub style={{fontSize:12}}>Filtrar resultados</Sub>
@@ -3604,7 +3622,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 {CATS.map(c=><button key={c} onClick={()=>setFmFilters({...fmFilters,category:c})} className="btn-press" style={{padding:"6px 10px",fontSize:11,borderRadius:8,border:`1px solid ${fmFilters.category===c?CAT_C[c]:C.borderS}`,background:fmFilters.category===c?`${CAT_C[c]}25`:"transparent",color:fmFilters.category===c?CAT_C[c]:C.muted,fontFamily:F.bc,letterSpacing:"0.1em",cursor:"pointer",fontWeight:600}}>{c}</button>)}
               </div>
               <FL>Género</FL>
-              <Seg options={[{v:"",l:"Todos"},{v:"M",l:"♂ Varonil"},{v:"F",l:"♀ Femenil"}]} value={fmFilters.gender} onChange={v=>setFmFilters({...fmFilters,gender:v})} style={{marginBottom:10}}/>
+              <Seg options={[{v:"",l:"Todos"},{v:"M",l:"Varonil"},{v:"F",l:"Femenil"}]} value={fmFilters.gender} onChange={v=>setFmFilters({...fmFilters,gender:v})} style={{marginBottom:10}}/>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                 <div><FL>País</FL><TI value={fmFilters.country} onChange={e=>setFmFilters({...fmFilters,country:e.target.value})} placeholder="México" style={{fontSize:13,padding:"10px 12px"}}/></div>
                 <div><FL>Ciudad</FL><TI value={fmFilters.city} onChange={e=>setFmFilters({...fmFilters,city:e.target.value})} placeholder="Monterrey" style={{fontSize:13,padding:"10px 12px"}}/></div>
@@ -3613,19 +3631,19 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <select value={fmFilters.state} onChange={e=>setFmFilters({...fmFilters,state:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"10px 12px",color:C.text,fontFamily:F.ios,fontSize:13,outline:"none",cursor:"pointer",marginBottom:10}}><option value="">Todos los estados</option>{MX_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select>
               <FL>Club</FL>
               <TI value={fmFilters.club} onChange={e=>setFmFilters({...fmFilters,club:e.target.value})} placeholder="Club Campestre" style={{fontSize:13,padding:"10px 12px"}}/>
-              <button onClick={()=>setFmFilters({category:"",gender:"",country:"",state:"",city:"",club:""})} className="btn-press" style={{marginTop:10,background:"none",border:"none",color:C.red,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:500}}>✕ Limpiar filtros</button>
+              <button onClick={()=>setFmFilters({category:"",gender:"",country:"",state:"",city:"",club:""})} className="btn-press" style={{marginTop:10,background:"none",border:"none",color:C.red,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:500}}><Ico n="x" s={14}/>Limpiar filtros</button>
             </div>}
             {(()=>{const filtered=others.filter(p=>(!fmFilters.category||p.category===fmFilters.category)&&(!fmFilters.gender||p.sex===fmFilters.gender)&&(!fmFilters.country||(p.country||"").toLowerCase().includes(fmFilters.country.toLowerCase()))&&(!fmFilters.state||p.state===fmFilters.state)&&(!fmFilters.city||(p.city||"").toLowerCase().includes(fmFilters.city.toLowerCase()))&&(!fmFilters.club||(p.club||"").toLowerCase().includes(fmFilters.club.toLowerCase())));return filtered.length===0?<Sub style={{padding:"30px 0",textAlign:"center"}}>Sin resultados con esos filtros.</Sub>:filtered.map((p,i)=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:12,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,marginBottom:8,animation:`slideLeft 0.3s ${i*0.03}s backwards`}}>
               <PA photo={p.photo} avatar={p.avatar} size={44} onClick={()=>{setViewP(p);setScreen("player-card");}}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{p.name}</div>
-                <Sub style={{fontSize:11,marginTop:2}}>{p.category?`CAT ${p.category} · `:""}{p.sex==="F"?"♀":"♂"} · {p.city||p.club||"—"}</Sub>
+                <Sub style={{fontSize:11,marginTop:2}}>{p.category?`CAT ${p.category} · `:""}{p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>} · {p.city||p.club||"—"}</Sub>
               </div>
-              <BtnG onClick={()=>{if(!user?.phone){alert("Agrega tu número de celular en tu perfil primero.");return;}setMatchReqModal({toId:p.id,toName:p.name});setNewMatchReq({club:p.club||"Club Campestre Monterrey",when:"weekend",time:"morning",msg:""});}} style={{padding:"7px 12px",fontSize:12}}>🎾 RETAR</BtnG>
+              <BtnG onClick={()=>{if(!user?.phone){alert("Agrega tu número de celular en tu perfil primero.");return;}setMatchReqModal({toId:p.id,toName:p.name});setNewMatchReq({club:p.club||"Club Campestre Monterrey",when:"weekend",time:"morning",msg:""});}} style={{padding:"7px 12px",fontSize:12}}>RETAR</BtnG>
             </div>);})()}
           </div>}
           {findMatchTab==="requests"&&<div>
-            {incoming.length===0?<div style={{padding:"40px 0",textAlign:"center"}}><div style={{fontSize:36,marginBottom:10}}>📭</div><Sub>Nadie te ha mandado solicitudes todavía.</Sub></div>:incoming.map(r=><div key={r.id} style={{padding:14,background:C.surface,border:`0.5px solid ${r.status==="pending"?C.cyanBdr:C.borderS}`,borderRadius:12,marginBottom:10}}>
+            {incoming.length===0?<div style={{padding:"40px 0",textAlign:"center"}}><div style={{fontSize:36,marginBottom:10}}><Ico n="mail" s={36} c={C.muted}/></div><Sub>Nadie te ha mandado solicitudes todavía.</Sub></div>:incoming.map(r=><div key={r.id} style={{padding:14,background:C.surface,border:`0.5px solid ${r.status==="pending"?C.cyanBdr:C.borderS}`,borderRadius:12,marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                 <PA photo={r.fromPhoto} avatar={r.fromAvatar} size={40}/>
                 <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.fromName}</div><Sub style={{fontSize:11}}>te invita a jugar</Sub></div>
@@ -3635,15 +3653,15 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
               <div style={{background:C.surface2,padding:10,borderRadius:8,marginBottom:r.status==="pending"?10:0}}>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
-                  <Chip type="cyan">🏟️ {r.club}</Chip>
-                  <Chip>{r.when==="weekday"?"📅 Entre semana":"🎉 Fin de semana"}</Chip>
-                  <Chip>{r.time==="morning"?"☀️ Mañana":"🌙 Noche"}</Chip>
+                  <Chip type="cyan">{r.club}</Chip>
+                  <Chip>{r.when==="weekday"?"Entre semana":"Fin de semana"}</Chip>
+                  <Chip>{r.time==="morning"?"Mañana":"Noche"}</Chip>
                 </div>
                 {r.msg&&<Sub style={{fontSize:12,marginTop:6,fontStyle:"italic",color:C.text}}>"{r.msg}"</Sub>}
               </div>
               {r.status==="pending"&&<div style={{display:"flex",gap:8}}>
-                <button onClick={()=>respondMatchRequest(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ ACEPTAR</button>
-                <button onClick={()=>respondMatchRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✕ RECHAZAR</button>
+                <button onClick={()=>respondMatchRequest(r.id,true)} className="btn-press" style={{flex:1,background:C.green,color:"#fff",border:"none",padding:11,borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>ACEPTAR</button>
+                <button onClick={()=>respondMatchRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"11px 16px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>RECHAZAR</button>
               </div>}
               {r.status==="accepted"&&r.fromPhone&&<div style={{marginTop:10,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,padding:12}}>
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.cyan,marginBottom:4,fontWeight:600}}><Ico n="phone"/>NÚMERO DE {r.fromName.toUpperCase()}</div>
@@ -3652,19 +3670,19 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>)}
           </div>}
           {findMatchTab==="sent"&&<div>
-            {myReqs.length===0?<div style={{padding:"40px 0",textAlign:"center"}}><div style={{fontSize:36,marginBottom:10}}>📤</div><Sub>No has mandado solicitudes.</Sub></div>:myReqs.map(r=>{const to=accounts.find(a=>a.id===r.toId);return <div key={r.id} style={{padding:14,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,marginBottom:10}}>
+            {myReqs.length===0?<div style={{padding:"40px 0",textAlign:"center"}}><div style={{fontSize:36,marginBottom:10}}><Ico n="upload" s={40} c={C.cyan}/></div><Sub>No has mandado solicitudes.</Sub></div>:myReqs.map(r=>{const to=accounts.find(a=>a.id===r.toId);return <div key={r.id} style={{padding:14,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
                 <PA photo={to?.photo} avatar={to?.avatar||"?"} size={40}/>
                 <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>Para {r.toName}</div></div>
-                {r.status==="accepted"&&<Chip type="green">✓ ACEPTÓ</Chip>}
-                {r.status==="rejected"&&<Chip type="red">✕ RECHAZÓ</Chip>}
+                {r.status==="accepted"&&<Chip type="green"><Ico n="check" s={14}/>ACEPTÓ</Chip>}
+                {r.status==="rejected"&&<Chip type="red"><Ico n="x" s={14}/>RECHAZÓ</Chip>}
                 {r.status==="pending"&&<Chip type="amber">PENDIENTE</Chip>}
               </div>
               <div style={{background:C.surface2,padding:10,borderRadius:8}}>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  <Chip type="cyan">🏟️ {r.club}</Chip>
-                  <Chip>{r.when==="weekday"?"📅 Semana":"🎉 Finde"}</Chip>
-                  <Chip>{r.time==="morning"?"☀️ Mañana":"🌙 Noche"}</Chip>
+                  <Chip type="cyan">{r.club}</Chip>
+                  <Chip>{r.when==="weekday"?"Semana":"Finde"}</Chip>
+                  <Chip>{r.time==="morning"?"Mañana":"Noche"}</Chip>
                 </div>
               </div>
               {r.status==="accepted"&&to?.phone&&<div style={{marginTop:10,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,padding:12}}>
@@ -3679,16 +3697,16 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <T size={24} style={{textAlign:"center",marginBottom:8}}>RETAR A {matchReqModal.toName?.toUpperCase()}</T>
           <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Configura tu invitación a jugar</Sub>
           <div style={{marginBottom:14}}><FL>Club preferido</FL><select value={newMatchReq.club} onChange={e=>setNewMatchReq({...newMatchReq,club:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer"}}>{CLUBS.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-          <div style={{marginBottom:14}}><FL>¿Cuándo?</FL><Seg options={[{v:"weekday",l:"📅 Entre semana"},{v:"weekend",l:"🎉 Fin de semana"}]} value={newMatchReq.when} onChange={v=>setNewMatchReq({...newMatchReq,when:v})}/></div>
-          <div style={{marginBottom:14}}><FL>Horario</FL><Seg options={[{v:"morning",l:"☀️ Mañana"},{v:"night",l:"🌙 Noche"}]} value={newMatchReq.time} onChange={v=>setNewMatchReq({...newMatchReq,time:v})}/></div>
+          <div style={{marginBottom:14}}><FL>¿Cuándo?</FL><Seg options={[{v:"weekday",l:"Entre semana"},{v:"weekend",l:"Fin de semana"}]} value={newMatchReq.when} onChange={v=>setNewMatchReq({...newMatchReq,when:v})}/></div>
+          <div style={{marginBottom:14}}><FL>Horario</FL><Seg options={[{v:"morning",l:"Mañana"},{v:"night",l:"Noche"}]} value={newMatchReq.time} onChange={v=>setNewMatchReq({...newMatchReq,time:v})}/></div>
           <div style={{marginBottom:14}}><FL>Mensaje (opcional)</FL><TI value={newMatchReq.msg} onChange={e=>setNewMatchReq({...newMatchReq,msg:e.target.value})} placeholder="¡Vamos a jugar este sábado!"/></div>
-          <Sub style={{fontSize:12,color:C.amber,marginBottom:4}}>ℹ️ Si acepta, se compartirán sus números de celular para coordinar.</Sub>
+          <Sub style={{fontSize:12,color:C.amber,marginBottom:4}}><Ico n="info" s={13} c={C.cyan}/> Si acepta, se compartirán sus números de celular para coordinar.</Sub>
           <BtnP onClick={()=>sendMatchRequest(matchReqModal.toId,newMatchReq)}>ENVIAR SOLICITUD</BtnP>
           <BtnX onClick={()=>setMatchReqModal(null)}>CANCELAR</BtnX>
         </Modal>}
         {phoneShare&&<Modal onClose={()=>setPhoneShare(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:48,marginBottom:10}}>🎾</div>
+            <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={48} c="#C4B5FD"/></div>
             <T size={26}>¡PARTIDO CONFIRMADO!</T>
             <Sub style={{marginTop:8}}>Comparte y coordina por teléfono</Sub>
           </div>
@@ -3700,7 +3718,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.muted,marginBottom:6,fontWeight:600}}>TU NÚMERO COMPARTIDO</div>
             <div style={{fontFamily:F.bn,fontSize:18,color:C.text,letterSpacing:"0.04em"}}>{phoneShare.myShared}</div>
           </div>
-          <BtnP onClick={()=>setPhoneShare(null)}>¡A JUGAR! 🎾</BtnP>
+          <BtnP onClick={()=>setPhoneShare(null)}>¡A JUGAR!</BtnP>
         </Modal>}
       </div>
       <ShowTabBar/>
@@ -3712,7 +3730,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
-        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
+        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
       </div>
       <ShowTabBar/>
     </div>;}
@@ -3735,31 +3753,31 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
           </div>
           {!isAdmin&&<>
-            {!myFisioApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"],kind:"fisio"});setShowFisioApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:"linear-gradient(135deg,#0D9488,#2DD4BF)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(13,148,136,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}>🩹 SOLICITAR SER FÍSIO</button>}
+            {!myFisioApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"],kind:"fisio"});setShowFisioApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:"linear-gradient(135deg,#0D9488,#2DD4BF)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(13,148,136,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}><Ico n="cross" s={15} c="#fff"/>SOLICITAR SER FÍSIO</button>}
             {myFisioApp&&myFisioApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:"1px solid rgba(255,159,10,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD FÍSIO</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
-            {myFisioApp&&myFisioApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(45,212,191,0.10)",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}>✓</div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700}}>ERES FÍSIO SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myFisioApp.hourlyRate}/sesión</Sub></div></div>}
-            {myFisioApp&&myFisioApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:"1px solid rgba(255,59,48,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}>✕ SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myFisioApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
+            {myFisioApp&&myFisioApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(45,212,191,0.10)",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}><Ico n="check" s={16}/></div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700}}>ERES FÍSIO SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myFisioApp.hourlyRate}/sesión</Sub></div></div>}
+            {myFisioApp&&myFisioApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:"1px solid rgba(255,59,48,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myFisioApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
             {(incomingFisioReqs.filter(r=>r.status==="pending").length>0||myFisioReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:"linear-gradient(135deg,rgba(45,212,191,0.10),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.30)",borderRadius:14,marginBottom:14}}>
               {incomingFisioReqs.filter(r=>r.status==="pending").length>0&&<div style={{marginBottom:myFisioReqs.length>0?12:0}}>
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700,marginBottom:8}}><Ico n="download"/>PACIENTES INTERESADOS</div>
                 {incomingFisioReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}{r.msg?" · "+r.msg.slice(0,40):""}</Sub></div>
-                  <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✓</button>
-                  <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✕</button>
+                  <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+                  <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
                 </div>)}
               </div>}
               {myFisioReqs.filter(r=>r.status==="accepted").length>0&&<div>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}>✓ FÍSIOS ACEPTARON</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}><Ico n="check" s={14}/>FÍSIOS ACEPTARON</div>
                 {myFisioReqs.filter(r=>r.status==="accepted").map(r=><div key={r.id} onClick={()=>setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone||"—",playerName:user.name,playerPhone:user.phone||"—",hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:"fisio"})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
-                  <div style={{fontSize:18}}>📞</div>
+                  <div style={{lineHeight:0}}><Ico n="phone" s={18} c={C.green}/></div>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.coachName}</div><Sub style={{fontSize:11}}>Toca para ver contacto</Sub></div>
                   <span style={{color:C.muted,fontSize:18}}>›</span>
                 </div>)}
               </div>}
             </div>}
           </>}
-          {approvedFisios.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}>🩹</div><Sub style={{fontSize:14}}>Aún no hay físios disponibles.</Sub>{!myFisioApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:"#2DD4BF"}}>¡Sé el primer físio SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {approvedFisios.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="cross" s={48} c={C.muted}/></div><Sub style={{fontSize:14}}>Aún no hay físios disponibles.</Sub>{!myFisioApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:"#2DD4BF"}}>¡Sé el primer físio SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
             {approvedFisios.map((f,i)=><div key={f.id} style={{position:"relative",background:"linear-gradient(135deg,rgba(45,212,191,0.06),"+C.surface+")",border:"1px solid rgba(45,212,191,0.20)",borderRadius:18,padding:14,overflow:"hidden",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
               <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"radial-gradient(circle,rgba(45,212,191,0.18),transparent 70%)",pointerEvents:"none"}}/>
               <div style={{display:"flex",gap:12,marginBottom:10,position:"relative"}}>
@@ -3778,9 +3796,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{f.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:"rgba(45,212,191,0.12)",color:"#5EEAD4",border:"1px solid rgba(45,212,191,0.25)",fontWeight:500}}>{s}</span>)}{f.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{f.specialties.length-4}</span>}</div>
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{f.bio.length>140?f.bio.slice(0,140)+"…":f.bio}"</Sub>
-              {f.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===f.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:f.playerName,coachPhone:f.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:f.hourlyRate,frequency:myReq.frequency,kind:"fisio"})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...f,kind:"fisio"});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:"linear-gradient(135deg,#2DD4BF,#0D9488)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(13,148,136,0.35)"}}>🩹 SOLICITAR FÍSIO</button>;})()}
+              {f.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===f.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:f.playerName,coachPhone:f.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:f.hourlyRate,frequency:myReq.frequency,kind:"fisio"})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...f,kind:"fisio"});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:"linear-gradient(135deg,#2DD4BF,#0D9488)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(13,148,136,0.35)"}}><Ico n="cross" s={15} c="#fff"/>SOLICITAR FÍSIO</button>;})()}
               {f.playerId===user?.id&&<div style={{padding:"8px 14px",background:"rgba(45,212,191,0.12)",border:"1px solid rgba(45,212,191,0.3)",borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:"#2DD4BF",fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
-              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este físio?")){setCoachApplications(prev=>prev.filter(x=>x.id!==f.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}>✕</button>}
+              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este físio?")){setCoachApplications(prev=>prev.filter(x=>x.id!==f.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
             </div>)}
           </div>}
           <div style={{height:32}}/>
@@ -3820,7 +3838,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </Modal>}
         {coachContactShare&&coachContactShare.kind==="fisio"&&<Modal onClose={()=>setCoachContactShare(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:48,marginBottom:10}}>🩹</div>
+            <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="cross" s={48} c="#5EEAD4"/></div>
             <T size={24}>¡FÍSIO CONFIRMADO!</T>
             <Sub style={{marginTop:8}}>Contáctense para agendar la sesión</Sub>
           </div>
@@ -3828,7 +3846,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <Sub style={{fontSize:11,letterSpacing:"0.18em",fontWeight:600}}>${coachContactShare.hourlyRate} / SESIÓN</Sub>
           </div>
           <div style={{background:"linear-gradient(135deg,rgba(45,212,191,0.15),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,padding:14,marginBottom:10}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#5EEAD4",marginBottom:4,fontWeight:600}}>🩹 FÍSIO</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#5EEAD4",marginBottom:4,fontWeight:600}}><span style={{display:"inline-flex",verticalAlign:"middle"}}><Ico n="cross" s={13} c="#5EEAD4"/></span>FÍSIO</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.coachName}</div>
             <div style={{fontFamily:F.bn,fontSize:22,color:"#5EEAD4",letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
           </div>
@@ -3837,7 +3855,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.playerName}</div>
             <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.playerPhone}</div>
           </div>
-          <BtnP onClick={()=>setCoachContactShare(null)}>LISTO 🩹</BtnP>
+          <BtnP onClick={()=>setCoachContactShare(null)}>LISTO</BtnP>
         </Modal>}
       </div>
       <ShowTabBar/>
@@ -3847,7 +3865,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
-        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{fontSize:48,marginBottom:12}}>🛡️</div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
+        <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
       </div>
       <ShowTabBar/>
     </div>;}
@@ -3872,10 +3890,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>
           </div>
           {!isAdmin&&<>
-            {!myCoachApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});setShowCoachApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:`linear-gradient(135deg,${C.cyanDeep},${C.cyanBright})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(2,136,209,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}>🎾 SOLICITAR SER COACH</button>}
+            {!myCoachApp&&<button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});setShowCoachApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:16,background:`linear-gradient(135deg,${C.cyanDeep},${C.cyanBright})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 24px rgba(2,136,209,0.35)",animation:"glowPulse 3s ease-in-out infinite"}}><Ico n="ball" s={15} c="#fff"/>SOLICITAR SER COACH</button>}
             {myCoachApp&&myCoachApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD COACH</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
-            {myCoachApp&&myCoachApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.35)`,borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}>✓</div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700}}>ERES COACH SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myCoachApp.hourlyRate}/hr</Sub></div></div>}
-            {myCoachApp&&myCoachApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}>✕ SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myCoachApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
+            {myCoachApp&&myCoachApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(52,199,89,0.10)",border:`1px solid rgba(52,199,89,0.35)`,borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}><Ico n="check" s={16}/></div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700}}>ERES COACH SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myCoachApp.hourlyRate}/hr</Sub></div></div>}
+            {myCoachApp&&myCoachApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.35)`,borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myCoachApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
             {/* Notificaciones */}
             {(incomingCoachReqs.filter(r=>r.status==="pending").length>0||myCoachReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:`linear-gradient(135deg,${C.cyanDim},rgba(167,139,250,0.10))`,border:`1px solid ${C.cyanBdr}`,borderRadius:14,marginBottom:14}}>
               {incomingCoachReqs.filter(r=>r.status==="pending").length>0&&<div style={{marginBottom:incomingCoachReqs.filter(r=>r.status!=="pending").length>0||myCoachReqs.length>0?12:0}}>
@@ -3883,14 +3901,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 {incomingCoachReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{COACH_FREQ.find(f=>f.v===r.frequency)?.l} · {r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}</Sub></div>
-                  <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✓</button>
-                  <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✕</button>
+                  <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+                  <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
                 </div>)}
               </div>}
               {myCoachReqs.filter(r=>r.status==="accepted").length>0&&<div>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}>✓ COACHES ACEPTARON</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}><Ico n="check" s={14}/>COACHES ACEPTARON</div>
                 {myCoachReqs.filter(r=>r.status==="accepted").map(r=><div key={r.id} onClick={()=>setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone||"—",playerName:user.name,playerPhone:user.phone||"—",hourlyRate:r.coachHourlyRate,frequency:r.frequency})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
-                  <div style={{fontSize:18}}>📞</div>
+                  <div style={{lineHeight:0}}><Ico n="phone" s={18} c={C.green}/></div>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.coachName}</div><Sub style={{fontSize:11}}>Toca para ver contacto</Sub></div>
                   <span style={{color:C.muted,fontSize:18}}>›</span>
                 </div>)}
@@ -3898,7 +3916,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             </div>}
           </>}
           {/* Lista de coaches */}
-          {approvedCoaches.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}>🎾</div><Sub style={{fontSize:14}}>Aún no hay coaches disponibles.</Sub>{!myCoachApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:C.cyan}}>¡Sé el primer coach SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {approvedCoaches.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={48} c={C.muted}/></div><Sub style={{fontSize:14}}>Aún no hay coaches disponibles.</Sub>{!myCoachApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:C.cyan}}>¡Sé el primer coach SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
             {approvedCoaches.map((coach,i)=><div key={coach.id} style={{position:"relative",background:`linear-gradient(135deg,rgba(167,139,250,0.06),${C.surface})`,border:`1px solid rgba(167,139,250,0.20)`,borderRadius:18,padding:14,overflow:"hidden",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
               <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"radial-gradient(circle,rgba(167,139,250,0.18),transparent 70%)",pointerEvents:"none"}}/>
               <div style={{display:"flex",gap:12,marginBottom:10,position:"relative"}}>
@@ -3917,9 +3935,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{coach.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:"rgba(167,139,250,0.12)",color:"#C4B5FD",border:"1px solid rgba(167,139,250,0.25)",fontWeight:500}}>{s}</span>)}{coach.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{coach.specialties.length-4}</span>}</div>
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{coach.bio.length>140?coach.bio.slice(0,140)+"…":coach.bio}"</Sub>
-              {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}>✓ VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}>🎾 SOLICITAR ENTRENAR</button>;})()}
+              {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}><Ico n="ball" s={15} c="#fff"/>SOLICITAR ENTRENAR</button>;})()}
               {coach.playerId===user?.id&&<div style={{padding:"8px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
-              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este coach?")){setCoachApplications(prev=>prev.filter(x=>x.id!==coach.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}>✕</button>}
+              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este coach?")){setCoachApplications(prev=>prev.filter(x=>x.id!==coach.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
             </div>)}
           </div>}
           <div style={{height:32}}/>
@@ -3961,7 +3979,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </Modal>}
         {coachContactShare&&<Modal onClose={()=>setCoachContactShare(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:48,marginBottom:10}}>🎾</div>
+            <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={48} c="#C4B5FD"/></div>
             <T size={24}>¡COACH CONFIRMADO!</T>
             <Sub style={{marginTop:8}}>Contáctense para agendar sesión</Sub>
           </div>
@@ -3969,7 +3987,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <Sub style={{fontSize:11,letterSpacing:"0.18em",fontWeight:600}}>{COACH_FREQ.find(f=>f.v===coachContactShare.frequency)?.l?.toUpperCase()} · ${coachContactShare.hourlyRate} / HR</Sub>
           </div>
           <div style={{background:`linear-gradient(135deg,rgba(167,139,250,0.15),rgba(124,58,237,0.10))`,border:`1px solid rgba(167,139,250,0.35)`,borderRadius:14,padding:14,marginBottom:10}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#C4B5FD",marginBottom:4,fontWeight:600}}>🎾 COACH</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#C4B5FD",marginBottom:4,fontWeight:600}}><span style={{display:"inline-flex",verticalAlign:"middle"}}><Ico n="cap" s={13} c="#C4B5FD"/></span>COACH</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.coachName}</div>
             <div style={{fontFamily:F.bn,fontSize:22,color:"#C4B5FD",letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
           </div>
@@ -3978,7 +3996,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.playerName}</div>
             <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.playerPhone}</div>
           </div>
-          <BtnP onClick={()=>setCoachContactShare(null)}>¡A ENTRENAR! 🎾</BtnP>
+          <BtnP onClick={()=>setCoachContactShare(null)}>¡A ENTRENAR!</BtnP>
         </Modal>}
       </div>
       <ShowTabBar/>
@@ -3992,7 +4010,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:12}}>🛡️</div>
+          <div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div>
           <T size={28}>NO DISPONIBLE</T>
           <Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub>
         </div>
@@ -4018,14 +4036,14 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 {incomingPur.filter(p=>p.status==="pending").map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={p.buyerPhoto} avatar={p.buyerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{p.buyerName}</div><Sub style={{fontSize:11,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.title} · ${p.price.toLocaleString()}</Sub></div>
-                  <button onClick={()=>respondPurchase(p.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✓</button>
-                  <button onClick={()=>respondPurchase(p.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}>✕</button>
+                  <button onClick={()=>respondPurchase(p.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
+                  <button onClick={()=>respondPurchase(p.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
                 </div>)}
               </div>}
               {myPur.filter(p=>p.status==="accepted").length>0&&<div>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.green,fontWeight:700,marginBottom:8}}>✓ COMPRAS ACEPTADAS</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.green,fontWeight:700,marginBottom:8}}><Ico n="check" s={14}/>COMPRAS ACEPTADAS</div>
                 {myPur.filter(p=>p.status==="accepted").map(p=><div key={p.id} onClick={()=>setMpContactShare({buyerName:user.name,buyerPhone:user.phone||"—",sellerName:p.sellerName,sellerPhone:p.sellerPhone||"—",title:p.title,price:p.price})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
-                  <div style={{fontSize:18}}>📞</div>
+                  <div style={{lineHeight:0}}><Ico n="phone" s={18} c={C.green}/></div>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{p.title}</div><Sub style={{fontSize:11}}>{p.sellerName} aceptó · Toca para ver contacto</Sub></div>
                   <span style={{color:C.muted,fontSize:18}}>›</span>
                 </div>)}
@@ -4034,7 +4052,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{display:"flex",gap:6,margin:"14px 0",overflowX:"auto",paddingBottom:6}}>
               {["Todos",...MP_CATS].map(c=><button key={c} onClick={()=>setMpFilter(c)} className="btn-press" style={{padding:"7px 14px",borderRadius:20,border:mpFilter===c?`2px solid ${C.cyan}`:`1px solid ${C.borderS}`,background:mpFilter===c?C.cyanDim:"transparent",color:mpFilter===c?C.cyan:C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",fontWeight:600}}>{c}</button>)}
             </div>
-            {filtered.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}>🛒</div><Sub style={{fontSize:14,marginBottom:4}}>{marketplace.length===0?"Sin productos a la venta todavía.":"Sin productos en esta categoría."}</Sub>{marketplace.length===0&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:C.cyan}}>¡Sé el primero en publicar!</Sub>}</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {filtered.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{fontSize:48,marginBottom:14}}><Ico n="cart" s={46} c={C.muted}/></div><Sub style={{fontSize:14,marginBottom:4}}>{marketplace.length===0?"Sin productos a la venta todavía.":"Sin productos en esta categoría."}</Sub>{marketplace.length===0&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:C.cyan}}>¡Sé el primero en publicar!</Sub>}</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
               {filtered.map((l,i)=><div key={l.id} onClick={()=>setMpDetail(l.id)} className="btn-press" style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,overflow:"hidden",cursor:"pointer",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
                 <div style={{aspectRatio:"1",position:"relative",background:"#000",overflow:"hidden"}}>
                   <img src={l.images[0]} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathSubtle 7s infinite"}} alt=""/>
@@ -4052,7 +4070,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{height:32}}/>
           </div>
         </>:(()=>{const l=marketplace.find(x=>x.id===mpDetail);if(!l){setMpDetail(null);return null;}const myReq=purchaseRequests.find(p=>p.listingId===l.id&&p.buyerId===user?.id);return <>
-          <button onClick={()=>setMpDetail(null)} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}>← Marketplace</button>
+          <button onClick={()=>setMpDetail(null)} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",padding:"14px 16px 0"}}><Ico n="arrowLeft" s={15}/> Marketplace</button>
           <div style={{padding:"10px 0 0"}}>
             <div style={{position:"relative",overflowX:"auto",scrollSnapType:"x mandatory",display:"flex",gap:8,padding:"0 16px"}}>
               {l.images.map((img,idx)=><div key={idx} style={{flex:"0 0 100%",scrollSnapAlign:"start",aspectRatio:"1",borderRadius:14,overflow:"hidden",background:"#000",border:`0.5px solid ${C.borderS}`}}><img src={img} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathSubtle 8s infinite"}} alt=""/></div>)}
@@ -4061,7 +4079,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
                 <Chip type="cyan">{l.category}</Chip>
                 <Chip>{l.condition}</Chip>
-                <Chip>📍 {l.sellerCity}</Chip>
+                <Chip>{l.sellerCity}</Chip>
               </div>
               <T size={28} style={{marginBottom:6}}>{l.title}</T>
               <div style={{fontFamily:F.bn,fontSize:42,color:C.cyan,letterSpacing:"0.04em",marginBottom:14}}>${l.price.toLocaleString()} <span style={{fontSize:18,color:C.muted}}>MXN</span></div>
@@ -4073,15 +4091,15 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>
               {l.sellerId===user?.id?<>
                 <div style={{padding:"12px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,marginBottom:10,fontFamily:F.ios,fontSize:13,color:C.cyan,textAlign:"center",fontWeight:600}}>Este es tu producto</div>
-                <button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}>✕ ELIMINAR PUBLICACIÓN</button>
-              </>:(isAdmin?<button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}>✕ ELIMINAR (ADMIN)</button>:(myReq?(myReq.status==="pending"?<div style={{padding:"14px 18px",background:"rgba(255,159,10,0.12)",border:`1px solid rgba(255,159,10,0.4)`,borderRadius:12,textAlign:"center"}}>
+                <button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>ELIMINAR PUBLICACIÓN</button>
+              </>:(isAdmin?<button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>ELIMINAR (ADMIN)</button>:(myReq?(myReq.status==="pending"?<div style={{padding:"14px 18px",background:"rgba(255,159,10,0.12)",border:`1px solid rgba(255,159,10,0.4)`,borderRadius:12,textAlign:"center"}}>
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>
                 <Sub style={{fontSize:12,marginTop:4}}>Esperando respuesta de {l.sellerName}</Sub>
               </div>:myReq.status==="accepted"?<div style={{padding:"14px 18px",background:"rgba(52,199,89,0.12)",border:`1px solid rgba(52,199,89,0.4)`,borderRadius:12,cursor:"pointer"}} onClick={()=>setMpContactShare({buyerName:user.name,buyerPhone:user.phone||"—",sellerName:l.sellerName,sellerPhone:l.sellerPhone||"—",title:l.title,price:l.price})}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.green,fontWeight:700,textAlign:"center"}}>✓ COMPRA ACEPTADA</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.green,fontWeight:700,textAlign:"center"}}><Ico n="check" s={14}/>COMPRA ACEPTADA</div>
                 <div style={{fontFamily:F.ios,fontSize:14,color:C.text,marginTop:6,fontWeight:600,textAlign:"center"}}>Toca para ver contacto del vendedor</div>
               </div>:<div style={{padding:"14px 18px",background:"rgba(255,59,48,0.12)",border:`1px solid rgba(255,59,48,0.4)`,borderRadius:12,textAlign:"center"}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}>✕ SOLICITUD RECHAZADA</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>
               </div>):<BtnP onClick={()=>requestPurchase(l.id)}><Ico n="cart"/>SOLICITAR COMPRA</BtnP>))}
             </div>
             <div style={{height:32}}/>
@@ -4091,27 +4109,27 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <T size={22} style={{textAlign:"center",marginBottom:8}}>VENDER PRODUCTO</T>
           <Sub style={{textAlign:"center",marginBottom:14,fontSize:13}}>Solo equipo deportivo · Sin contenido humano</Sub>
           <div style={{background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.35)`,borderRadius:10,padding:10,marginBottom:14}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.red,fontWeight:700,marginBottom:4}}>⚠️ POLÍTICA DE CONTENIDO</div>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.red,fontWeight:700,marginBottom:4}}>POLÍTICA DE CONTENIDO</div>
             <Sub style={{fontSize:11,lineHeight:1.5}}>Solo se permiten fotos de <b style={{color:C.text}}>raquetas, ropa, calzado o equipo deportivo</b>. Imágenes con personas serán rechazadas automáticamente. <b style={{color:C.red}}>Dos intentos = expulsión permanente.</b></Sub>
-            {mpStrikes[user.id]>0&&<div style={{marginTop:8,padding:"6px 10px",background:"rgba(255,159,10,0.15)",borderRadius:6,fontFamily:F.bc,fontSize:10,letterSpacing:"0.15em",color:C.amber,fontWeight:700}}>⚠️ ADVERTENCIA ACTIVA: {mpStrikes[user.id]}/2 STRIKES</div>}
+            {mpStrikes[user.id]>0&&<div style={{marginTop:8,padding:"6px 10px",background:"rgba(255,159,10,0.15)",borderRadius:6,fontFamily:F.bc,fontSize:10,letterSpacing:"0.15em",color:C.amber,fontWeight:700}}>ADVERTENCIA ACTIVA: {mpStrikes[user.id]}/2 STRIKES</div>}
           </div>
           <FL>Fotos del producto * (hasta 4)</FL>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
             {mpDraft.images.map((img,i)=><div key={i} style={{position:"relative",aspectRatio:"1",borderRadius:8,overflow:"hidden",border:`1px solid ${C.cyanBdr}`,background:"#000"}}>
               <img src={img} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>
-              <button onClick={()=>setMpDraft(prev=>({...prev,images:prev.images.filter((_,j)=>j!==i)}))} className="btn-press" style={{position:"absolute",top:2,right:2,background:"rgba(255,59,48,0.95)",color:"#fff",border:"none",width:20,height:20,borderRadius:10,cursor:"pointer",fontSize:10,fontWeight:700}}>✕</button>
+              <button onClick={()=>setMpDraft(prev=>({...prev,images:prev.images.filter((_,j)=>j!==i)}))} className="btn-press" style={{position:"absolute",top:2,right:2,background:"rgba(255,59,48,0.95)",color:"#fff",border:"none",width:20,height:20,borderRadius:10,cursor:"pointer",fontSize:10,fontWeight:700}}><Ico n="x" s={16}/></button>
             </div>)}
             {mpDraft.images.length<4&&<label htmlFor="mpImgUp" style={{cursor:mpScanning?"wait":"pointer",aspectRatio:"1",border:`2px dashed ${C.cyanBdr}`,borderRadius:8,background:C.iosField,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",opacity:mpScanning?0.5:1}}>
-              <div style={{fontSize:24}}>{mpScanning?"🔍":"📷"}</div>
+              <div style={{fontSize:24}}>{mpScanning?<Ico n="search" s={24}/>:<Ico n="camera" s={24}/>}</div>
               <Sub style={{fontSize:9,marginTop:4,letterSpacing:"0.1em",fontFamily:F.bc}}>{mpScanning?"ESCANEANDO":"AÑADIR"}</Sub>
             </label>}
             <input id="mpImgUp" type="file" accept="image/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={handleMpImageUpload} disabled={mpScanning}/>
           </div>
           {mpScanResult&&mpScanResult.rejected&&<div style={{padding:14,background:"rgba(255,59,48,0.15)",border:`1px solid ${C.red}`,borderRadius:10,marginBottom:14}}>
-            <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.2em",color:C.red,fontWeight:700,marginBottom:6}}>⛔ IMAGEN RECHAZADA</div>
+            <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.2em",color:C.red,fontWeight:700,marginBottom:6}}>IMAGEN RECHAZADA</div>
             <Sub style={{fontSize:12,color:C.text,lineHeight:1.5}}>Detectamos posible contenido humano en tu imagen. Solo se permiten productos deportivos.<br/><br/><b style={{color:C.red}}>Strike {mpScanResult.strikes}/2</b>. {mpScanResult.strikes>=2?"Tu cuenta será suspendida ahora.":"Si vuelves a intentar subir contenido inapropiado, tu cuenta será suspendida permanentemente."}</Sub>
           </div>}
-          {mpScanResult&&!mpScanResult.rejected&&<div style={{padding:10,background:"rgba(52,199,89,0.15)",border:`1px solid rgba(52,199,89,0.4)`,borderRadius:10,marginBottom:14,fontFamily:F.bc,fontSize:11,letterSpacing:"0.16em",color:C.green,fontWeight:700,textAlign:"center"}}>✓ IMAGEN APROBADA</div>}
+          {mpScanResult&&!mpScanResult.rejected&&<div style={{padding:10,background:"rgba(52,199,89,0.15)",border:`1px solid rgba(52,199,89,0.4)`,borderRadius:10,marginBottom:14,fontFamily:F.bc,fontSize:11,letterSpacing:"0.16em",color:C.green,fontWeight:700,textAlign:"center"}}><Ico n="check" s={14}/>IMAGEN APROBADA</div>}
           <FL>Título *</FL><TI value={mpDraft.title} onChange={e=>setMpDraft({...mpDraft,title:e.target.value})} placeholder="Wilson Pro Staff 97 v14"/>
           <div style={{height:12}}/>
           <FL>Categoría</FL>
@@ -4127,7 +4145,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </Modal>}
         {mpContactShare&&<Modal onClose={()=>setMpContactShare(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:48,marginBottom:10}}>🤝</div>
+            <div style={{fontSize:48,marginBottom:10}}><Ico n="handshake" s={46} c={C.cyan}/></div>
             <T size={24}>COMPRA CONFIRMADA</T>
             <Sub style={{marginTop:8}}>Coordina la entrega por teléfono</Sub>
           </div>
@@ -4146,7 +4164,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{mpContactShare.buyerName}</div>
             <div style={{fontFamily:F.bn,fontSize:22,color:C.green,letterSpacing:"0.04em"}}><Ico n="phone"/>{mpContactShare.buyerPhone}</div>
           </div>
-          <BtnP onClick={()=>setMpContactShare(null)}>ENTENDIDO 🤝</BtnP>
+          <BtnP onClick={()=>setMpContactShare(null)}>ENTENDIDO</BtnP>
         </Modal>}
       </div>
       <ShowTabBar/>
