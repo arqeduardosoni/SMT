@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 
 const STYLE=`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
 *{-webkit-tap-highlight-color:transparent}
-input,button,select{font-family:inherit;-webkit-appearance:none;appearance:none}
+input,textarea,button,select{font-family:inherit;-webkit-appearance:none;appearance:none;box-sizing:border-box}
 input:focus,select:focus{outline:none}
 ::-webkit-scrollbar{width:0;height:0}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
@@ -77,6 +77,7 @@ const ADMIN_PASS="SmtAdmin#2026";
 const RACKETS=["Wilson Pro Staff","Wilson Blade","Wilson Clash","Wilson Ultra","Babolat Pure Aero","Babolat Pure Drive","Babolat Pure Strike","Head Speed","Head Radical","Head Prestige","Head Boom","Yonex VCORE","Yonex Ezone","Yonex Percept","Prince Phantom","Tecnifibre TFight","Otra"];
 const CATS=["Abierta","B","C","D","Di"];
 const CAT_C={Abierta:"#FFD700",B:"#4FC3F7",C:"#5BAD6F",D:"#F59E0B",Di:"#B8C5D6"};
+const fmtTDate=(d)=>{try{const M=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];const dt=new Date(String(d).replace(" ","T"));if(isNaN(dt.getTime()))return d;return dt.getDate()+" "+M[dt.getMonth()]+" "+dt.getFullYear();}catch(e){return d;}};
 const nextCat=c=>{const i=CATS.indexOf(c);if(i<=0)return c;return CATS[i-1];};
 const CLUBS=["Club Campestre Monterrey","Club Sonoma","Club Industrial","Club San Agustín","Club Británico","Club Bosques","Casa Club del Valle","Otro"];
 const MX_STATES=["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","CDMX","Coahuila","Colima","Durango","Estado de México","Guanajuato","Guerrero","Hidalgo","Jalisco","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
@@ -259,7 +260,7 @@ const profileToPlayer=(r)=>({
   ranking:r.ranking||0, points:r.points||0, wins:r.wins||0, losses:r.losses||0, titles:r.titles||0,
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
-  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false,
+  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false, premiumUntil:r.premium_until||null, trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false,
 });
 const playerToProfile=(p,authId)=>({
   id:authId||p.id, auth_id:authId||p.id, email:(p.email||"").toLowerCase(),
@@ -270,7 +271,7 @@ const playerToProfile=(p,authId)=>({
   photo_url:p.photo||null, avatar:p.avatar||ini(p.name||""),
   ranking:p.ranking||0, points:p.points||0, wins:p.wins||0, losses:p.losses||0, titles:p.titles||0,
   hand:p.hand||"Diestro", racket:p.racket||"Wilson Pro Staff", stats:p.stats||{},
-  require_password_change:p.requirePasswordChange||false, premium:p.premium||false,
+  require_password_change:p.requirePasswordChange||false, premium:p.premium||false, premium_until:p.premiumUntil||null, trial_used:p.trialUsed||false, trial_ended_seen:p.trialEndedSeen||false,
   privacy_accepted_at:p.privacyAcceptedAt?new Date(p.privacyAcceptedAt).toISOString():new Date().toISOString(),
 });
 
@@ -345,7 +346,7 @@ function Chip({type,children,style}){
 }
 
 function Modal({onClose,children,large,center}){
-  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?16:0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"86vh":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
+  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?16:0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"90vh":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
 }
 
 const BtnP=({onClick,children,style})=><button onClick={onClick} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"15px 18px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,marginTop:12,boxShadow:`0 10px 28px rgba(2,136,209,0.42)`,letterSpacing:"-0.01em",...style}}>{children}</button>;
@@ -455,7 +456,7 @@ function PremiumPanel({onClose,onPremiumChange}){
     <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.1em",fontWeight:700,marginTop:3,color:strong?"#6b5300":C.gold}}>7 DÍAS GRATIS</div>
   </button>;
   return <div style={{position:"fixed",inset:0,zIndex:950,background:"rgba(2,6,16,0.9)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}} onClick={onClose}>
-    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",textAlign:"center",animation:"scaleIn 0.3s"}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"90vh",overflowY:"auto",WebkitOverflowScrolling:"touch",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",paddingBottom:"max(26px,calc(env(safe-area-inset-bottom) + 22px))",textAlign:"center",animation:"scaleIn 0.3s"}}>
       <div style={{marginBottom:4}}><Ico n="star" s={40} c="#FFD15C"/></div>
       <T size={26} style={{marginBottom:4}}>SMT PREMIUM</T>
       <Sub style={{marginBottom:10}}>Lleva tu juego al siguiente nivel.</Sub>
@@ -729,6 +730,7 @@ export default function App(){
   const [notifications,setNotifications]=useState([]);
   const [showNotifs,setShowNotifs]=useState(false);
   const [showOnboarding,setShowOnboarding]=useState(false);
+  const [trialModal,setTrialModal]=useState(null);
   const [showPremium,setShowPremium]=useState(false);
   const [sb,setSb]=useState(null);          // estado del partido en el marcador
   const [sbHist,setSbHist]=useState([]);     // historial para deshacer
@@ -836,7 +838,7 @@ export default function App(){
         if(session?.user&&active){
           const {data:prof}=await supabase.from("profiles").select("*").eq("auth_id",session.user.id).single();
           if(prof&&active){
-            const p=profileToPlayer(prof);
+            const p=applyTrialState(profileToPlayer(prof));
             if(p.isBanned){await supabase.auth.signOut();}
             else{setUser(p);setIsAdmin(false);setScreen("home");}
           }
@@ -858,6 +860,7 @@ export default function App(){
   };
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);};
   const updateAccount=(u)=>updateEverywhere(u);
+  const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
 
   const doLogin=async()=>{setAuthErr("");
@@ -870,7 +873,7 @@ export default function App(){
         if(error){setAuthErr(error.message.includes("Invalid")?"Email o contraseña incorrectos":error.message);return;}
         const {data:prof,error:pErr}=await supabase.from("profiles").select("*").eq("auth_id",data.user.id).single();
         if(pErr||!prof){setAuthErr("No se encontró tu perfil. Contacta al administrador.");return;}
-        const p=profileToPlayer(prof);
+        const p=applyTrialState(profileToPlayer(prof));
         if(p.isBanned){await supabase.auth.signOut();setAuthErr("Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
         setAuthErr("");setUser(p);setIsAdmin(false);
         if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
@@ -910,13 +913,14 @@ export default function App(){
       if(!data.user){setAuthErr("No se pudo crear la cuenta. Intenta de nuevo.");return;}
       const newPlayer=mkPlayer({id:data.user.id,email,name:authForm.name.trim(),birthdate:authForm.birthdate,ranking:accounts.length+1,points:0,wins:0,losses:0,titles:0});
       newPlayer.privacyAcceptedAt=Date.now();
+      newPlayer.premium=true;newPlayer.premiumUntil=new Date(Date.now()+30*86400000).toISOString();newPlayer.trialUsed=true;
       const row=playerToProfile(newPlayer,data.user.id);
       const {error:insErr}=await supabase.from("profiles").insert(row);
       if(insErr){console.error("Error guardando perfil:",insErr.message);setAuthErr("Error al guardar tu perfil: "+insErr.message);return;}
       setAuthErr("");
       const p=profileToPlayer(row);
       setAccounts(prev=>[...prev.filter(a=>a.id!==p.id),p]);
-      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();setShowOnboarding(true);
+      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();setTrialModal("start");
     }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
   // Generar contraseña temporal aleatoria segura
@@ -987,7 +991,7 @@ export default function App(){
   };
   const doLogout=async()=>{try{await supabase.auth.signOut();}catch(e){}setDataLoaded(false);tPrevIds.current=null;mPrevIds.current=null;setGuest(false);setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
   // Entrar a explorar sin cuenta: usuario "invitado" con valores seguros por defecto (evita crashes en render)
-  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{}});setScreen("home");};
+  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{}});setScreen("home");setShowOnboarding(true);};
   // Salir del modo invitado hacia login o registro
   const guestToAuth=(mode)=>{setGuest(false);setUser(null);setGuestPrompt(null);setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(mode);setScreen("auth");};
   // Compuerta: si es invitado, muestra el modal de "crea tu cuenta" y bloquea la acción. Devuelve true si bloqueó.
@@ -1107,7 +1111,7 @@ export default function App(){
     // Categoría: si jugador (no admin) y ya tenía categoría con lock, y la cambió → crear solicitud, no aplicar cambio
     if(!editAsAdmin&&orig?.categoryLocked&&editProfile.category!==orig.category&&editProfile.category){
       const exists=categoryRequests.find(r=>r.playerId===editProfile.id&&r.status==="pending");
-      if(!exists){setCategoryRequests(prev=>[...prev,{id:`cr-${Date.now()}`,playerId:editProfile.id,playerName:u.name,from:orig.category,to:editProfile.category,status:"pending",time:Date.now()}]);alert(`Solicitud de cambio de categoría (${orig.category} → ${editProfile.category}) enviada al administrador.`);}
+      if(!exists){setCategoryRequests(prev=>[...prev,{id:`cr-${Date.now()}`,playerId:editProfile.id,playerName:u.name,from:orig.category,to:editProfile.category,status:"pending",time:Date.now()}]);notifyAdmins({type:"admin",title:"Cambio de categoría",body:(u.name||"Un jugador")+" pidió cambiar de categoría.",link:"admin-inbox"});alert(`Solicitud de cambio de categoría (${orig.category} → ${editProfile.category}) enviada al administrador.`);}
       else alert("Ya tienes una solicitud de cambio de categoría pendiente.");
       u.category=orig.category;
     }
@@ -1252,9 +1256,11 @@ export default function App(){
   const RC_KEY="appl_VfwfvzlfCuwIjMStzBVCIaiqpSl";
   const syncPremium=(ci)=>{try{
     const active=!!(ci&&ci.entitlements&&ci.entitlements.active&&ci.entitlements.active["premium"]);
-    if(user&&user.id!=="__guest__"&&active!==!!user.premium){
-      updateUser({...user,premium:active});
-      try{supabase.from("profiles").update({premium:active}).eq("auth_id",user.id);}catch(e){}
+    const trialActive=!!(user&&user.premiumUntil&&Date.now()<new Date(user.premiumUntil).getTime());
+    const eff=active||trialActive;
+    if(user&&user.id!=="__guest__"&&eff!==!!user.premium){
+      updateUser({...user,premium:eff});
+      try{supabase.from("profiles").update({premium:eff}).eq("auth_id",user.id);}catch(e){}
     }
   }catch(e){}};
   useEffect(()=>{
@@ -1413,6 +1419,9 @@ export default function App(){
     try{ await supabase.from("notifications").insert({user_id:toUserId,type,title,body,link}); }
     catch(e){console.error("notif",e);}
   };
+
+  // Notifica SIEMPRE por push a Eduardo (admin) y al Coach Alan Lopez
+  const notifyAdmins=(payload)=>{try{(accounts||[]).forEach(a=>{const em=(a.email||"").toLowerCase(),nm=(a.name||"").toLowerCase();if(em==="arqeduardosoni@gmail.com"||(/alan/.test(nm)&&/l[oó]pez/.test(nm)))createNotif(a.id,payload);});}catch(e){}};
 
   const loadNotifications=async()=>{
     if(!user||isAdmin)return;
@@ -1681,7 +1690,7 @@ export default function App(){
 
   const submitTournamentRequest=()=>{
     if(!newReqT.name.trim()){alert("Falta nombre del torneo");return;}
-    setTournamentRequests(prev=>[...prev,{id:`tr-${Date.now()}`,playerId:user.id,playerName:user.name,...newReqT,status:"pending",time:Date.now()}]);
+    setTournamentRequests(prev=>[...prev,{id:`tr-${Date.now()}`,playerId:user.id,playerName:user.name,...newReqT,status:"pending",time:Date.now()}]);notifyAdmins({type:"admin",title:"Nueva solicitud de torneo",body:(user.name||"Un jugador")+" pidió crear un torneo. Revisa la bandeja.",link:"admin-inbox"});
     setReqTourModal(false);
     setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:"M",category:user.category||"B"});
     alert("Solicitud enviada al administrador.");
@@ -1731,7 +1740,7 @@ export default function App(){
   };
   const submitMediaRequest=()=>{if(gate("Crea tu cuenta gratis para publicar en Media."))return;
     if(!mediaDraft.url){alert("Selecciona una imagen o video.");return;}
-    setMediaRequests(prev=>[...prev,{id:`mr-${Date.now()}`,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,type:mediaDraft.type,url:mediaDraft.url,aspect:mediaDraft.aspect||"square",caption:mediaDraft.caption,status:"pending",time:Date.now()}]);
+    setMediaRequests(prev=>[...prev,{id:`mr-${Date.now()}`,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,type:mediaDraft.type,url:mediaDraft.url,aspect:mediaDraft.aspect||"square",caption:mediaDraft.caption,status:"pending",time:Date.now()}]);notifyAdmins({type:"admin",title:"Nuevo contenido por aprobar",body:(user.name||"Un jugador")+" subió un post a Media.",link:"admin-inbox"});
     setPostMediaModal(false);
     setMediaDraft({type:null,url:null,caption:""});
     alert("Post enviado al administrador. Aparecerá en MEDIA cuando lo apruebe.");
@@ -1793,7 +1802,7 @@ export default function App(){
     if(!user.phone){alert("Agrega tu número de celular en tu perfil para comprar productos.");return;}
     const exists=purchaseRequests.find(r=>r.listingId===listingId&&r.buyerId===user.id&&r.status==="pending");
     if(exists){alert("Ya enviaste una solicitud de compra para este producto.");return;}
-    setPurchaseRequests(prev=>[...prev,{id:`pur-${Date.now()}`,listingId,buyerId:user.id,buyerName:user.name,buyerPhoto:user.photo,buyerAvatar:user.avatar,buyerPhone:user.phone,sellerId:l.sellerId,sellerName:l.sellerName,sellerPhone:l.sellerPhone,title:l.title,price:l.price,status:"pending",time:Date.now()}]);
+    setPurchaseRequests(prev=>[...prev,{id:`pur-${Date.now()}`,listingId,buyerId:user.id,buyerName:user.name,buyerPhoto:user.photo,buyerAvatar:user.avatar,buyerPhone:user.phone,sellerId:l.sellerId,sellerName:l.sellerName,sellerPhone:l.sellerPhone,title:l.title,price:l.price,status:"pending",time:Date.now()}]);notifyAdmins({type:"admin",title:"Interés de compra",body:(user.name||"Un jugador")+" quiere comprar "+l.title+".",link:"admin-inbox"});
     createNotif(l.sellerId,{type:"market",title:"Nueva oferta de compra",body:`${user.name} quiere comprar "${l.title}" ($${l.price})`,link:"marketplace"});
     alert("Solicitud de compra enviada al vendedor. Te notificaremos cuando responda.");
   };
@@ -1822,6 +1831,7 @@ export default function App(){
     const existing=coachApplications.find(c=>c.playerId===user.id&&(c.kind||"coach")===K&&(c.status==="pending"||c.status==="approved"));
     if(existing){alert(existing.status==="approved"?("Ya eres "+(K==="fisio"?"físio":"coach")+" aprobado. Edita tu perfil desde EDITAR PERFIL."):"Ya tienes una solicitud pendiente.");return;}
     setCoachApplications(prev=>[...prev,{id:`${K}-${Date.now()}`,kind:K,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,playerCity:user.city||"—",playerCategory:user.category,playerSex:user.sex,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:coachDraft.availability.trim(),languages:[...coachDraft.languages],status:"pending",time:Date.now()}]);
+    notifyAdmins({type:"admin",title:"Nueva solicitud "+(K==="fisio"?"de físio":"de coach"),body:(user.name||"Un jugador")+" quiere publicarse. Revisa la bandeja.",link:"admin-inbox"});
     setShowCoachApply(false);setShowFisioApply(false);
     setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
     alert("Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como "+(K==="fisio"?"físio":"coach")+".");
@@ -1908,8 +1918,24 @@ export default function App(){
           </div>)}
       </div>
     </div>}
-    {showOnboarding&&!isAdmin&&!guest&&<Onboarding onClose={()=>setShowOnboarding(false)} onGoProfile={()=>{setShowOnboarding(false);setViewP(user);setScreen("player-card");}} onShowPremium={()=>setShowPremium(true)}/>}
-    {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)} onPremiumChange={(v)=>{if(user&&user.id!=="__guest__"){updateUser({...user,premium:v});try{supabase.from("profiles").update({premium:v}).eq("auth_id",user.id);}catch(e){}}}}/>}
+    {showOnboarding&&!isAdmin&&<Onboarding onClose={()=>setShowOnboarding(false)} onGoProfile={()=>{setShowOnboarding(false);if(guest){setAuthMode("player-register");setScreen("auth");}else{setViewP(user);setScreen("player-card");}}} onShowPremium={()=>setShowPremium(true)}/>}
+    {trialModal&&<div style={{position:"fixed",inset:0,zIndex:960,background:"rgba(2,6,16,0.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:400,background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:"1px solid #FFD15C",borderRadius:24,padding:"30px 24px",paddingBottom:"max(30px,calc(env(safe-area-inset-bottom) + 22px))",textAlign:"center",animation:"scaleIn 0.34s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:"0 24px 70px rgba(0,0,0,0.6)"}}>
+        <div style={{width:74,height:74,margin:"0 auto 14px",borderRadius:"50%",background:"linear-gradient(135deg,#C9A84C,#FFD15C)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 30px rgba(255,209,92,0.5)",animation:"glowPulse 2.6s ease-in-out infinite"}}><Ico n={trialModal==="start"?"trophy":"clock"} s={38} c="#1a1200"/></div>
+        {trialModal==="start"?<>
+          <T size={26} style={{marginBottom:6}}>¡PREMIUM GRATIS 1 MES!</T>
+          <Sub style={{fontSize:14,lineHeight:1.55,marginBottom:8,color:C.text}}>Por ser tu primera vez, tienes <b style={{color:"#FFD15C"}}>SMT Premium GRATIS por 30 días</b>: feedback de coach y físio, torneos privados, sin anuncios y elegible al premio anual.</Sub>
+          <Sub style={{fontSize:12.5,marginBottom:20}}>Al terminar, sigues gratis (o te suscribes si quieres).</Sub>
+          <BtnP onClick={()=>{setTrialModal(null);setShowOnboarding(true);}}>¡EMPEZAR!</BtnP>
+        </>:<>
+          <T size={24} style={{marginBottom:6}}>SE ACABÓ TU MES GRATIS</T>
+          <Sub style={{fontSize:14,lineHeight:1.55,marginBottom:20,color:C.text}}>Tu prueba de <b style={{color:"#FFD15C"}}>SMT Premium</b> terminó. Puedes seguir usando SMT en modo <b>gratis</b>, o hacerte Premium para recuperar los beneficios y competir por el premio anual.</Sub>
+          <BtnP onClick={()=>{setTrialModal(null);setShowPremium(true);}}>VER PREMIUM</BtnP>
+          <button onClick={()=>setTrialModal(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Seguir gratis</button>
+        </>}
+      </div>
+    </div>}
+    {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)} onPremiumChange={(v)=>{if(user&&user.id!=="__guest__"){updateUser({...user,premium:v,premiumUntil:v?null:user.premiumUntil});try{supabase.from("profiles").update(v?{premium:true,premium_until:null}:{premium:v}).eq("auth_id",user.id);}catch(e){}}}}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
         <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={38} c={C.cyan}/></div>
@@ -1990,7 +2016,8 @@ export default function App(){
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",position:"relative",zIndex:1}}>
       <div style={{animation:"scaleInBig 0.9s"}}><Logo size={220} glow/></div>
       <T size={52} style={{textAlign:"center",marginTop:24,animation:"slideUp 0.6s 0.4s backwards"}}>SOCIEDAD<br/><span style={{background:`linear-gradient(135deg,${C.cyan},#A78BFA,${C.cyan})`,backgroundSize:"200% 100%",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",animation:"gradientShift 4s ease infinite"}}>MEXICANA</span><br/>DE TENIS</T>
-      <div style={{display:"flex",flexDirection:"column",gap:12,width:"100%",maxWidth:300,marginTop:54}}>
+      <div style={{width:"100%",maxWidth:300,marginTop:22,animation:"fadeIn 0.9s 0.7s backwards",pointerEvents:"none"}}><svg viewBox="0 0 300 44" width="100%" height="44" style={{overflow:"visible",display:"block"}}><path id="smtTraj" d="M8 38 Q 46 6 84 38 T 160 38 T 236 38 T 296 38" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeDasharray="2 6" strokeLinecap="round"/><circle r="5.5" fill="#fff" style={{filter:"drop-shadow(0 0 5px rgba(255,255,255,0.75))"}}><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#smtTraj"/></animateMotion></circle></svg></div>
+      <div style={{display:"flex",flexDirection:"column",gap:12,width:"100%",maxWidth:300,marginTop:28}}>
         <button onClick={()=>{setAuthMode("player-login");setScreen("auth");}} className="btn-press" style={{position:"relative",overflow:"hidden",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"16px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 0.9s backwards",boxShadow:"0 12px 30px rgba(2,136,209,0.4)",letterSpacing:"-0.01em"}}> INGRESAR COMO JUGADOR</button>
         <button onClick={()=>{setAuthMode("player-register");setScreen("auth");}} className="btn-press" style={{background:"rgba(79,195,247,0.08)",backdropFilter:"blur(20px)",border:`1px solid ${C.cyanBdr}`,color:C.cyan,padding:"15px",fontFamily:F.ios,fontSize:16,fontWeight:600,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 1s backwards"}}>＋  Crear cuenta</button>
         <button onClick={enterGuest} className="btn-press" style={{background:"none",border:"none",color:"rgba(240,237,232,0.7)",padding:"12px",fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",animation:"fadeIn 0.6s 1.2s backwards",textDecoration:"underline",textUnderlineOffset:4}}>Explorar sin cuenta →</button>
@@ -2629,7 +2656,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
                   <div style={{flex:1,minWidth:0}}>
                     <T size={20} style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.name}</T>
-                    <Sub style={{fontSize:12,marginTop:3}}>{t.date} · {t.location}</Sub>
+                    <div style={{display:"flex",alignItems:"center",gap:7,marginTop:6,flexWrap:"wrap"}}><span style={{display:"inline-flex",alignItems:"center",gap:5,background:`${C.cyan}1f`,border:`1px solid ${C.cyan}55`,borderRadius:9,padding:"4px 10px"}}><Ico n="calendar" s={13} c={C.cyan}/><span style={{fontFamily:F.bc,fontSize:13.5,letterSpacing:"0.06em",color:C.cyan,fontWeight:700}}>{fmtTDate(t.date)}</span></span>{t.category&&<span style={{fontFamily:F.bc,fontSize:13.5,letterSpacing:"0.08em",padding:"4px 11px",borderRadius:9,background:`${CAT_C[t.category]}2e`,color:CAT_C[t.category],border:`1px solid ${CAT_C[t.category]}77`,fontWeight:800}}>CAT {t.category}</span>}</div><Sub style={{fontSize:11.5,marginTop:5,opacity:0.75}}>{t.location}</Sub>
                   </div>
                   <div style={{display:"flex",gap:5,alignItems:"center",flexShrink:0}}>
                     {isReg&&<Chip type="green">INSCRITO</Chip>}
@@ -2645,7 +2672,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                   <Chip type="cyan">{t.modality==="doubles"?"DOBLES":"SINGLES"}</Chip>
                   <Chip>{t.gender==="F"?<Ico n="female" s={12}/>:t.gender==="Mixed"?<Ico n="mixed" s={12}/>:<Ico n="male" s={12}/>}</Chip>
                   {t.forMinors&&<Chip type="green">MENORES</Chip>}
-                  {t.category&&<span style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,background:`${CAT_C[t.category]}25`,color:CAT_C[t.category],border:`1px solid ${CAT_C[t.category]}55`,fontWeight:700}}>CAT {t.category}</span>}
+                  
                   <Chip type="gold">{t.prize}</Chip>
                 </div>
                 {!champ&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
@@ -3005,7 +3032,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodeURIComponent(url)}`} width={220} height={220} alt="QR inscripción" style={{display:"block"}}/>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8,background:C.bg,border:`1px solid ${C.borderS}`,borderRadius:11,padding:"11px 13px",marginBottom:12}}>
-            <span style={{flex:1,textAlign:"left",fontSize:12,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{url}</span>
+            <span style={{flex:1,textAlign:"left",fontSize:13,color:C.cyan,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",fontWeight:600}}>Link de inscripción al torneo</span>
             <button onClick={()=>{try{navigator.clipboard.writeText(url);}catch(e){}setShareTCopied(true);setTimeout(()=>setShareTCopied(false),2000);}} className="btn-press" style={{flexShrink:0,background:"none",border:"none",color:shareTCopied?C.green:C.muted,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:F.ios}}>{shareTCopied?"Copiado":"Copiar"}</button>
           </div>
           <button onClick={()=>{const msg=`Inscríbete al torneo "${shareTourney.name}" de la Sociedad Mexicana de Tenis. Abre este link en tu celular:\n${url}\n\n(Primero descarga la app SMT del App Store)`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");}} className="btn-press" style={{width:"100%",background:"#25D366",border:"none",borderRadius:13,padding:"14px",color:"#fff",fontFamily:F.ios,fontSize:15.5,fontWeight:700,cursor:"pointer"}}>Compartir por WhatsApp</button>
@@ -3174,7 +3201,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="rankings"){
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
-    const inCat=accounts.filter(a=>a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
+    const inCat=accounts.filter(a=>a.email!=="demo@smt.mx"&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
@@ -3673,7 +3700,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
     </div>;}
     // Solo mayores entre mayores (excluir admin de la lista de jugadores, excluir menores)
-    const others=accounts.filter(a=>a.id!==user?.id&&!isMinor(a.birthdate));
+    const others=accounts.filter(a=>a.email!=="demo@smt.mx"&&a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
@@ -3976,7 +4003,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.cyan,fontWeight:700,marginBottom:8}}><Ico n="download"/>ALUMNOS INTERESADOS</div>
                 {incomingCoachReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
-                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{COACH_FREQ.find(f=>f.v===r.frequency)?.l} · {r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}</Sub></div>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{COACH_FREQ.find(f=>f.v===r.frequency)?.l} · {r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}</Sub>{r.msg&&<div style={{fontFamily:F.ios,fontSize:12,color:C.text,opacity:0.9,marginTop:4,fontStyle:"italic",lineHeight:1.35,whiteSpace:"pre-wrap"}}>"{r.msg}"</div>}</div>
                   <button onClick={()=>respondCoachRequest(r.id,true)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
                   <button onClick={()=>respondCoachRequest(r.id,false)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
                 </div>)}
@@ -4092,7 +4119,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>
       </div>
     </div>;}
-    const filtered=mpFilter==="Todos"?marketplace:marketplace.filter(l=>l.category===mpFilter);
+    const _demoId=accounts.find(a=>a.email==="demo@smt.mx")?.id;const _mp=marketplace.filter(l=>l.sellerId!==_demoId&&l.sellerName!=="Demo");const filtered=mpFilter==="Todos"?_mp:_mp.filter(l=>l.category===mpFilter);
     const incomingPur=purchaseRequests.filter(p=>p.sellerId===user?.id);
     const myPur=purchaseRequests.filter(p=>p.buyerId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
