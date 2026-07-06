@@ -84,6 +84,7 @@ const MX_STATES=["Aguascalientes","Baja California","Baja California Sur","Campe
 const MP_CATS=["Raqueta","Ropa","Tenis (calzado)","Pelotas","Bolsas / Mochilas","Grips / Cuerdas","Accesorios","Otro"];
 const MP_COND=["Nuevo","Como nuevo","Buen estado","Usado"];
 const COACH_SPECIALTIES=["Técnica","Estrategia","Servicio","Resto","Volea","Físico","Mental","Juniors","Principiantes","Avanzados","Dobles","Singles"];
+const VIDEO_TOPICS=["Servicio flat","Servicio slice","Servicio kick","Flat forehand","Topspin forehand","Revés a dos manos","Revés a una mano","Slice","Volea","Volea de revés","Drive volley","Overhead smash","Drills intermedios","Drills avanzados","Táctica","Físico","Mental","Otro"];
 const COACH_FREQ=[{v:"once",l:"Una vez"},{v:"weekly",l:"Semanal"},{v:"biweekly",l:"2x semana"},{v:"intensive",l:"Intensivo"}];
 const FISIO_SPECIALTIES=["Rehabilitación","Prevención de lesiones","Masaje deportivo","Vendaje funcional","Punción seca","Codo de tenista","Hombro","Rodilla","Espalda","Movilidad","Fuerza y acondicionamiento","Recuperación"];
 
@@ -817,6 +818,12 @@ export default function App(){
   const [showCoachRequest,setShowCoachRequest]=useState(null);
   const [coachRequestForm,setCoachRequestForm]=useState({frequency:"weekly",when:"weekend",time:"morning",msg:""});
   const [coachContactShare,setCoachContactShare]=useState(null);
+  const [coachVideos,setCoachVideos]=useState([]);
+  const [videosCoach,setVideosCoach]=useState(null);
+  const [showVideoUpload,setShowVideoUpload]=useState(false);
+  const [videoDraft,setVideoDraft]=useState({topic:"",title:"",premium:false,file:null,preview:null});
+  const [uploadingVideo,setUploadingVideo]=useState(false);
+  const [playVideo,setPlayVideo]=useState(null);
 
   const getT=()=>tournaments.find(t=>t.id===selT?.id);
   useEffect(()=>{if("speechSynthesis" in window) window.speechSynthesis.getVoices();},[]);
@@ -829,10 +836,12 @@ export default function App(){
       if(data) setAccounts(data.map(profileToPlayer));
     }catch(e){console.error("Error cargando perfiles:",e);}
   };
+  const loadCoachVideos=async()=>{try{const {data}=await supabase.from("coach_videos").select("*").order("created_at",{ascending:false});setCoachVideos(data||[]);}catch(e){}};
   useEffect(()=>{
     let active=true;
     (async()=>{
       await loadAllAccounts();
+      loadCoachVideos();
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(session?.user&&active){
@@ -1853,6 +1862,32 @@ export default function App(){
     setCoachRequests(prev=>prev.map(x=>x.id===rid?{...x,status:accept?"accepted":"rejected"}:x));
     if(accept){setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone,playerName:r.playerName,playerPhone:r.playerPhone,hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:r.kind||"coach"});}
   };
+  const pickVideoFile=(e)=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(f.size>200*1024*1024){alert("El video es muy grande (máximo 200 MB). Sube uno más corto o de menor calidad.");e.target.value="";return;}setVideoDraft(d=>({...d,file:f,preview:URL.createObjectURL(f)}));e.target.value="";};
+  const uploadCoachVideo=async()=>{
+    if(!videoDraft.topic){alert("Elige un tema para el video.");return;}
+    if(!videoDraft.file){alert("Selecciona un video.");return;}
+    setUploadingVideo(true);
+    try{
+      const f=videoDraft.file;
+      const ext=((f.name&&f.name.split(".").pop())||"mp4").toLowerCase().replace(/[^a-z0-9]/g,"")||"mp4";
+      const path=user.id+"/"+Date.now()+"."+ext;
+      const {error:upErr}=await supabase.storage.from("coach-videos").upload(path,f,{contentType:f.type||"video/mp4",upsert:false});
+      if(upErr){alert("No se pudo subir el video: "+upErr.message);setUploadingVideo(false);return;}
+      const {data:pub}=supabase.storage.from("coach-videos").getPublicUrl(path);
+      const row={coach_id:user.id,coach_name:user.name,topic:videoDraft.topic,title:(videoDraft.title||"").trim()||videoDraft.topic,video_url:pub.publicUrl,premium:!!videoDraft.premium};
+      const {data:ins,error:insErr}=await supabase.from("coach_videos").insert(row).select().single();
+      if(insErr){alert("Error al guardar: "+insErr.message);setUploadingVideo(false);return;}
+      setCoachVideos(prev=>[ins,...prev]);
+      setShowVideoUpload(false);setVideoDraft({topic:"",title:"",premium:false,file:null,preview:null});
+      alert("¡Video publicado!");
+    }catch(e){alert("Error: "+((e&&e.message)||e));}
+    setUploadingVideo(false);
+  };
+  const deleteCoachVideo=async(v)=>{
+    if(!confirm("¿Eliminar este video?"))return;
+    setCoachVideos(prev=>prev.filter(x=>x.id!==v.id));
+    try{await supabase.from("coach_videos").delete().eq("id",v.id);const m=(v.video_url||"").match(/coach-videos\/(.+)$/);if(m)await supabase.storage.from("coach-videos").remove([m[1]]);}catch(e){}
+  };
 
   const handlePhoto=(e)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const url=r.result;if(viewP&&isAdmin&&viewP.id!==user?.id){updateAccount({...viewP,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",viewP.id);}catch(er){}}else if(user){updateUser({...user,photo:url});try{supabase.from("profiles").update({photo_url:url}).eq("auth_id",user.id);}catch(er){}}};r.onerror=()=>alert("Error al cargar imagen");r.readAsDataURL(f);e.target.value="";};
   const handleTImg=(e,target)=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{if(target==="new")setNewT(prev=>({...prev,image:r.result}));else setEditTourney(prev=>({...prev,image:r.result}));};r.readAsDataURL(f);e.target.value="";};
@@ -1935,6 +1970,34 @@ export default function App(){
         </>}
       </div>
     </div>}
+    {showVideoUpload&&<Modal onClose={()=>setShowVideoUpload(false)} large center>
+      <T size={22} style={{textAlign:"center",marginBottom:6}}>SUBIR VIDEO</T>
+      <Sub style={{textAlign:"center",marginBottom:16,fontSize:13}}>Comparte tu técnica con la comunidad</Sub>
+      <FL>Tema *</FL>
+      <select value={videoDraft.topic} onChange={e=>setVideoDraft({...videoDraft,topic:e.target.value})} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:16,outline:"none",cursor:"pointer",marginBottom:14}}><option value="">— Elige un tema —</option>{VIDEO_TOPICS.map(t=><option key={t} value={t}>{t}</option>)}</select>
+      <FL>Título (opcional)</FL>
+      <TI value={videoDraft.title} onChange={e=>setVideoDraft({...videoDraft,title:e.target.value})} placeholder="Ej. Cómo mejorar tu servicio kick"/>
+      <div style={{height:14}}/>
+      <FL>Video *</FL>
+      <label htmlFor="cvUp" className="btn-press" style={{cursor:"pointer",border:`2px dashed ${C.cyanBdr}`,borderRadius:12,padding:videoDraft.preview?8:22,background:C.iosField,textAlign:"center",display:"block",marginBottom:14}}>
+        {videoDraft.preview?<video src={videoDraft.preview} style={{width:"100%",maxHeight:200,borderRadius:8,display:"block"}} muted playsInline/>:<><div style={{lineHeight:0,display:"flex",justifyContent:"center",marginBottom:8}}><Ico n="video" s={30} c={C.cyan}/></div><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Elegir video</div><Sub style={{fontSize:12,marginTop:4}}>MP4 / MOV · máx 200 MB</Sub></>}
+      </label>
+      <input id="cvUp" type="file" accept="video/*" style={{position:"absolute",left:-9999,opacity:0,width:1,height:1}} onChange={pickVideoFile}/>
+      <div onClick={()=>setVideoDraft({...videoDraft,premium:!videoDraft.premium})} className="btn-press" style={{cursor:"pointer",display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:C.surface2,borderRadius:12,marginBottom:4,border:`1px solid ${videoDraft.premium?"#FFD15C":C.borderS}`}}>
+        <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Solo para Premium</div><Sub style={{fontSize:11,marginTop:1}}>{videoDraft.premium?"Solo suscriptores Premium podrán verlo":"Gratis para todos"}</Sub></div>
+        <div style={{width:48,height:28,borderRadius:14,flexShrink:0,background:videoDraft.premium?"#FFD15C":C.iosField,position:"relative",transition:"all .2s"}}><span style={{position:"absolute",top:3,left:videoDraft.premium?23:3,width:22,height:22,borderRadius:"50%",background:"#fff",transition:"all .2s"}}/></div>
+      </div>
+      <BtnP onClick={uploadCoachVideo} style={{opacity:uploadingVideo?0.6:1}}>{uploadingVideo?"Subiendo…":"PUBLICAR VIDEO"}</BtnP>
+      <BtnX onClick={()=>setShowVideoUpload(false)}>CANCELAR</BtnX>
+    </Modal>}
+    {playVideo&&<div style={{position:"fixed",inset:0,zIndex:970,background:"rgba(0,0,0,0.96)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setPlayVideo(null)}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:640}}>
+        <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.2em",color:"#C4B5FD",fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>{playVideo.topic}</div>
+        <div style={{fontFamily:F.ios,fontSize:16,color:"#fff",fontWeight:600,marginBottom:10}}>{playVideo.title}</div>
+        <video src={playVideo.video_url} controls autoPlay playsInline style={{width:"100%",borderRadius:14,background:"#000",maxHeight:"70vh"}}/>
+        <button onClick={()=>setPlayVideo(null)} className="btn-press" style={{width:"100%",marginTop:14,background:"rgba(255,255,255,0.12)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:15,fontWeight:600,padding:"13px",borderRadius:14,cursor:"pointer"}}>Cerrar</button>
+      </div>
+    </div>}
     {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)} onPremiumChange={(v)=>{if(user&&user.id!=="__guest__"){updateUser({...user,premium:v,premiumUntil:v?null:user.premiumUntil});try{supabase.from("profiles").update(v?{premium:true,premium_until:null}:{premium:v}).eq("auth_id",user.id);}catch(e){}}}}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
@@ -1989,7 +2052,7 @@ export default function App(){
       else if(k==="profile-tab"){setViewP(user);setScreen("player-card");}
       else setScreen(k);
     };
-    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
+    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio"||screen==="coach-videos")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
     return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,maxWidth:720,margin:"0 auto",background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
       <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start",padding:"8px 2px 4px",maxWidth:640,margin:"0 auto"}}>
         {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="tab-btn" style={{flex:1,background:"transparent",border:"none",padding:"6px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",fontFamily:F.ios,minHeight:60,minWidth:0}}>
@@ -3964,6 +4027,42 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <ShowTabBar/>
     </div>;
   }
+  if(screen==="coach-videos"&&videosCoach){
+    const vc=videosCoach;
+    const vids=coachVideos.filter(v=>v.coach_id===vc.playerId);
+    const canWatch=(v)=>!v.premium||!!user?.premium||isAdmin||v.coach_id===user?.id;
+    const byTopic={};vids.forEach(v=>{(byTopic[v.topic]=byTopic[v.topic]||[]).push(v);});
+    const isMine=vc.playerId===user?.id;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.4}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/>
+        <Back to="coach" label="Coach"/>
+        <div style={{padding:"12px 18px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+            <PA photo={vc.playerPhoto} avatar={vc.playerAvatar} size={54} border="2px solid rgba(167,139,250,0.5)"/>
+            <div style={{flex:1,minWidth:0}}><SL color="#C4B5FD">Videos del coach</SL><T size={26} style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{vc.playerName}</T></div>
+          </div>
+          {isMine&&<button onClick={()=>{setVideoDraft({topic:"",title:"",premium:false,file:null,preview:null});setShowVideoUpload(true);}} className="btn-press" style={{width:"100%",padding:"13px",borderRadius:14,background:"linear-gradient(135deg,#A78BFA,#7C3AED)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n="upload" s={16} c="#fff"/>SUBIR NUEVO VIDEO</button>}
+          {vids.length===0?<div style={{padding:"50px 0",textAlign:"center"}}><div style={{lineHeight:0,display:"flex",justifyContent:"center",marginBottom:12}}><Ico n="video" s={46} c={C.muted}/></div><Sub>{isMine?"Aún no subes videos. ¡Sube el primero!":"Este coach aún no sube videos."}</Sub></div>:
+            Object.keys(byTopic).map(topic=><div key={topic} style={{marginBottom:20}}>
+              <div style={{fontFamily:F.bc,fontSize:12,letterSpacing:"0.2em",color:"#C4B5FD",fontWeight:700,textTransform:"uppercase",marginBottom:10}}>{topic}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {byTopic[topic].map(v=>{const watch=canWatch(v);return <div key={v.id} onClick={()=>{if(watch)setPlayVideo(v);else setShowPremium(true);}} className="btn-press" style={{cursor:"pointer",display:"flex",alignItems:"center",gap:12,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"12px 14px"}}>
+                  <div style={{width:46,height:46,borderRadius:12,flexShrink:0,background:watch?"linear-gradient(135deg,#A78BFA,#7C3AED)":"rgba(255,255,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={watch?"play":"lock"} s={20} c="#fff"/></div>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14.5,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{v.title}</div><Sub style={{fontSize:11,marginTop:2}}>{v.premium?"Solo Premium":"Gratis"}</Sub></div>
+                  {v.premium&&<span style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:"#FFD15C",fontWeight:700,background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",padding:"3px 8px",borderRadius:6,flexShrink:0}}>PREMIUM</span>}
+                  {(isAdmin||v.coach_id===user?.id)&&<button onClick={(e)=>{e.stopPropagation();deleteCoachVideo(v);}} className="btn-press" style={{background:"transparent",border:"none",color:C.red,cursor:"pointer",padding:4,flexShrink:0}}><Ico n="trash" s={16}/></button>}
+                </div>;})}
+              </div>
+            </div>)}
+          <div style={{height:32}}/>
+          <TabSpacer/>
+        </div>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
   if(screen==="coach"){
     if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
@@ -4040,6 +4139,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{coach.bio.length>140?coach.bio.slice(0,140)+"…":coach.bio}"</Sub>
               {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}><Ico n="ball" s={15} c="#fff"/>SOLICITAR ENTRENAR</button>;})()}
               {coach.playerId===user?.id&&<div style={{padding:"8px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
+              {(()=>{const vids=coachVideos.filter(v=>v.coach_id===coach.playerId);const isMine=coach.playerId===user?.id;if(!vids.length&&!isMine)return null;return <div style={{display:"flex",gap:8,marginTop:8}}>{vids.length>0&&<button onClick={()=>{setVideosCoach(coach);setScreen("coach-videos");}} className="btn-press" style={{flex:1,background:"rgba(167,139,250,0.14)",border:"1px solid rgba(167,139,250,0.4)",color:"#C4B5FD",fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"10px",borderRadius:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="play" s={14} c="#C4B5FD"/>Ver videos ({vids.length})</button>}{isMine&&<button onClick={()=>{setVideoDraft({topic:"",title:"",premium:false,file:null,preview:null});setShowVideoUpload(true);}} className="btn-press" style={{flex:1,background:"rgba(52,199,89,0.12)",border:`1px solid rgba(52,199,89,0.4)`,color:C.green,fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"10px",borderRadius:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="upload" s={14} c={C.green}/>Subir video</button>}</div>;})()}
               {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este coach?")){setCoachApplications(prev=>prev.filter(x=>x.id!==coach.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
             </div>)}
           </div>}
