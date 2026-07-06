@@ -400,30 +400,85 @@ function Ico({n,s=15,c="currentColor"}){
   return <svg width={s} height={s} viewBox="0 0 24 24" fill={n==="star"?c:"none"} stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:6,flexShrink:0}}><path d={paths[n]}/></svg>;
 }
 // ===== SMT PREMIUM (panel de beneficios) =====
-function PremiumPanel({onClose}){
+function PremiumPanel({onClose,onPremiumChange}){
   const benefits=[
     ["cap","Feedback de un coach","Mándale tus videos y mensajes. Te responde con video, mensajes y notas de voz para mejorar tu juego."],
     ["cross","Feedback de un fisioterapeuta","Prevén y atiende lesiones con un profesional."],
     ["trophy","Torneos privados","Crea tu torneo con tus amigos e invítalos por QR."],
     ["ban","Sin anuncios","Disfruta la app sin publicidad."],
   ];
+  const [pkgs,setPkgs]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{let on=true;(async()=>{
+    try{
+      const mod=await import("@revenuecat/purchases-capacitor");
+      const off=await mod.Purchases.getOfferings();
+      const cur=(off&&(off.current||(off.offerings&&off.offerings.current)))||null;
+      if(cur&&on){
+        const ap=cur.availablePackages||[];
+        const monthly=cur.monthly||ap.find(p=>p.packageType==="MONTHLY")||ap.find(p=>/month|mensual/i.test(p.identifier||""));
+        const annual=cur.annual||ap.find(p=>p.packageType==="ANNUAL")||ap.find(p=>/annual|year|anual/i.test(p.identifier||""));
+        setPkgs({monthly,annual});
+      }
+    }catch(e){}
+    if(on)setLoading(false);
+  })();return()=>{on=false;};},[]);
+  const priceOf=(p)=>{try{return (p&&p.product&&(p.product.priceString||p.product.price_string))||null;}catch(e){return null;}};
+  const buy=async(p)=>{if(!p||busy)return;setBusy(true);
+    try{
+      const mod=await import("@revenuecat/purchases-capacitor");
+      const res=await mod.Purchases.purchasePackage({aPackage:p});
+      const ci=res&&(res.customerInfo||res);
+      const active=!!(ci&&ci.entitlements&&ci.entitlements.active&&ci.entitlements.active["premium"]);
+      if(active){onPremiumChange&&onPremiumChange(true);alert("¡Bienvenido a SMT Premium! Ya tienes todos los beneficios activos.");onClose();}
+      else alert("La compra no se completó. Si crees que es un error, usa Restaurar compras.");
+    }catch(e){if(!(e&&(e.userCancelled||/cancel/i.test(e.message||""))))alert("No se pudo completar la compra. Intenta de nuevo.");}
+    setBusy(false);
+  };
+  const restore=async()=>{if(busy)return;setBusy(true);
+    try{
+      const mod=await import("@revenuecat/purchases-capacitor");
+      const res=await mod.Purchases.restorePurchases();
+      const ci=res&&(res.customerInfo||res);
+      const active=!!(ci&&ci.entitlements&&ci.entitlements.active&&ci.entitlements.active["premium"]);
+      onPremiumChange&&onPremiumChange(active);
+      alert(active?"¡Compras restauradas! Ya eres Premium.":"No encontramos compras activas para restaurar.");
+      if(active)onClose();
+    }catch(e){alert("No se pudieron restaurar las compras.");}
+    setBusy(false);
+  };
+  const hasNative=!!(pkgs&&(pkgs.monthly||pkgs.annual));
+  const planBtn=(p,fallback,sub,strong)=><button onClick={()=>buy(p)} disabled={busy} className="btn-press" style={{flex:1,cursor:busy?"default":"pointer",background:strong?"linear-gradient(135deg,#C9A84C,#FFD15C)":C.bg,border:`1px solid ${strong?"#FFD15C":C.cyanBdr}`,borderRadius:14,padding:"12px 8px",color:strong?"#1a1200":C.text,opacity:busy?0.6:1}}>
+    <div style={{fontFamily:F.bn,fontSize:22,color:strong?"#1a1200":C.cyan}}>{priceOf(p)||fallback}</div>
+    <div style={{fontFamily:F.ios,fontSize:11,color:strong?"rgba(0,0,0,0.6)":C.muted}}>{sub}</div>
+    <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.1em",fontWeight:700,marginTop:3,color:strong?"#6b5300":C.gold}}>7 DÍAS GRATIS</div>
+  </button>;
   return <div style={{position:"fixed",inset:0,zIndex:950,background:"rgba(2,6,16,0.9)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}} onClick={onClose}>
     <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.gold||"#FFD15C"}`,borderRadius:24,padding:"26px 24px",textAlign:"center",animation:"scaleIn 0.3s"}}>
       <div style={{marginBottom:4}}><Ico n="star" s={40} c="#FFD15C"/></div>
       <T size={26} style={{marginBottom:4}}>SMT PREMIUM</T>
       <Sub style={{marginBottom:10}}>Lleva tu juego al siguiente nivel.</Sub>
-      <div style={{display:"inline-block",background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",color:"#FFD15C",fontFamily:F.bc,fontSize:11,letterSpacing:"0.12em",fontWeight:700,padding:"5px 12px",borderRadius:999,marginBottom:18}}>MUY PRONTO · PRUEBA GRATIS 7 DÍAS</div>
+      <div style={{display:"inline-block",background:"rgba(255,209,92,0.15)",border:"1px solid rgba(255,209,92,0.4)",color:"#FFD15C",fontFamily:F.bc,fontSize:11,letterSpacing:"0.12em",fontWeight:700,padding:"5px 12px",borderRadius:999,marginBottom:18}}>PRUEBA GRATIS 7 DÍAS</div>
       <div style={{textAlign:"left",marginBottom:18}}>
         {benefits.map((b,i)=><div key={i} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:i<benefits.length-1?`1px solid ${C.borderS}`:"none"}}>
           <div style={{flexShrink:0,color:"#FFD15C",lineHeight:0}}><Ico n={b[0]} s={24} c="#FFD15C"/></div>
           <div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{b[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted,marginTop:2,lineHeight:1.4}}>{b[2]}</div></div>
         </div>)}
       </div>
-      <div style={{display:"flex",gap:10,marginBottom:16}}>
-        <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$79</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al mes</div></div>
-        <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$799</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al año · ahorra 2 meses</div></div>
-      </div>
-      <BtnP onClick={()=>{alert("¡Gracias por tu interés! Te avisaremos en cuanto SMT Premium esté disponible.");onClose();}}>Quiero enterarme</BtnP>
+      {loading?<div style={{padding:"16px 0"}}><Sub>Cargando planes…</Sub></div>:hasNative?<>
+        <div style={{display:"flex",gap:10,marginBottom:12}}>
+          {pkgs.annual&&planBtn(pkgs.annual,"$799","al año · ahorra 2 meses",true)}
+          {pkgs.monthly&&planBtn(pkgs.monthly,"$79","al mes",false)}
+        </div>
+        <button onClick={restore} disabled={busy} className="btn-press" style={{width:"100%",background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"6px",cursor:"pointer",marginBottom:2}}>Restaurar compras</button>
+      </>:<>
+        <div style={{display:"flex",gap:10,marginBottom:14}}>
+          <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$79</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al mes</div></div>
+          <div style={{flex:1,background:C.bg,border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"12px 8px"}}><div style={{fontFamily:F.bn,fontSize:24,color:C.cyan}}>$799</div><div style={{fontFamily:F.ios,fontSize:11,color:C.muted}}>al año · ahorra 2 meses</div></div>
+        </div>
+        <Sub style={{fontSize:12,marginBottom:6}}>Las suscripciones se compran desde la app de iPhone.</Sub>
+      </>}
       <button onClick={onClose} className="btn-press" style={{width:"100%",marginTop:9,background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:14,padding:"8px",cursor:"pointer"}}>Ahora no</button>
     </div>
   </div>;
@@ -1193,6 +1248,27 @@ export default function App(){
     /* eslint-disable-next-line */
   },[user]);
 
+  // ==================== REVENUECAT (compras Premium) ====================
+  const RC_KEY="appl_VfwfvzlfCuwIjMStzBVCIaiqpSl";
+  const syncPremium=(ci)=>{try{
+    const active=!!(ci&&ci.entitlements&&ci.entitlements.active&&ci.entitlements.active["premium"]);
+    if(user&&user.id!=="__guest__"&&active!==!!user.premium){
+      updateUser({...user,premium:active});
+      try{supabase.from("profiles").update({premium:active}).eq("auth_id",user.id);}catch(e){}
+    }
+  }catch(e){}};
+  useEffect(()=>{
+    if(!user||user.id==="__guest__")return;
+    (async()=>{try{
+      const mod=await import("@revenuecat/purchases-capacitor");
+      const Purchases=mod.Purchases;
+      await Purchases.configure({apiKey:RC_KEY,appUserID:user.id});
+      const info=await Purchases.getCustomerInfo();
+      syncPremium(info&&(info.customerInfo||info));
+    }catch(e){/* web / no nativo */}})();
+    /* eslint-disable-next-line */
+  },[user?.id]);
+
   // CARGA: al iniciar sesión (jugador o admin), trae torneos y marketplace de Supabase
   useEffect(()=>{
     if(!user||dataLoaded)return;
@@ -1833,7 +1909,7 @@ export default function App(){
       </div>
     </div>}
     {showOnboarding&&!isAdmin&&!guest&&<Onboarding onClose={()=>setShowOnboarding(false)} onGoProfile={()=>{setShowOnboarding(false);setViewP(user);setScreen("player-card");}} onShowPremium={()=>setShowPremium(true)}/>}
-    {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)}/>}
+    {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)} onPremiumChange={(v)=>{if(user&&user.id!=="__guest__"){updateUser({...user,premium:v});try{supabase.from("profiles").update({premium:v}).eq("auth_id",user.id);}catch(e){}}}}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
         <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="ball" s={38} c={C.cyan}/></div>
