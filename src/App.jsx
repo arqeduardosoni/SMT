@@ -248,6 +248,9 @@ const CountUp=({target,duration,delay,decimals=0,suffix=""})=>{const v=useCount(
 
 const mkPlayer=(o)=>({id:o.id,email:o.email,password:"demo123",name:o.name,firstName:o.firstName||o.name.split(" ")[0],lastName:o.lastName||o.name.split(" ").slice(1).join(" "),sex:o.sex||"M",birthdate:o.birthdate||"1990-01-01",club:o.club||"Club Campestre MTY",hand:o.hand||"Diestro",country:o.country||"México",state:o.state||"Nuevo León",city:o.city||"Monterrey",racket:o.racket||"Wilson Pro Staff",category:o.category||null,categoryLocked:o.categoryLocked||false,phone:o.phone||"",ranking:o.ranking,points:o.points,wins:o.wins,losses:o.losses,titles:o.titles,photo:null,avatar:ini(o.name),stats:{...DSTATS,...(o.stats||{})}});
 
+// ⚠️ Cuando la app ya esté publicada, cambia esto por el link real (App Store / Play Store / smt.mx)
+const APP_DOWNLOAD_URL="https://www.instagram.com/tennis.smt/";
+
 // ====== SUPABASE: traductores entre formato base de datos (snake_case) y app (camelCase) ======
 const profileToPlayer=(r)=>({
   id:r.id, email:r.email||"", password:"",
@@ -262,6 +265,7 @@ const profileToPlayer=(r)=>({
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
   requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false, premiumUntil:r.premium_until||null, trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false,
+  referralCode:r.referral_code||null,
 });
 const playerToProfile=(p,authId)=>({
   id:authId||p.id, auth_id:authId||p.id, email:(p.email||"").toLowerCase(),
@@ -690,6 +694,8 @@ export default function App(){
   const [guest,setGuest]=useState(false);
   const [guestPrompt,setGuestPrompt]=useState(null); // mensaje del modal "crea tu cuenta"
   const [authForm,setAuthForm]=useState({email:"",password:"",name:""});
+  const [refCodeInput,setRefCodeInput]=useState("");
+  const [showReferModal,setShowReferModal]=useState(false);
   const [authErr,setAuthErr]=useState("");
   const [recoveryFlow,setRecoveryFlow]=useState(null);
   const [recoveryCode,setRecoveryCode]=useState("");
@@ -929,10 +935,24 @@ export default function App(){
       const row=playerToProfile(newPlayer,data.user.id);
       const {error:insErr}=await supabase.from("profiles").insert(row);
       if(insErr){console.error("Error guardando perfil:",insErr.message);setAuthErr("Error al guardar tu perfil: "+insErr.message);return;}
+      // Si escribió un código de invitación, aplicamos la recompensa (1 mes premium a ambos)
+      const refCode=refCodeInput.trim().toUpperCase();
+      if(refCode){
+        try{
+          const {error:refErr}=await supabase.rpc("apply_referral_reward",{p_referred_id:data.user.id,p_referral_code:refCode});
+          if(refErr)console.warn("Código de invitación no válido:",refErr.message);
+        }catch(e){console.warn("Error aplicando referido:",e);}
+      }
+      // Releemos el perfil por si el referido le sumó premium
+      let finalRow=row;
+      try{
+        const {data:freshProf}=await supabase.from("profiles").select("*").eq("auth_id",data.user.id).single();
+        if(freshProf)finalRow=freshProf;
+      }catch(e){}
       setAuthErr("");
-      const p=profileToPlayer(row);
+      const p=profileToPlayer(finalRow);
       setAccounts(prev=>[...prev.filter(a=>a.id!==p.id),p]);
-      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setAcceptedPrivacy(false);trigWelcome();setTrialModal("start");
+      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setRefCodeInput("");setAcceptedPrivacy(false);trigWelcome();setTrialModal("start");
     }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
   // Generar contraseña temporal aleatoria segura
@@ -2123,7 +2143,8 @@ export default function App(){
           {authMode==="player-register"&&<><FL>Fecha de nacimiento *</FL><TI type="date" value={authForm.birthdate||""} onChange={e=>setAuthForm({...authForm,birthdate:e.target.value})}/><Sub style={{fontSize:11,marginTop:6,color:C.muted}}>Necesaria por seguridad. Los menores de edad usan una versión protegida de la app.</Sub><div style={{height:14}}/></>}
           {authMode!=="admin-login"&&authMode!=="admin-recover"&&<><FL>Email</FL><TI type="email" value={authForm.email} onChange={e=>setAuthForm({...authForm,email:e.target.value})} placeholder="tu@email.com" autoFocus={!authMode.includes("register")}/><div style={{height:14}}/></>}
           {authMode!=="player-recover"&&authMode!=="admin-recover"&&<><FL>Contraseña {authMode==="player-register"&&"(mín 8, 1 mayúscula, 1 número)"}</FL><TI type="password" value={authForm.password} onChange={e=>setAuthForm({...authForm,password:e.target.value})} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&(authMode==="player-register"?doRegister():doLogin())} autoFocus={authMode==="admin-login"}/></>}
-          {authMode==="player-register"&&<div style={{marginTop:18,padding:"14px",background:C.surface2,border:`1px solid ${acceptedPrivacy?C.cyan:C.borderS}`,borderRadius:14,transition:"all 0.25s"}}>
+          {authMode==="player-register"&&<><FL>Código de invitación (opcional)</FL><TI value={refCodeInput} onChange={e=>setRefCodeInput(e.target.value)} placeholder="SMT-XXXXX" style={{textTransform:"uppercase"}}/><Sub style={{fontSize:11,marginTop:6,color:C.muted}}>Si un amigo te invitó, pon su código aquí y ambos ganan 1 mes Premium 🎾</Sub><div style={{height:14}}/></>}
+          {authMode==="player-register"&&<div style={{marginTop:4,padding:"14px",background:C.surface2,border:`1px solid ${acceptedPrivacy?C.cyan:C.borderS}`,borderRadius:14,transition:"all 0.25s"}}>
             <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
               <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{flexShrink:0,width:22,height:22,borderRadius:6,border:`2px solid ${acceptedPrivacy?C.cyan:"rgba(255,255,255,0.25)"}`,background:acceptedPrivacy?C.cyan:"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,transition:"all 0.2s"}}>{acceptedPrivacy&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}</div>
               <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{fontFamily:F.ios,fontSize:13,color:C.text,lineHeight:1.45,flex:1}}>Acepto el <span onClick={(e)=>{e.stopPropagation();setShowPrivacyModal(true);}} style={{color:C.cyan,fontWeight:600,textDecoration:"underline"}}>Aviso de Privacidad y Términos de Uso</span> de Sociedad Mexicana de Tenis</div>
@@ -2472,6 +2493,7 @@ export default function App(){
           <BtnG onClick={()=>{setEditProfile({...p});setEditAsAdmin(isAdmin&&p.id!==user?.id);setShowProfileEdit(true);}} style={{flex:"1 1 140px",padding:12}}><Ico n="edit"/>{isAdmin&&p.id!==user?.id?"EDITAR (ADMIN)":"EDITAR PERFIL"}</BtnG>
           {isMe&&<BtnG onClick={()=>{setSvDraft({serve:"",return:"",forehand:"",backhand:"",image:null});setShowSvModal(true);}} style={{flex:"1 1 140px",padding:12}}><Ico n="chart"/>SUBIR SWINGVISION</BtnG>}
           {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}><Ico n="lock"/>CONTRASEÑA</BtnG>}
+          {isMe&&<BtnG onClick={()=>setShowReferModal(true)} style={{flex:"1 1 140px",padding:12,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none"}}><Ico n="medal"/>INVITA Y GANA 1 MES</BtnG>}
         </div>}
         <div style={{background:C.surface,padding:"18px 20px",margin:"4px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
           <SL>Resumen de temporada</SL>
@@ -2616,6 +2638,20 @@ export default function App(){
           <BtnX onClick={()=>setShowSvModal(false)}>CANCELAR</BtnX>
         </Modal>}
         {viewSvImg&&<div onClick={()=>setViewSvImg(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",padding:20}}><img src={viewSvImg} style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}} alt=""/></div>}
+        {showReferModal&&isMe&&<Modal onClose={()=>setShowReferModal(false)} center>
+          <div style={{textAlign:"center",marginBottom:6}}><Ico n="medal" s={40} c={C.cyan}/></div>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>INVITA A UN AMIGO</T>
+          <Sub style={{textAlign:"center",fontSize:13,lineHeight:1.5,marginBottom:18}}>Cuando tu amigo se registre con tu código, <b style={{color:C.cyan}}>ambos ganan 1 mes de SMT Premium gratis</b> 🎾</Sub>
+          <div style={{background:C.surface2,border:`1px dashed ${C.cyanBdr}`,borderRadius:14,padding:"18px 14px",textAlign:"center",marginBottom:16}}>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.muted,marginBottom:6,fontWeight:600}}>TU CÓDIGO</div>
+            <div style={{fontFamily:F.bn,fontSize:32,color:C.cyan,letterSpacing:"0.06em"}}>{p.referralCode||"—"}</div>
+          </div>
+          <BtnP onClick={()=>{
+            const msg=`¡Únete a SMT (Sociedad Mexicana de Tenis)! 🎾 Organiza tus partidos, entra a torneos y encuentra rival cerca de ti.\n\nUsa mi código de invitación *${p.referralCode}* al registrarte y ambos ganamos 1 mes de Premium gratis.\n\nDescárgala aquí: ${APP_DOWNLOAD_URL}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+          }}><Ico n="send"/>COMPARTIR POR WHATSAPP</BtnP>
+          <BtnX onClick={()=>setShowReferModal(false)}>CERRAR</BtnX>
+        </Modal>}
       </div>
       <ShowTabBar/>
     </div>;
