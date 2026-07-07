@@ -347,7 +347,7 @@ function Chip({type,children,style}){
 }
 
 function Modal({onClose,children,large,center}){
-  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?16:0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"90vh":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
+  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?"max(28px,calc(env(safe-area-inset-top) + 8px)) 14px max(20px,calc(env(safe-area-inset-bottom) + 10px))":0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"100%":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
 }
 
 const BtnP=({onClick,children,style})=><button onClick={onClick} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"15px 18px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,marginTop:12,boxShadow:`0 10px 28px rgba(2,136,209,0.42)`,letterSpacing:"-0.01em",...style}}>{children}</button>;
@@ -750,6 +750,8 @@ export default function App(){
   const [editTourney,setEditTourney]=useState(null);
   const [deleteTId,setDeleteTId]=useState(null);
   const [showProfileEdit,setShowProfileEdit]=useState(false);
+  const [showSetCat,setShowSetCat]=useState(false);
+  const [setCatVal,setSetCatVal]=useState("");
   const [editProfile,setEditProfile]=useState(null);
   const [showDeleteAccount,setShowDeleteAccount]=useState(false);
   const [deleteConfirmText,setDeleteConfirmText]=useState("");
@@ -800,7 +802,7 @@ export default function App(){
   const [previewMediaReq,setPreviewMediaReq]=useState(null);
   const [marketplace,setMarketplace]=useState([]);
   const [mpModal,setMpModal]=useState(false);
-  const [mpDraft,setMpDraft]=useState({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[]});
+  const [mpDraft,setMpDraft]=useState({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[],payInfo:""});
   const [mpDetail,setMpDetail]=useState(null);
   const [mpFilter,setMpFilter]=useState("Todos");
   const [mpScanning,setMpScanning]=useState(false);
@@ -868,6 +870,7 @@ export default function App(){
     if(viewP?.id===u.id)setViewP(u);
   };
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);};
+  const saveQuickCategory=(cat)=>{if(!cat||!user)return;const u={...user,category:cat,categoryLocked:true};updateUser(u);try{supabase.from("profiles").update({category:cat,category_locked:true}).eq("auth_id",user.id);}catch(e){}setShowSetCat(false);};
   const updateAccount=(u)=>updateEverywhere(u);
   const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
@@ -961,6 +964,7 @@ export default function App(){
     try{
       const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:"https://smt-green.vercel.app/reset.html"});
       if(error){setAuthErr(error.message);return;}
+      try{const acct=accounts.find(a=>(a.email||"").toLowerCase()===email);notifyAdmins({type:"admin",title:"Recuperación de contraseña",body:(acct?acct.name:email)+" pidió recuperar su contraseña. Si no le llega el correo, ayúdalo desde Supabase.",link:"admin-inbox"});}catch(e){}
       setAuthErr("");setResetRequestSent(true);
     }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
@@ -1799,9 +1803,9 @@ export default function App(){
     if(!mpDraft.price||parseFloat(mpDraft.price)<=0){alert("Ingresa un precio válido");return;}
     if(mpDraft.images.length===0){alert("Sube al menos una foto del producto");return;}
     if(!user.phone){alert("Agrega tu número de celular en tu perfil para vender productos.");return;}
-    setMarketplace(prev=>[{id:`mp-${Date.now()}`,sellerId:user.id,sellerName:user.name,sellerPhoto:user.photo,sellerAvatar:user.avatar,sellerPhone:user.phone,sellerCity:user.city||"—",title:mpDraft.title.trim(),category:mpDraft.category,price:parseFloat(mpDraft.price),condition:mpDraft.condition,description:mpDraft.description.trim(),images:mpDraft.images,createdAt:Date.now(),status:"available"},...prev]);
+    setMarketplace(prev=>[{id:`mp-${Date.now()}`,sellerId:user.id,sellerName:user.name,sellerPhoto:user.photo,sellerAvatar:user.avatar,sellerPhone:user.phone,sellerCity:user.city||"—",title:mpDraft.title.trim(),category:mpDraft.category,price:parseFloat(mpDraft.price),condition:mpDraft.condition,description:mpDraft.description.trim(),images:mpDraft.images,sellerPay:(mpDraft.payInfo||"").trim(),createdAt:Date.now(),status:"available"},...prev]);
     setMpModal(false);
-    setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[]});
+    setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[],payInfo:""});
     alert("¡Producto publicado!");
   };
 
@@ -1953,6 +1957,21 @@ export default function App(){
           </div>)}
       </div>
     </div>}
+    {user&&user.id!=="__guest__"&&!isAdmin&&!guest&&!user.category&&!["welcome","auth"].includes(screen)&&<div style={{position:"fixed",left:0,right:0,bottom:"calc(env(safe-area-inset-bottom,0px) + 66px)",zIndex:180,display:"flex",justifyContent:"center",padding:"0 12px",pointerEvents:"none"}}>
+      <div style={{pointerEvents:"auto",width:"100%",maxWidth:560,display:"flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,rgba(255,159,10,0.97),rgba(255,120,10,0.97))",borderRadius:14,padding:"10px 12px",boxShadow:"0 8px 26px rgba(0,0,0,0.5)",animation:"slideUp 0.4s"}}>
+        <div style={{flexShrink:0,lineHeight:0}}><Ico n="warn" s={20} c="#1a1200"/></div>
+        <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:"#1a1200",lineHeight:1.25}}>Agrega tu categoría</div><div style={{fontFamily:F.ios,fontSize:11,color:"rgba(0,0,0,0.72)",lineHeight:1.25}}>Para inscribirte a torneos y retar jugadores.</div></div>
+        <button onClick={()=>{setSetCatVal(user.category||"");setShowSetCat(true);}} className="btn-press" style={{flexShrink:0,background:"#1a1200",border:"none",color:"#FFD15C",fontFamily:F.ios,fontSize:12.5,fontWeight:700,padding:"9px 15px",borderRadius:10,cursor:"pointer"}}>Elegir</button>
+      </div>
+    </div>}
+    {showSetCat&&<Modal onClose={()=>setShowSetCat(false)} center>
+      <div style={{textAlign:"center",marginBottom:6}}><div style={{lineHeight:0,display:"flex",justifyContent:"center",marginBottom:8}}><Ico n="trophy" s={38} c={C.cyan}/></div><T size={22}>ELIGE TU CATEGORÍA</T></div>
+      <Sub style={{textAlign:"center",fontSize:13,marginBottom:16,lineHeight:1.5}}>Tu categoría define en qué torneos y contra quién juegas. Elígela para poder inscribirte y retar.</Sub>
+      <Seg options={CATS} value={setCatVal||"B"} onChange={setSetCatVal} style={{marginBottom:8}}/>
+      <Sub style={{fontSize:11,textAlign:"center",marginBottom:6,color:C.muted}}>Después solo se puede cambiar con aprobación del admin.</Sub>
+      <BtnP onClick={()=>saveQuickCategory(setCatVal||"B")}>GUARDAR CATEGORÍA</BtnP>
+      <BtnX onClick={()=>setShowSetCat(false)}>Ahora no</BtnX>
+    </Modal>}
     {showOnboarding&&!isAdmin&&<Onboarding onClose={()=>setShowOnboarding(false)} onGoProfile={()=>{setShowOnboarding(false);if(guest){setAuthMode("player-register");setScreen("auth");}else{setViewP(user);setScreen("player-card");}}} onShowPremium={()=>setShowPremium(true)}/>}
     {trialModal&&<div style={{position:"fixed",inset:0,zIndex:960,background:"rgba(2,6,16,0.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div style={{width:"100%",maxWidth:400,background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:"1px solid #FFD15C",borderRadius:24,padding:"30px 24px",paddingBottom:"max(30px,calc(env(safe-area-inset-bottom) + 22px))",textAlign:"center",animation:"scaleIn 0.34s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:"0 24px 70px rgba(0,0,0,0.6)"}}>
@@ -4231,7 +4250,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{padding:"14px 18px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
               <div><T size={32}>MARKETPLACE</T><Sub style={{marginTop:4}}>Compra y venta entre jugadores</Sub></div>
-              {!isAdmin&&<BtnG onClick={()=>{setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[]});setMpScanResult(null);setMpModal(true);}}>＋ VENDER</BtnG>}
+              {!isAdmin&&<BtnG onClick={()=>{setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[],payInfo:""});setMpScanResult(null);setMpModal(true);}}>＋ VENDER</BtnG>}
             </div>
             {(incomingPur.length>0||myPur.length>0)&&<div style={{margin:"14px 0 6px",background:`linear-gradient(135deg,rgba(79,195,247,0.10),rgba(2,136,209,0.05))`,border:`1px solid ${C.cyanBdr}`,borderRadius:12,padding:12}}>
               {incomingPur.filter(p=>p.status==="pending").length>0&&<div style={{marginBottom:incomingPur.filter(p=>p.status!=="pending").length>0||myPur.length>0?12:0}}>
@@ -4292,6 +4311,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{flex:1}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.muted,fontWeight:600}}>VENDEDOR</div><div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginTop:2}}>{l.sellerName}</div></div>
                 <span style={{color:C.muted,fontSize:20}}>›</span>
               </div>
+              {l.sellerId!==user?.id&&l.sellerPay&&<button onClick={()=>{const pay=(l.sellerPay||"").trim();if(/^https?:\/\//i.test(pay)){try{window.open(pay,"_system");}catch(e){window.open(pay,"_blank");}}else{try{navigator.clipboard.writeText(pay);}catch(e){}alert("Datos de pago del vendedor (copiados):\n\n"+pay+"\n\nP\u00e1gale directo por MercadoPago o transferencia y acuerden la entrega. SMT no cobra comisi\u00f3n.");}}} className="btn-press" style={{width:"100%",marginBottom:10,background:"linear-gradient(135deg,#009EE3,#00B1EA)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:15,fontWeight:700,padding:"14px",borderRadius:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n="cart" s={16} c="#fff"/>PAGAR AL VENDEDOR</button>}
               {l.sellerId===user?.id?<>
                 <div style={{padding:"12px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,marginBottom:10,fontFamily:F.ios,fontSize:13,color:C.cyan,textAlign:"center",fontWeight:600}}>Este es tu producto</div>
                 <button onClick={()=>deleteListing(l.id)} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:13,borderRadius:12,fontFamily:F.ios,fontSize:14,cursor:"pointer",fontWeight:600}}><Ico n="x" s={14}/>ELIMINAR PUBLICACIÓN</button>
@@ -4340,6 +4360,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <FL>Estado del producto</FL>
           <Seg options={MP_COND} value={mpDraft.condition} onChange={v=>setMpDraft({...mpDraft,condition:v})} style={{marginBottom:12}}/>
           <FL>Precio (MXN) *</FL><TI type="number" value={mpDraft.price} onChange={e=>setMpDraft({...mpDraft,price:e.target.value})} placeholder="3500"/>
+          <div style={{height:12}}/>
+          <FL>¿Cómo te pagan? (recomendado)</FL><TI value={mpDraft.payInfo} onChange={e=>setMpDraft({...mpDraft,payInfo:e.target.value})} placeholder="Tu link de MercadoPago, o CLABE/celular para transferencia"/>
+          <Sub style={{fontSize:11,marginTop:6,color:C.muted,lineHeight:1.4}}>El comprador te paga directo. SMT no cobra comisión. En MercadoPago: Cobrar → "Link de pago".</Sub>
           <div style={{height:12}}/>
           <FL>Descripción (opcional)</FL>
           <textarea value={mpDraft.description} onChange={e=>setMpDraft({...mpDraft,description:e.target.value})} placeholder="Detalles del producto, tiempo de uso, motivo de venta..." rows={3} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical"}}/>
