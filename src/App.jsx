@@ -2572,7 +2572,29 @@ export default function App(){
           {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}><Ico n="lock"/>CONTRASEÑA</BtnG>}
           {isMe&&<BtnG onClick={()=>setShowReferModal(true)} style={{flex:"1 1 140px",padding:12,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none"}}><Ico n="medal"/>INVITA Y GANA 1 MES</BtnG>}
         </div>}
-        <div style={{background:C.surface,padding:"18px 20px",margin:"4px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
+        <div style={{padding:"6px 16px 0"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,animation:"statPop 0.4s backwards"}}>
+              <div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:C.muted,fontWeight:600,marginBottom:6}}>WIN RATE</div>
+              <div style={{fontFamily:F.bn,fontSize:32,color:C.cyan,lineHeight:1}}>{wr}%</div>
+              <div style={{height:6,background:C.surface3,borderRadius:4,overflow:"hidden",marginTop:9}}><div style={{height:"100%",width:wr+"%",background:`linear-gradient(90deg,${C.cyanBright},${C.cyanDeep})`,borderRadius:4,animation:"growW 1.1s ease both"}}/></div>
+            </div>
+            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,animation:"statPop 0.4s 0.07s backwards"}}>
+              <div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:C.muted,fontWeight:600,marginBottom:6}}>RÉCORD</div>
+              <div style={{fontFamily:F.bn,fontSize:32,color:C.text,lineHeight:1}}>{p.wins||0}<span style={{fontSize:15,color:C.cyan}}>W</span> {p.losses||0}<span style={{fontSize:15,color:C.muted}}>L</span></div>
+              <div style={{fontFamily:F.ios,fontSize:11,color:C.muted,marginTop:8}}>{(p.wins||0)+(p.losses||0)} partidos jugados</div>
+            </div>
+            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,display:"flex",alignItems:"center",gap:11,animation:"statPop 0.4s 0.14s backwards"}}>
+              <span style={{width:38,height:38,borderRadius:11,background:"rgba(201,168,76,0.14)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="trophy" s={20} c={C.gold}/></span>
+              <div><div style={{fontFamily:F.bn,fontSize:28,color:C.gold,lineHeight:1}}>{p.titles||0}</div><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:C.muted,fontWeight:600}}>TÍTULOS</div></div>
+            </div>
+            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,display:"flex",alignItems:"center",gap:11,animation:"statPop 0.4s 0.21s backwards"}}>
+              <span style={{width:38,height:38,borderRadius:11,background:p.category?`${CAT_C[p.category]}22`:"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:F.bn,fontSize:16,color:p.category?CAT_C[p.category]:C.muted}}>{p.category||"—"}</span>
+              <div><div style={{fontFamily:F.bn,fontSize:28,color:C.cyan,lineHeight:1}}>#{p.ranking||"—"}</div><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:C.muted,fontWeight:600}}>RANKING · {p.points||0} PTS</div></div>
+            </div>
+          </div>
+        </div>
+        <div style={{background:C.surface,padding:"18px 20px",margin:"10px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
           <SL>Resumen de temporada</SL>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px 24px"}}>
             {[[p.stats?.setsDropped||0,"SETS CAÍDOS"],[p.stats?.gamesLost||0,"JUEGOS PERDIDOS"],[p.stats?.aces||0,"ACES"],[p.stats?.doubleFaults||0,"DOBLES FALTAS"]].map(([v,l],i)=><div key={l} style={{animation:`statPop 0.4s ${i*0.07}s backwards`}}>
@@ -2596,13 +2618,6 @@ export default function App(){
           </div>;})}
         </div>}
         <div style={{background:C.surface,margin:"10px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`,overflow:"hidden"}}>
-          <Row label="W / L" val={`${p.wins||0} — ${p.losses||0}`}/>
-          <Row label="Win Rate" val={`${wr}%`}/>
-          <Row label="Categoría" val={p.category?<span style={{color:CAT_C[p.category]}}>{p.category}</span>:"— sin asignar —"}/>
-          <Row label="Títulos" val={p.titles||0}/>
-          <Row label="Mano hábil" val={p.hand||"—"}/>
-          <Row label="Raqueta" val={p.racket||"—"}/>
-          <Row label="Club sede" val={p.club||"—"}/>
           <Row label="País" val={p.country||"—"}/>
           <Row label="Estado" val={p.state||"—"}/>
           <Row label="Ciudad" val={p.city||"—"}/>
