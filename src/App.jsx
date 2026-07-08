@@ -78,6 +78,8 @@ const RACKETS=["Wilson Pro Staff","Wilson Blade","Wilson Clash","Wilson Ultra","
 const CATS=["Abierta","B","C","D","Di"];
 const CAT_C={Abierta:"#FFD700",B:"#4FC3F7",C:"#5BAD6F",D:"#F59E0B",Di:"#B8C5D6"};
 const fmtTDate=(d)=>{try{const M=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];const dt=new Date(String(d).replace(" ","T"));if(isNaN(dt.getTime()))return d;return dt.getDate()+" "+M[dt.getMonth()]+" "+dt.getFullYear();}catch(e){return d;}};
+const LIME="#C7F94E";const LIMED="#12200a";
+const OBJETIVOS=[{k:"mejorar",ic:"medal",t:"Mejorar mi juego",d:"Ponte metas y sigue tu progreso"},{k:"torneos",ic:"trophy",t:"Torneos y ganar dinero",d:"Compite y ll\u00e9vate premios"},{k:"fisico",ic:"fire",t:"Mejorar mi condici\u00f3n f\u00edsica",d:"Plan f\u00edsico y prevenci\u00f3n de lesiones"},{k:"jugar",ic:"people",t:"Encontrar con qui\u00e9n jugar",d:"Rivales de tu nivel y grupos"},{k:"equipo",ic:"cart",t:"Comprar o vender equipo",d:"Marketplace de tenis"}];
 const nextCat=c=>{const i=CATS.indexOf(c);if(i<=0)return c;return CATS[i-1];};
 const CLUBS=["Club Campestre Monterrey","Club Sonoma","Club Industrial","Club San Agustín","Club Británico","Club Bosques","Casa Club del Valle","Otro"];
 const MX_STATES=["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","CDMX","Coahuila","Colima","Durango","Estado de México","Guanajuato","Guerrero","Hidalgo","Jalisco","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
@@ -264,7 +266,7 @@ const profileToPlayer=(r)=>({
   ranking:r.ranking||0, points:r.points||0, wins:r.wins||0, losses:r.losses||0, titles:r.titles||0,
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
-  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false, premiumUntil:r.premium_until||null, trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false,
+  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false, premiumUntil:r.premium_until||null, trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false, objectives:r.objectives||[], objectivesSet:r.objectives_set||false, physical:r.physical||{}, goals:r.goals||{},
   referralCode:r.referral_code||null,
 });
 const playerToProfile=(p,authId)=>({
@@ -276,7 +278,7 @@ const playerToProfile=(p,authId)=>({
   photo_url:p.photo||null, avatar:p.avatar||ini(p.name||""),
   ranking:p.ranking||0, points:p.points||0, wins:p.wins||0, losses:p.losses||0, titles:p.titles||0,
   hand:p.hand||"Diestro", racket:p.racket||"Wilson Pro Staff", stats:p.stats||{},
-  require_password_change:p.requirePasswordChange||false, premium:p.premium||false, premium_until:p.premiumUntil||null, trial_used:p.trialUsed||false, trial_ended_seen:p.trialEndedSeen||false,
+  require_password_change:p.requirePasswordChange||false, premium:p.premium||false, premium_until:p.premiumUntil||null, trial_used:p.trialUsed||false, trial_ended_seen:p.trialEndedSeen||false, objectives:p.objectives||[], objectives_set:p.objectivesSet||false, physical:p.physical||{}, goals:p.goals||{},
   privacy_accepted_at:p.privacyAcceptedAt?new Date(p.privacyAcceptedAt).toISOString():new Date().toISOString(),
 });
 
@@ -758,6 +760,7 @@ export default function App(){
   const [showProfileEdit,setShowProfileEdit]=useState(false);
   const [showSetCat,setShowSetCat]=useState(false);
   const [setCatVal,setSetCatVal]=useState("");
+  const [objSel,setObjSel]=useState([]);
   const [editProfile,setEditProfile]=useState(null);
   const [showDeleteAccount,setShowDeleteAccount]=useState(false);
   const [deleteConfirmText,setDeleteConfirmText]=useState("");
@@ -857,7 +860,7 @@ export default function App(){
           if(prof&&active){
             const p=applyTrialState(profileToPlayer(prof));
             if(p.isBanned){await supabase.auth.signOut();}
-            else{setUser(p);setIsAdmin(false);setScreen("home");}
+            else{setUser(p);setIsAdmin(false);setScreen("metas");}
           }
         }
       }catch(e){console.error("Error restaurando sesión:",e);}
@@ -877,6 +880,7 @@ export default function App(){
   };
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);};
   const saveQuickCategory=(cat)=>{if(!cat||!user)return;const u={...user,category:cat,categoryLocked:true};updateUser(u);try{supabase.from("profiles").update({category:cat,category_locked:true}).eq("auth_id",user.id);}catch(e){}setShowSetCat(false);};
+  const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);setScreen("metas");};
   const updateAccount=(u)=>updateEverywhere(u);
   const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
@@ -895,7 +899,7 @@ export default function App(){
         if(p.isBanned){await supabase.auth.signOut();setAuthErr("Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
         setAuthErr("");setUser(p);setIsAdmin(false);
         if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
-        setScreen("home");setAuthForm({email:"",password:"",name:""});trigWelcome();
+        setScreen("metas");setAuthForm({email:"",password:"",name:""});trigWelcome();
       }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
     }else if(authMode==="admin-login"){
       if(authForm.password!==adminPass)return setAuthErr("Contraseña incorrecta");
@@ -952,7 +956,7 @@ export default function App(){
       setAuthErr("");
       const p=profileToPlayer(finalRow);
       setAccounts(prev=>[...prev.filter(a=>a.id!==p.id),p]);
-      setUser(p);setIsAdmin(false);setScreen("home");setAuthForm({email:"",password:"",name:""});setRefCodeInput("");setAcceptedPrivacy(false);trigWelcome();setTrialModal("start");
+      setUser(p);setIsAdmin(false);setScreen("metas");setAuthForm({email:"",password:"",name:""});setRefCodeInput("");setAcceptedPrivacy(false);trigWelcome();setTrialModal("start");
     }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
   };
   // Generar contraseña temporal aleatoria segura
@@ -1977,6 +1981,20 @@ export default function App(){
           </div>)}
       </div>
     </div>}
+    {user&&user.id!=="__guest__"&&!isAdmin&&!guest&&!user.objectivesSet&&!trialModal&&!showOnboarding&&!["welcome","auth"].includes(screen)&&<div style={{position:"fixed",inset:0,zIndex:955,background:"#0A0F0C",overflowY:"auto",fontFamily:F.ios}}>
+      <div style={{maxWidth:480,margin:"0 auto",padding:"max(46px,calc(env(safe-area-inset-top) + 14px)) 22px max(28px,calc(env(safe-area-inset-bottom) + 18px))",minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+        <div style={{fontFamily:F.bn,fontSize:34,color:"#F2F5EA",letterSpacing:"0.02em",lineHeight:1.05,marginBottom:6}}>¿QUÉ QUIERES<br/>LOGRAR EN SMT?</div>
+        <div style={{fontFamily:F.ios,fontSize:14,color:"#95a08f",marginBottom:20,lineHeight:1.4}}>Elige una o varias. Personalizamos tu experiencia.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:11,marginBottom:"auto"}}>
+          {OBJETIVOS.map(o=>{const sel=objSel.includes(o.k);return <div key={o.k} onClick={()=>setObjSel(sel?objSel.filter(x=>x!==o.k):[...objSel,o.k])} className="btn-press" style={{display:"flex",alignItems:"center",gap:13,cursor:"pointer",background:sel?"rgba(199,249,78,0.12)":"#141B14",border:`1.5px solid ${sel?LIME:"#20291f"}`,borderRadius:15,padding:"14px 15px"}}>
+            <div style={{width:42,height:42,borderRadius:12,flexShrink:0,background:sel?LIME:"#20291f",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={o.ic} s={22} c={sel?LIMED:"#95a08f"}/></div>
+            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:"#F2F5EA"}}>{o.t}</div><div style={{fontFamily:F.ios,fontSize:12,color:"#95a08f",marginTop:1,lineHeight:1.3}}>{o.d}</div></div>
+            <div style={{width:24,height:24,borderRadius:7,flexShrink:0,border:`2px solid ${sel?LIME:"#3a4230"}`,background:sel?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<Ico n="check" s={15} c={LIMED}/>}</div>
+          </div>;})}
+        </div>
+        <button onClick={()=>saveObjectives(objSel.length?objSel:["mejorar"])} className="btn-press" style={{width:"100%",marginTop:22,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"15px",borderRadius:20,cursor:"pointer"}}>{objSel.length?"CONTINUAR ("+objSel.length+")":"Omitir por ahora"}</button>
+      </div>
+    </div>}
     {user&&user.id!=="__guest__"&&!isAdmin&&!guest&&!user.category&&!["welcome","auth"].includes(screen)&&<div style={{position:"fixed",left:0,right:0,bottom:"calc(env(safe-area-inset-bottom,0px) + 66px)",zIndex:180,display:"flex",justifyContent:"center",padding:"0 12px",pointerEvents:"none"}}>
       <div style={{pointerEvents:"auto",width:"100%",maxWidth:560,display:"flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,rgba(255,159,10,0.97),rgba(255,120,10,0.97))",borderRadius:14,padding:"10px 12px",boxShadow:"0 8px 26px rgba(0,0,0,0.5)",animation:"slideUp 0.4s"}}>
         <div style={{flexShrink:0,lineHeight:0}}><Ico n="warn" s={20} c="#1a1200"/></div>
@@ -2069,6 +2087,7 @@ export default function App(){
     // NUEVO: COACH - silbato + lupa
     if(name==="coach") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a6 6 0 0 1 6-6h7a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4h-1v3a1 1 0 0 1-1 1H9a6 6 0 0 1-6-6z"/><circle cx="9" cy="12" r="1.2" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><path d="M18 8.5v0"/></svg>;
     if(name==="chat") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><circle cx="8" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><circle cx="12" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/><circle cx="16" cy="11" r="1.1" fill={filled?"#fff":"none"} stroke={filled?"none":stroke}/></svg>;
+    if(name==="target") return <svg width={w} height={h} viewBox="0 0 24 24" fill={filled?(color||"#4FC3F7"):"none"} stroke={filled?"none":stroke} strokeWidth={strokeW} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.3" fill={filled?"#fff":(color||stroke)} stroke="none"/></svg>;
     return null;
   };
 
@@ -2076,6 +2095,7 @@ export default function App(){
     if(!user) return null;
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
     const tabs=[
+      {k:"metas",icon:"target",label:"Metas"},
       {k:"home",icon:"trophy",label:"Torneos"},
       ...(userIsMinor?[]:[{k:"find-hub",icon:"bolt",label:"Find"}]),
       ...(userIsMinor?[]:[{k:"marketplace",icon:"bag",label:"Market"}]),
@@ -2091,7 +2111,7 @@ export default function App(){
       else if(k==="profile-tab"){setViewP(user);setScreen("player-card");}
       else setScreen(k);
     };
-    const currentTab=screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio"||screen==="coach-videos")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
+    const currentTab=screen==="metas"?"metas":screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio"||screen==="coach-videos")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
     return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,maxWidth:720,margin:"0 auto",background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
       <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start",padding:"8px 2px 4px",maxWidth:640,margin:"0 auto"}}>
         {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="tab-btn" style={{flex:1,background:"transparent",border:"none",padding:"6px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",fontFamily:F.ios,minHeight:60,minWidth:0}}>
@@ -2658,6 +2678,58 @@ export default function App(){
   }
 
   // HOME
+  if(screen==="metas"){
+    if(isAdmin){setTimeout(()=>setScreen("home"),0);return null;}
+    const obj=user?.objectives||[];
+    const has=(k)=>!obj.length||obj.includes(k);
+    const money=(tournaments||[]).reduce((a,t)=>{try{const ch=getChamp(t);if(ch&&ch.id===user?.id){return a+(parseInt(String(t.prize||"").replace(/[^0-9]/g,""))||0);}return a;}catch(e){return a;}},0);
+    const g=user?.goals||{};const streak=g.streak||0;const weekDone=g.weekDone||0;const wp=Math.min(1,weekDone/5);
+    const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;
+    const recs=[];
+    if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
+    if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
+    if(has("jugar")||has("mejorar"))recs.push({ic:"vs",t:"Encuentra rival",s:()=>setScreen("find-match")});
+    if(has("jugar"))recs.push({ic:"people",t:"Crea un grupo",s:()=>setScreen("social")});
+    if(has("torneos"))recs.push({ic:"trophy",t:"Inscríbete a un torneo",s:()=>setScreen("home")});
+    if(has("equipo"))recs.push({ic:"cart",t:"Vende tu equipo",s:()=>setScreen("marketplace")});
+    const Card=({children,edge,onClick})=><div onClick={onClick} className={onClick?"btn-press":""} style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderLeft:edge?`3px solid ${edge}`:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"12px 13px",marginBottom:10,cursor:onClick?"pointer":"default"}}>{children}</div>;
+    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style><Aurora intense={0.45}/>
+      <div style={{position:"relative",zIndex:1}}>
+        <Nav/>
+        <div style={{padding:"6px 18px 18px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:11,marginBottom:14}}>
+            <PA photo={user?.photo} avatar={user?.avatar} size={40} border={`2px solid ${LIME}`}/>
+            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:16,fontWeight:700,color:C.text}}>Hola, {user?.firstName||(user?.name||"jugador").split(" ")[0]}</div><Sub style={{fontSize:12}}>{user?.category?"Categoría "+user.category:"Sin categoría"} · {user?.city||"—"}</Sub></div>
+            <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(199,249,78,0.12)",border:`1px solid ${LIME}55`,borderRadius:16,padding:"5px 10px"}}><Ico n="fire" s={14} c={LIME}/><span style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:LIME}}>{streak}</span></div>
+          </div>
+          <T size={30} style={{marginBottom:12}}>MIS METAS</T>
+          <div style={{display:"flex",alignItems:"center",gap:14,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,marginBottom:11}}>
+            <svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke={C.surface2} strokeWidth="6"/><circle cx="29" cy="29" r="23" fill="none" stroke={LIME} strokeWidth="6" strokeLinecap="round" strokeDasharray="145" strokeDashoffset={145*(1-wp)} transform="rotate(-90 29 29)"/></svg>
+            <div><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Tu semana</div><Sub style={{fontSize:12,marginTop:2}}>{weekDone} de 5 días activos</Sub><div style={{fontFamily:F.ios,fontSize:11,fontWeight:700,color:LIME,marginTop:3}}>{weekDone===0?"¡Empieza hoy!":weekDone>=5?"¡Semana completa!":"¡Vas bien, sigue!"}</div></div>
+          </div>
+          {(has("fisico")||has("mejorar"))&&<Card edge={LIME} onClick={()=>setScreen("fisio")}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Plan físico</div><Sub style={{fontSize:11,marginTop:2}}>{imc?"IMC "+imc.toFixed(1)+" · riesgo bajo":"Crea tu plan y sigue tus metas"}</Sub></div>
+              <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>{imc?<div style={{fontFamily:F.bn,fontSize:22,color:LIME}}>{imc.toFixed(1)}</div>:<span style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:LIME,fontWeight:700,background:"rgba(199,249,78,0.14)",border:`1px solid ${LIME}55`,padding:"4px 8px",borderRadius:6}}>NUEVO</span>}<Ico n="chevronDown" s={16} c={C.muted}/></div>
+            </div>
+          </Card>}
+          {(has("mejorar")||has("fisico"))&&<Card edge={C.cyan} onClick={()=>setScreen("coach")}>
+            <div style={{display:"flex",alignItems:"center",gap:9}}><Ico n="ball" s={18} c={C.cyan}/><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Rutina de la semana</div><Sub style={{fontSize:11}}>Reserva un coach para tu plan</Sub></div><Ico n="chevronDown" s={16} c={C.muted}/></div>
+          </Card>}
+          {has("torneos")&&<Card edge={LIME} onClick={()=>setScreen("home")}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Torneos</div><Sub style={{fontSize:11,marginTop:2}}>{user?.titles||0} títulos · {user?.wins||0}W-{user?.losses||0}L</Sub></div><div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:LIME}}>${money.toLocaleString()}</div><Sub style={{fontSize:10}}>ganados</Sub></div></div>
+          </Card>}
+          {recs.length>0&&<>
+            <div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text,margin:"6px 0 9px"}}>Te recomendamos</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>{recs.map((r,i)=><div key={i} onClick={r.s} className="btn-press" style={{display:"inline-flex",alignItems:"center",gap:6,border:`1px solid ${C.cyanBdr}`,color:C.cyan,fontFamily:F.ios,fontSize:12.5,fontWeight:600,padding:"9px 13px",borderRadius:20,cursor:"pointer",background:"rgba(79,195,247,0.08)"}}><Ico n={r.ic} s={14} c={C.cyan}/>{r.t}</div>)}</div>
+          </>}
+          <TabSpacer/>
+        </div>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
   if(screen==="home"){
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style><Aurora intense={0.5}/>
