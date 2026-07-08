@@ -1982,17 +1982,17 @@ export default function App(){
       </div>
     </div>}
     {user&&user.id!=="__guest__"&&!isAdmin&&!guest&&!user.objectivesSet&&!trialModal&&!showOnboarding&&!["welcome","auth"].includes(screen)&&<div style={{position:"fixed",inset:0,zIndex:955,background:"#0A0F0C",overflowY:"auto",fontFamily:F.ios}}>
-      <div style={{maxWidth:480,margin:"0 auto",padding:"max(46px,calc(env(safe-area-inset-top) + 14px)) 22px max(28px,calc(env(safe-area-inset-bottom) + 18px))",minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+      <div style={{maxWidth:480,margin:"0 auto",padding:"max(46px,calc(env(safe-area-inset-top) + 14px)) 22px max(130px,calc(env(safe-area-inset-bottom) + 100px))"}}>
         <div style={{fontFamily:F.bn,fontSize:34,color:"#F2F5EA",letterSpacing:"0.02em",lineHeight:1.05,marginBottom:6}}>¿QUÉ QUIERES<br/>LOGRAR EN SMT?</div>
         <div style={{fontFamily:F.ios,fontSize:14,color:"#95a08f",marginBottom:20,lineHeight:1.4}}>Elige una o varias. Personalizamos tu experiencia.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:11,marginBottom:"auto"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:11,marginBottom:22}}>
           {OBJETIVOS.map(o=>{const sel=objSel.includes(o.k);return <div key={o.k} onClick={()=>setObjSel(sel?objSel.filter(x=>x!==o.k):[...objSel,o.k])} className="btn-press" style={{display:"flex",alignItems:"center",gap:13,cursor:"pointer",background:sel?"rgba(199,249,78,0.12)":"#141B14",border:`1.5px solid ${sel?LIME:"#20291f"}`,borderRadius:15,padding:"14px 15px"}}>
             <div style={{width:42,height:42,borderRadius:12,flexShrink:0,background:sel?LIME:"#20291f",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={o.ic} s={22} c={sel?LIMED:"#95a08f"}/></div>
             <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:"#F2F5EA"}}>{o.t}</div><div style={{fontFamily:F.ios,fontSize:12,color:"#95a08f",marginTop:1,lineHeight:1.3}}>{o.d}</div></div>
             <div style={{width:24,height:24,borderRadius:7,flexShrink:0,border:`2px solid ${sel?LIME:"#3a4230"}`,background:sel?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<Ico n="check" s={15} c={LIMED}/>}</div>
           </div>;})}
         </div>
-        <button onClick={()=>saveObjectives(objSel.length?objSel:["mejorar"])} className="btn-press" style={{width:"100%",marginTop:22,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"15px",borderRadius:20,cursor:"pointer"}}>{objSel.length?"CONTINUAR ("+objSel.length+")":"Omitir por ahora"}</button>
+        <button onClick={()=>saveObjectives(objSel.length?objSel:["mejorar"])} className="btn-press" style={{width:"100%",marginTop:4,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"16px",borderRadius:20,cursor:"pointer"}}>{objSel.length?"CONTINUAR ("+objSel.length+")":"Omitir por ahora"}</button>
       </div>
     </div>}
     {user&&user.id!=="__guest__"&&!isAdmin&&!guest&&!user.category&&!["welcome","auth"].includes(screen)&&<div style={{position:"fixed",left:0,right:0,bottom:"calc(env(safe-area-inset-bottom,0px) + 66px)",zIndex:180,display:"flex",justifyContent:"center",padding:"0 12px",pointerEvents:"none"}}>
