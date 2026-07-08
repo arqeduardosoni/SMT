@@ -790,6 +790,7 @@ export default function App(){
   const [fqData,setFqData]=useState({});
   const [dayModal,setDayModal]=useState(null);
   const [doneModal,setDoneModal]=useState(null);
+  const [chartKcal,setChartKcal]=useState(false);
   const [editProfile,setEditProfile]=useState(null);
   const [showDeleteAccount,setShowDeleteAccount]=useState(false);
   const [deleteConfirmText,setDeleteConfirmText]=useState("");
@@ -912,6 +913,7 @@ export default function App(){
   const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);const we=editObj;setEditObj(false);setScreen(we?"metas":((arr.includes("fisico")||arr.includes("mejorar"))?"fisio-q":"metas"));};
   const saveFisioQ=()=>{const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:(fqData.goalPhys&&fqData.goalPhys.length?fqData.goalPhys:["rendimiento"]),injury:(fqData.injury||"Ninguna").toLowerCase(),experience:fqData.experience||"Intermedio",freq:fqData.freq||3};const u={...user,physical:phys};updateUser(u);try{supabase.from("profiles").update({physical:phys}).eq("auth_id",user.id);}catch(e){}setFqStep(0);setScreen("plan");};
   const markDone=(dd)=>{const g={...(user&&user.goals||{})};const today=new Date().toISOString().slice(0,10);const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);if(g.doneToday!==today){g.streak=g.lastDone===yest?(g.streak||0)+1:1;g.lastDone=today;g.doneToday=today;g.weekDone=Math.min(7,(g.weekDone||0)+1);const wk=(g.week&&g.week.length===7)?[...g.week]:[false,false,false,false,false,false,false];const ti=(new Date().getDay()+6)%7;wk[ti]=true;g.week=wk;}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}setDayModal(null);setDoneModal(g.streak||1);};
+  const markFisioDone=()=>{if(!user)return;const g={...(user.goals||{})};const t=new Date().toISOString().slice(0,10);if(g.fisioDoneToday===t){g.fisioDoneToday=null;}else{const y=new Date(Date.now()-86400000).toISOString().slice(0,10);g.fisioStreak=g.fisioLast===y?(g.fisioStreak||0)+1:1;g.fisioLast=t;g.fisioDoneToday=t;}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}};
   const updateAccount=(u)=>updateEverywhere(u);
   const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
@@ -2777,7 +2779,7 @@ export default function App(){
   }
   if(screen==="fisioplan"){
     const P0=user?.physical||{};const hasData=!!(P0.weight&&P0.height);
-    const M=genPhysical(P0,user?.birthdate);const FP=genFisioPlan(P0);
+    const M=genPhysical(P0,user?.birthdate);const FP=genFisioPlan(P0);const fdoneP=(user?.goals?.fisioDoneToday)===new Date().toISOString().slice(0,10);
     const IB="#0A0F0C",IC="#141B14",IC2="#20291f",TX="#F2F5EA",MU="#95a08f";
     return <div key={screen} style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style>
@@ -2799,6 +2801,7 @@ export default function App(){
           <div style={{display:"flex",flexDirection:"column",gap:9}}>
             {FP.ex.map((e,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:11,background:IC,border:"1px solid "+IC2,borderRadius:14,padding:"12px 13px"}}><span style={{width:28,height:28,borderRadius:9,flexShrink:0,background:LIME,color:LIMED,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:14}}>{i+1}</span><div style={{flex:1,fontFamily:F.ios,fontSize:13,fontWeight:600,color:TX}}>{e}</div></div>)}
           </div>
+          <button onClick={markFisioDone} className="btn-press" style={{width:"100%",marginTop:14,background:fdoneP?"rgba(199,249,78,0.14)":LIME,border:fdoneP?`1.5px solid ${LIME}`:"none",color:fdoneP?LIME:LIMED,fontFamily:F.ios,fontSize:15,fontWeight:800,padding:"14px",borderRadius:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n={fdoneP?"check":"cross"} s={18} c={fdoneP?LIME:LIMED}/>{fdoneP?"COMPLETADO HOY":"MARCAR RECUPERACIÓN"}</button>
           <div style={{marginTop:14,padding:"10px 12px",background:"#0c1a2a",border:"1px solid #23507d",borderRadius:12}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.14em",color:C.cyan,fontWeight:700,marginBottom:2}}>CONSEJO DEL FÍSIO</div><div style={{fontFamily:F.ios,fontSize:11.5,color:TX,lineHeight:1.35}}>Calienta 10 min antes de jugar y aplica hielo si hay molestia. ¿Necesitas atención personal? Reserva un físio Premium.</div></div>
         </div>
       </div>
@@ -2859,7 +2862,7 @@ export default function App(){
     const has=(k)=>!obj.length||obj.includes(k);
     const money=(tournaments||[]).reduce((a,t)=>{try{const ch=getChamp(t);if(ch&&ch.id===user?.id){return a+(parseInt(String(t.prize||"").replace(/[^0-9]/g,""))||0);}return a;}catch(e){return a;}},0);
     const g=user?.goals||{};const streak=g.streak||0;const weekDone=g.weekDone||0;const wp=Math.min(1,weekDone/5);
-    const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];const _maxMin=Math.max(1,..._R.map(d=>d.min||0));
+    const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];const _maxMin=Math.max(1,..._R.map(d=>d.min||0));const _maxKcal=Math.max(1,..._R.map(d=>d.kcal||0));const _FP=genFisioPlan(ph);const _fdone=(user?.goals?.fisioDoneToday)===new Date().toISOString().slice(0,10);
     const recs=[];
     if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
     if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
@@ -2883,9 +2886,9 @@ export default function App(){
             <svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke={C.surface2} strokeWidth="6"/><circle cx="29" cy="29" r="23" fill="none" stroke={LIME} strokeWidth="6" strokeLinecap="round" strokeDasharray="145" strokeDashoffset={145*(1-wp)} transform="rotate(-90 29 29)"/></svg>
             <div><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Tu semana</div><Sub style={{fontSize:12,marginTop:2}}>{weekDone} de 5 días activos</Sub><div style={{fontFamily:F.ios,fontSize:11,fontWeight:700,color:LIME,marginTop:3}}>{weekDone===0?"¡Empieza hoy!":weekDone>=5?"¡Semana completa!":"¡Vas bien, sigue!"}</div></div>
           </div>
-          <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:"12px 14px",marginBottom:11}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}><span style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:C.text}}>Tu entrenamiento</span><span style={{fontFamily:F.ios,fontSize:10.5,color:C.muted}}>min por día</span></div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:5,height:60,marginTop:2}}>{_R.map(d=><div key={d.d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}><div style={{width:"100%",height:Math.max(4,(d.min/_maxMin)*52),borderRadius:"4px 4px 0 0",background:d.today?C.cyan:LIME,opacity:d.min?1:0.28,transition:"height .5s"}}/><span style={{fontFamily:F.bc,fontSize:8,color:d.today?C.cyan:C.muted,fontWeight:600}}>{d.d[0]}</span></div>)}</div>
+          <div onClick={()=>setChartKcal(v=>!v)} className="btn-press" style={{cursor:"pointer",background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:"12px 14px",marginBottom:11}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}><span style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:C.text}}>Tu entrenamiento</span><span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:F.ios,fontSize:10.5,color:chartKcal?LIME:C.muted,fontWeight:chartKcal?700:400}}>{chartKcal?"kcal por día":"min por día"}<Ico n="chevronDown" s={11} c={chartKcal?LIME:C.muted}/></span></div>
+            <div style={{display:"flex",alignItems:"flex-end",gap:5,height:66,marginTop:2}}>{_R.map(d=>{const val=chartKcal?d.kcal:d.min;const mx=chartKcal?_maxKcal:_maxMin;return <div key={d.d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>{chartKcal&&<span style={{fontFamily:F.bc,fontSize:7,color:d.today?C.cyan:C.muted,fontWeight:700}}>{d.kcal||""}</span>}<div style={{width:"100%",height:Math.max(4,(val/mx)*(chartKcal?46:52)),borderRadius:"4px 4px 0 0",background:d.today?C.cyan:LIME,opacity:val?1:0.28,transition:"height .5s"}}/><span style={{fontFamily:F.bc,fontSize:8,color:d.today?C.cyan:C.muted,fontWeight:600}}>{d.d[0]}</span></div>;})}</div>
           </div>
           {(has("mejorar")||has("torneos")||!obj.length)&&<div onClick={()=>setScreen("plan")} className="btn-press" style={{position:"relative",marginBottom:11,cursor:"pointer",borderRadius:16,padding:2,overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,background:`conic-gradient(from 0deg,${LIME},${C.cyan},${LIME}22,${LIME})`,animation:"spin 4.5s linear infinite"}}/>
@@ -2899,9 +2902,10 @@ export default function App(){
               </div>
             </div>
           </div>}
-          {(has("fisico")||(ph&&ph.injury&&ph.injury!=="ninguna"))&&<Card edge={LIME} onClick={()=>setScreen("fisioplan")}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Plan físio · recuperación</div><Sub style={{fontSize:11,marginTop:2}}>{imc?"IMC "+imc.toFixed(1)+" · previene lesiones":"Recupérate y previene lesiones"}</Sub></div><Ico n="cross" s={18} c={LIME}/></div>
-          </Card>}
+          {(has("fisico")||(ph&&ph.injury&&ph.injury!=="ninguna"))&&<div style={{marginBottom:11,background:C.surface,border:`0.5px solid ${_fdone?LIME:C.borderS}`,borderRadius:16,padding:"12px 13px",display:"flex",alignItems:"center",gap:12,transition:"border .3s"}}>
+            <div onClick={()=>setScreen("fisioplan")} className="btn-press" style={{flex:1,minWidth:0,cursor:"pointer"}}><div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:LIME,fontWeight:700,marginBottom:3}}>RECUPERACIÓN DE HOY</div><div style={{fontFamily:F.ios,fontSize:13.5,fontWeight:700,color:C.text,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{_FP.ex[0]}</div><Sub style={{fontSize:11}}>{_fdone?"¡Completado hoy!":"Toca para ver tu rutina ›"}</Sub></div>
+            <div onClick={markFisioDone} className="btn-press" style={{width:56,height:56,flexShrink:0,borderRadius:16,background:_fdone?LIME:C.surface2,border:`1.5px solid ${_fdone?LIME:C.borderS}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"background .3s"}}><Ico n="cross" s={28} c={_fdone?LIMED:LIME}/></div>
+          </div>}
           {has("torneos")&&<Card edge="#FFD15C" onClick={()=>setScreen("ingresos")}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Torneos</div><Sub style={{fontSize:11,marginTop:2}}>{user?.titles||0} títulos · {user?.wins||0}W-{user?.losses||0}L</Sub></div><div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:LIME}}>${money.toLocaleString()}</div><Sub style={{fontSize:10}}>ganados</Sub></div></div>
           </Card>}
