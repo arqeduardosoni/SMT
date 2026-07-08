@@ -5,6 +5,9 @@ const STYLE=`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&fa
 *{-webkit-tap-highlight-color:transparent}
 input,textarea,button,select{font-family:inherit;-webkit-appearance:none;appearance:none;box-sizing:border-box}
 input:focus,select:focus{outline:none}
+.nobar::-webkit-scrollbar{display:none}
+.nobar{scrollbar-width:none}
+@keyframes growW{from{width:0}}
 ::-webkit-scrollbar{width:0;height:0}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
@@ -80,6 +83,11 @@ const CAT_C={Abierta:"#FFD700",B:"#4FC3F7",C:"#5BAD6F",D:"#F59E0B",Di:"#B8C5D6"}
 const fmtTDate=(d)=>{try{const M=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];const dt=new Date(String(d).replace(" ","T"));if(isNaN(dt.getTime()))return d;return dt.getDate()+" "+M[dt.getMonth()]+" "+dt.getFullYear();}catch(e){return d;}};
 const LIME="#C7F94E";const LIMED="#12200a";
 const OBJETIVOS=[{k:"mejorar",ic:"medal",t:"Mejorar mi juego",d:"Ponte metas y sigue tu progreso"},{k:"torneos",ic:"trophy",t:"Torneos y ganar dinero",d:"Compite y ll\u00e9vate premios"},{k:"fisico",ic:"fire",t:"Mejorar mi condici\u00f3n f\u00edsica",d:"Plan f\u00edsico y prevenci\u00f3n de lesiones"},{k:"jugar",ic:"people",t:"Encontrar con qui\u00e9n jugar",d:"Rivales de tu nivel y grupos"},{k:"equipo",ic:"cart",t:"Comprar o vender equipo",d:"Marketplace de tenis"}];
+const _MET={tecnica:6,drills:7,cardio:8,movilidad:2.8,tactica:6,volea:6.5,fuerza:5.5,descanso:2};
+const _kcal=(min,kind,w)=>Math.round((_MET[kind]||5)*(w||75)*(min/60));
+const ageFrom=(bd)=>{try{const d=new Date(bd);const t=new Date();let a=t.getFullYear()-d.getFullYear();if(t.getMonth()<d.getMonth()||(t.getMonth()===d.getMonth()&&t.getDate()<d.getDate()))a--;return a>0&&a<100?a:30;}catch(e){return 30;}};
+const genPhysical=(ph,bd)=>{ph=ph||{};const w=ph.weight||75,h=ph.height||175,age=ph.age||ageFrom(bd);const imc=w/Math.pow(h/100,2);const imcLabel=imc<18.5?"Bajo peso":imc<25?"Saludable":imc<30?"Sobrepeso":"Alto";const freq=ph.freq||3;let r=0;if(ph.injury&&ph.injury!=="ninguna")r++;if(imc>=30||imc<18.5)r++;if(age>=50)r++;if(freq<=1)r++;const risk=r<=0?"Bajo":r===1?"Medio":"Alto";const sportAge=Math.max(16,Math.round(age-(freq-3)*1.5-(imc<25?2:0)));return {imc:Math.round(imc*10)/10,imcLabel,risk,riskN:Math.min(Math.max(r,0),3),sportAge,age,weight:w};};
+const genRoutine=(ph,obj)=>{ph=ph||{};obj=obj||[];const w=ph.weight||75;const inj=ph.injury&&ph.injury!=="ninguna"?ph.injury:"";const foco=obj.includes("fisico")&&!obj.includes("mejorar")?"fisico":"juego";const injMov=inj?("Movilidad de "+inj):"Movilidad general";const days=[{d:"LUN",t:"Técnica de servicio",x:"+ core 15 min",min:45,kind:"tecnica"},{d:"MAR",t:injMov+" + cardio",x:"20 min trote suave",min:35,kind:"cardio"},{d:"MIÉ",t:"Drills de derecha y revés",x:"+ piernas 15 min",min:60,kind:"drills"},{d:"JUE",t:"Descanso activo",x:"estiramiento + foam roller",min:20,kind:"descanso"},{d:"VIE",t:foco==="fisico"?"Fuerza + core":"Táctica + partido",x:foco==="fisico"?"circuito de fuerza":"sets de práctica",min:50,kind:foco==="fisico"?"fuerza":"tactica"},{d:"SÁB",t:"Volea y remate",x:"o juega tu reta/torneo",min:45,kind:"volea"},{d:"DOM",t:"Recuperación",x:"descanso total",min:0,kind:"descanso"}];const todayIdx=(new Date().getDay()+6)%7;return days.map((dd,i)=>({...dd,i,today:i===todayIdx,kcal:dd.min?_kcal(dd.min,dd.kind,w):0}));};
 const nextCat=c=>{const i=CATS.indexOf(c);if(i<=0)return c;return CATS[i-1];};
 const CLUBS=["Club Campestre Monterrey","Club Sonoma","Club Industrial","Club San Agustín","Club Británico","Club Bosques","Casa Club del Valle","Otro"];
 const MX_STATES=["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","CDMX","Coahuila","Colima","Durango","Estado de México","Guanajuato","Guerrero","Hidalgo","Jalisco","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
@@ -356,6 +364,20 @@ function Modal({onClose,children,large,center}){
   return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(4,10,24,0.93)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",zIndex:300,display:"flex",alignItems:center?"center":"flex-end",justifyContent:"center",padding:center?"max(28px,calc(env(safe-area-inset-top) + 8px)) 14px max(20px,calc(env(safe-area-inset-bottom) + 10px))":0}}><div onClick={e=>e.stopPropagation()} style={{background:`linear-gradient(180deg,${C.surface},${C.surface2})`,border:`1px solid ${C.cyanBdr}`,borderRadius:center?22:"22px 22px 0 0",width:"100%",maxWidth:large?540:440,padding:"22px 20px 28px",maxHeight:center?"100%":"92vh",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",paddingBottom:"max(34px,calc(env(safe-area-inset-bottom) + 22px))",animation:center?"scaleIn 0.32s cubic-bezier(0.34,1.56,0.64,1)":"slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)",fontFamily:F.ios,boxShadow:center?"0 24px 60px rgba(0,0,0,0.6)":"none"}}>{!center&&<div style={{width:40,height:5,background:"rgba(255,255,255,0.18)",borderRadius:3,margin:"0 auto 18px"}}/>}{children}</div></div>;
 }
 
+function Wheel({min,max,step,value,onChange,unit,fmt}){
+  const ref=useRef(null);const H=46;const st=step||1;const vals=[];const n=Math.round((max-min)/st);for(let i=0;i<=n;i++)vals.push(Math.round((min+i*st)*100)/100);
+  const cur=(value==null?vals[Math.floor(n/2)]:value);const idx=Math.max(0,Math.round((cur-min)/st));
+  useEffect(()=>{if(ref.current)ref.current.scrollTop=idx*H;/* eslint-disable-next-line */},[]);
+  const onScroll=()=>{if(!ref.current)return;const i=Math.round(ref.current.scrollTop/H);const v=vals[Math.max(0,Math.min(vals.length-1,i))];if(v!==cur)onChange(v);};
+  return <div style={{position:"relative",height:H*5,maxWidth:280,margin:"0 auto"}}>
+    <div style={{position:"absolute",top:H*2,left:8,right:8,height:H,borderTop:`1.5px solid ${LIME}66`,borderBottom:`1.5px solid ${LIME}66`,pointerEvents:"none",borderRadius:2}}/>
+    <div ref={ref} onScroll={onScroll} className="nobar" style={{height:"100%",overflowY:"auto",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
+      <div style={{height:H*2}}/>
+      {vals.map(v=><div key={v} style={{height:H,scrollSnapAlign:"center",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontFamily:F.bn,fontSize:v===cur?36:24,color:v===cur?LIME:"rgba(255,255,255,0.32)",transition:"all .12s",lineHeight:1}}>{fmt?fmt(v):v}</span>{v===cur&&unit&&<span style={{fontFamily:F.ios,fontSize:15,color:"#95a08f",marginLeft:6,fontWeight:600}}>{unit}</span>}</div>)}
+      <div style={{height:H*2}}/>
+    </div>
+  </div>;
+}
 const BtnP=({onClick,children,style})=><button onClick={onClick} className="btn-press" style={{width:"100%",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none",padding:"15px 18px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,marginTop:12,boxShadow:`0 10px 28px rgba(2,136,209,0.42)`,letterSpacing:"-0.01em",...style}}>{children}</button>;
 const BtnG=({onClick,children,style})=><button onClick={onClick} className="btn-press" style={{background:"rgba(79,195,247,0.10)",backdropFilter:"blur(20px)",border:`1px solid ${C.cyanBdr}`,color:C.cyan,padding:"10px 16px",fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer",borderRadius:14,letterSpacing:"-0.01em",...style}}>{children}</button>;
 const BtnX=({onClick,children})=><button onClick={onClick} className="btn-press" style={{width:"100%",background:"rgba(118,118,128,0.16)",border:"none",color:C.text,padding:"14px 18px",fontFamily:F.ios,fontSize:16,fontWeight:500,cursor:"pointer",borderRadius:16,marginTop:8}}>{children}</button>;
@@ -761,6 +783,8 @@ export default function App(){
   const [showSetCat,setShowSetCat]=useState(false);
   const [setCatVal,setSetCatVal]=useState("");
   const [objSel,setObjSel]=useState([]);
+  const [fqStep,setFqStep]=useState(0);
+  const [fqData,setFqData]=useState({});
   const [editProfile,setEditProfile]=useState(null);
   const [showDeleteAccount,setShowDeleteAccount]=useState(false);
   const [deleteConfirmText,setDeleteConfirmText]=useState("");
@@ -881,6 +905,7 @@ export default function App(){
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);};
   const saveQuickCategory=(cat)=>{if(!cat||!user)return;const u={...user,category:cat,categoryLocked:true};updateUser(u);try{supabase.from("profiles").update({category:cat,category_locked:true}).eq("auth_id",user.id);}catch(e){}setShowSetCat(false);};
   const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);setScreen("metas");};
+  const saveFisioQ=()=>{const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:fqData.goalPhys||"rendimiento",injury:(fqData.injury||"Ninguna").toLowerCase(),experience:fqData.experience||"Intermedio",freq:fqData.freq||3};const u={...user,physical:phys};updateUser(u);try{supabase.from("profiles").update({physical:phys}).eq("auth_id",user.id);}catch(e){}setFqStep(0);setScreen("plan");};
   const updateAccount=(u)=>updateEverywhere(u);
   const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
@@ -2678,13 +2703,83 @@ export default function App(){
   }
 
   // HOME
+  if(screen==="fisio-q"){
+    const IB="#0A0F0C",IC="#141B14",IC2="#20291f",TX="#F2F5EA",MU="#95a08f";
+    const N=7;const set=(k,v)=>setFqData({...fqData,[k]:v});
+    const Choice=({opts,k,grid})=><div style={{display:grid?"grid":"flex",gridTemplateColumns:grid?"1fr 1fr":undefined,flexDirection:grid?undefined:"column",gap:10}}>{opts.map(o=>{const val=typeof o==="object"?o.k:o;const lab=typeof o==="object"?o.t:o;const sel=fqData[k]===val;return <div key={String(val)} onClick={()=>set(k,val)} className="btn-press" style={{cursor:"pointer",background:sel?"rgba(199,249,78,0.12)":IC,border:`1.5px solid ${sel?LIME:IC2}`,borderRadius:14,padding:"15px 15px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}><span style={{fontFamily:F.ios,fontSize:14.5,fontWeight:700,color:TX}}>{lab}</span><div style={{width:22,height:22,borderRadius:7,flexShrink:0,border:`2px solid ${sel?LIME:"#3a4230"}`,background:sel?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<Ico n="check" s={14} c={LIMED}/>}</div></div>;})}</div>;
+    const steps=[
+      {q:"¿Cuántos años tienes?",s:"Personalizamos tu plan según tu edad.",c:<Wheel min={12} max={90} value={fqData.age||ageFrom(user?.birthdate)} onChange={v=>set("age",v)} unit="años"/>},
+      {q:"¿Cuál es tu peso?",s:"Lo usamos para tu IMC y las calorías.",c:<Wheel min={40} max={160} value={fqData.weight||75} onChange={v=>set("weight",v)} unit="kg"/>},
+      {q:"¿Cuál es tu altura?",s:"Para tu IMC y métricas de salud.",c:<Wheel min={140} max={210} value={fqData.height||175} onChange={v=>set("height",v)} unit="cm"/>},
+      {q:"¿Qué quieres lograr?",s:"Ajustamos tu rutina a tu meta.",c:<Choice k="goalPhys" opts={[{k:"rendimiento",t:"Mejorar mi rendimiento"},{k:"lesiones",t:"Evitar lesiones"},{k:"dolor",t:"Tratar un dolor recurrente"},{k:"otro",t:"Otro"}]}/>},
+      {q:"¿Alguna lesión recurrente?",s:"Adaptamos la carga y la movilidad.",c:<Choice k="injury" grid opts={["Ninguna","Tobillo","Codo","Muñeca","Hombro","Rodilla","Espalda","Otro"]}/>},
+      {q:"¿Tu experiencia en tenis?",s:"Para el nivel correcto de ejercicios.",c:<Choice k="experience" opts={["Sin experiencia","Principiante","Intermedio","Avanzado","Alto rendimiento"]}/>},
+      {q:"¿Cuánto juegas o entrenas?",s:"Frecuencia semanal.",c:<Choice k="freq" opts={[{k:1,t:"1-2 días"},{k:3,t:"3-4 días"},{k:5,t:"5+ días"}]}/>},
+    ];
+    const S=steps[fqStep];
+    return <div key={screen} style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style>
+      <div style={{maxWidth:480,margin:"0 auto",padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 22px max(120px,calc(env(safe-area-inset-bottom) + 92px))"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <button onClick={()=>{if(fqStep>0)setFqStep(fqStep-1);else setScreen("metas");}} className="btn-press" style={{width:32,height:32,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={15}/></button>
+          <span style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU}}>Perfil físico ({fqStep+1}/{N})</span>
+          <span onClick={()=>saveFisioQ()} className="btn-press" style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU,cursor:"pointer"}}>Omitir</span>
+        </div>
+        <div style={{height:4,background:IC2,borderRadius:3,marginBottom:22,overflow:"hidden"}}><div style={{height:"100%",width:((fqStep+1)/N*100)+"%",background:LIME,borderRadius:3,transition:"width .3s"}}/></div>
+        <div key={fqStep} style={{animation:"fadeIn .3s"}}>
+          <div style={{fontFamily:F.bn,fontSize:28,letterSpacing:"0.01em",lineHeight:1.05,marginBottom:6}}>{S.q}</div>
+          <div style={{fontFamily:F.ios,fontSize:13.5,color:MU,marginBottom:26,lineHeight:1.4}}>{S.s}</div>
+          {S.c}
+        </div>
+        <button onClick={()=>{if(fqStep<N-1)setFqStep(fqStep+1);else saveFisioQ();}} className="btn-press" style={{width:"100%",marginTop:28,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"16px",borderRadius:20,cursor:"pointer"}}>{fqStep<N-1?"CONTINUAR":"VER MI PLAN"}</button>
+      </div>
+    </div>;
+  }
+  if(screen==="plan"){
+    const P0=user?.physical||{};const hasData=!!(P0.weight&&P0.height);
+    const M=genPhysical(P0,user?.birthdate);const R=genRoutine(P0,user?.objectives);
+    const totKcal=R.reduce((a,d)=>a+d.kcal,0);const totMin=R.reduce((a,d)=>a+d.min,0);
+    const imcPct=Math.max(6,Math.min(100,((M.imc-15)/(35-15))*100));
+    const IB="#0A0F0C",IC="#141B14",IC2="#20291f",TX="#F2F5EA",MU="#95a08f";
+    return <div key={screen} style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
+      <style>{STYLE}</style>
+      <div style={{position:"relative",zIndex:1,padding:"0 0 90px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 18px 10px"}}>
+          <button onClick={()=>setScreen("metas")} className="btn-press" style={{width:34,height:34,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={16}/></button>
+          <div style={{flex:1,fontFamily:F.bn,fontSize:26,letterSpacing:"0.02em"}}>PLAN FÍSICO</div>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#0c1a2a",border:"1px solid #23507d",color:C.cyan,fontSize:10,fontWeight:700,padding:"5px 9px",borderRadius:14,fontFamily:F.ios}}><Ico n="star" s={12} c={C.cyan}/>IA</span>
+        </div>
+        <div style={{padding:"0 18px"}}>
+          {!hasData&&<div onClick={()=>setScreen("fisio-q")} className="btn-press" style={{cursor:"pointer",background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}66`,borderRadius:13,padding:"11px 13px",marginBottom:13,display:"flex",alignItems:"center",gap:9}}><Ico n="info" s={16} c={LIME}/><div style={{flex:1,fontFamily:F.ios,fontSize:12.5,color:TX,lineHeight:1.35}}>Contesta 1 min y personalizamos tu plan a tu medida.</div><span style={{color:LIME,fontWeight:800,fontSize:12}}>Empezar</span></div>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+            <div style={{background:IC,borderRadius:14,padding:13}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:MU,fontWeight:600,marginBottom:6}}>IMC</div><div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{fontFamily:F.bn,fontSize:26,color:LIME}}>{M.imc}</div><div style={{fontFamily:F.ios,fontSize:11,color:MU}}>{M.imcLabel}</div></div><div style={{height:7,background:IC2,borderRadius:5,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:imcPct+"%",background:LIME,borderRadius:5,animation:"growW 1.2s ease both"}}/></div></div>
+            <div style={{background:IC,borderRadius:14,padding:13}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:MU,fontWeight:600,marginBottom:6}}>RIESGO DE LESIÓN</div><div style={{fontFamily:F.bn,fontSize:22,color:M.risk==="Bajo"?LIME:M.risk==="Medio"?C.amber:C.red,marginBottom:8}}>{M.risk}</div><div style={{display:"flex",gap:5}}>{[0,1,2].map(k=><div key={k} style={{flex:1,height:6,borderRadius:5,background:k<=M.riskN-1||(M.riskN===0&&k===0)?(M.risk==="Bajo"?LIME:M.risk==="Medio"?C.amber:C.red):IC2}}/>)}</div></div>
+          </div>
+          <div style={{display:"flex",gap:10,marginBottom:16}}>
+            <div style={{flex:1,background:IC,borderRadius:14,padding:"12px 13px"}}><div style={{fontFamily:F.bn,fontSize:24,color:TX}}>{M.sportAge}</div><div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:MU,fontWeight:600}}>EDAD DEPORTIVA</div></div>
+            <div style={{flex:1,background:IC,borderRadius:14,padding:"12px 13px"}}><div style={{fontFamily:F.bn,fontSize:24,color:LIME}}>{totKcal}</div><div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:MU,fontWeight:600}}>KCAL / SEMANA</div></div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><div style={{fontFamily:F.bn,fontSize:20,color:TX}}>RUTINA DE LA SEMANA</div><span style={{fontFamily:F.ios,fontSize:11,color:MU}}>{Math.round(totMin/60*10)/10} h</span></div>
+          <div style={{display:"flex",flexDirection:"column",gap:9}}>
+            {R.map(dd=><div key={dd.d} style={{display:"flex",alignItems:"center",gap:11,background:IC,border:dd.today?`1.5px solid ${LIME}`:"1px solid "+IC2,borderRadius:14,padding:"11px 12px"}}>
+              <span style={{width:34,height:34,borderRadius:10,flexShrink:0,background:dd.today?LIME:IC2,color:dd.today?LIMED:MU,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.ios,fontWeight:700,fontSize:11}}>{dd.d}</span>
+              <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:TX}}>{dd.t}{dd.today&&<span style={{color:LIME,fontSize:10,fontWeight:800,marginLeft:6}}>HOY</span>}</div><div style={{fontFamily:F.ios,fontSize:11,color:MU,marginTop:1}}>{dd.min?dd.min+" min · "+dd.x:dd.x}</div></div>
+              {dd.kcal>0&&<div style={{textAlign:"right",flexShrink:0}}><div style={{fontFamily:F.bn,fontSize:16,color:LIME}}>{dd.kcal}</div><div style={{fontFamily:F.bc,fontSize:8,letterSpacing:"0.14em",color:MU,fontWeight:600}}>KCAL</div></div>}
+            </div>)}
+          </div>
+          <div style={{marginTop:14,padding:"10px 12px",background:"#0c1a2a",border:"1px solid #23507d",borderRadius:12}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.14em",color:C.cyan,fontWeight:700,marginBottom:2}}>GRATIS · GENERADO POR IA</div><div style={{fontFamily:F.ios,fontSize:11.5,color:TX,lineHeight:1.35}}>Se ajusta a tus objetivos, nivel y lesiones. ¿Quieres apoyo humano? Reserva un físio o coach Premium.</div></div>
+        </div>
+      </div>
+      <ShowTabBar/>
+    </div>;
+  }
   if(screen==="metas"){
     if(isAdmin){setTimeout(()=>setScreen("home"),0);return null;}
     const obj=user?.objectives||[];
     const has=(k)=>!obj.length||obj.includes(k);
     const money=(tournaments||[]).reduce((a,t)=>{try{const ch=getChamp(t);if(ch&&ch.id===user?.id){return a+(parseInt(String(t.prize||"").replace(/[^0-9]/g,""))||0);}return a;}catch(e){return a;}},0);
     const g=user?.goals||{};const streak=g.streak||0;const weekDone=g.weekDone||0;const wp=Math.min(1,weekDone/5);
-    const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;
+    const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];
     const recs=[];
     if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
     if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
@@ -2708,14 +2803,14 @@ export default function App(){
             <svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke={C.surface2} strokeWidth="6"/><circle cx="29" cy="29" r="23" fill="none" stroke={LIME} strokeWidth="6" strokeLinecap="round" strokeDasharray="145" strokeDashoffset={145*(1-wp)} transform="rotate(-90 29 29)"/></svg>
             <div><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Tu semana</div><Sub style={{fontSize:12,marginTop:2}}>{weekDone} de 5 días activos</Sub><div style={{fontFamily:F.ios,fontSize:11,fontWeight:700,color:LIME,marginTop:3}}>{weekDone===0?"¡Empieza hoy!":weekDone>=5?"¡Semana completa!":"¡Vas bien, sigue!"}</div></div>
           </div>
-          {(has("fisico")||has("mejorar"))&&<Card edge={LIME} onClick={()=>setScreen("fisio")}>
+          {(has("fisico")||has("mejorar"))&&<Card edge={LIME} onClick={()=>setScreen("plan")}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Plan físico</div><Sub style={{fontSize:11,marginTop:2}}>{imc?"IMC "+imc.toFixed(1)+" · riesgo bajo":"Crea tu plan y sigue tus metas"}</Sub></div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>{imc?<div style={{fontFamily:F.bn,fontSize:22,color:LIME}}>{imc.toFixed(1)}</div>:<span style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:LIME,fontWeight:700,background:"rgba(199,249,78,0.14)",border:`1px solid ${LIME}55`,padding:"4px 8px",borderRadius:6}}>NUEVO</span>}<Ico n="chevronDown" s={16} c={C.muted}/></div>
             </div>
           </Card>}
-          {(has("mejorar")||has("fisico"))&&<Card edge={C.cyan} onClick={()=>setScreen("coach")}>
-            <div style={{display:"flex",alignItems:"center",gap:9}}><Ico n="ball" s={18} c={C.cyan}/><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Rutina de la semana</div><Sub style={{fontSize:11}}>Reserva un coach para tu plan</Sub></div><Ico n="chevronDown" s={16} c={C.muted}/></div>
+          {(has("mejorar")||has("fisico"))&&<Card edge={C.cyan} onClick={()=>setScreen("plan")}>
+            <div style={{display:"flex",alignItems:"center",gap:9}}><Ico n="star" s={18} c={C.cyan}/><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Rutina de hoy · IA</div><Sub style={{fontSize:11}}>{_today?_today.t+(_today.kcal?" · "+_today.kcal+" kcal":""):"Genera tu rutina gratis"}</Sub></div><Ico n="chevronDown" s={16} c={C.muted}/></div>
           </Card>}
           {has("torneos")&&<Card edge={LIME} onClick={()=>setScreen("home")}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Torneos</div><Sub style={{fontSize:11,marginTop:2}}>{user?.titles||0} títulos · {user?.wins||0}W-{user?.losses||0}L</Sub></div><div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:LIME}}>${money.toLocaleString()}</div><Sub style={{fontSize:10}}>ganados</Sub></div></div>
