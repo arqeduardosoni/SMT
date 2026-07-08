@@ -80,6 +80,9 @@ const DSTATS={serve:0,return:0,forehand:0,backhand:0,aces:0,doubleFaults:0,bpWon
 const ADMIN_PASS="SmtAdmin#2026";
 const RACKETS=["Wilson Pro Staff","Wilson Blade","Wilson Clash","Wilson Ultra","Babolat Pure Aero","Babolat Pure Drive","Babolat Pure Strike","Head Speed","Head Radical","Head Prestige","Head Boom","Yonex VCORE","Yonex Ezone","Yonex Percept","Prince Phantom","Tecnifibre TFight","Otra"];
 const CATS=["Abierta","B","C","D","Di"];
+const HIDDEN_EMAILS=["demo@smt.mx"];
+const demoFresh=(p)=>(p&&p.email==="demo@smt.mx")?{...p,objectivesSet:false,objectives:[],physical:{},goals:{},category:null,categoryLocked:false}:p;
+const capFirst=(x)=>x?(x.charAt(0).toUpperCase()+x.slice(1)):x;
 const CAT_C={Abierta:"#FFD700",B:"#4FC3F7",C:"#5BAD6F",D:"#F59E0B",Di:"#B8C5D6"};
 const fmtTDate=(d)=>{try{const M=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];const dt=new Date(String(d).replace(" ","T"));if(isNaN(dt.getTime()))return d;return dt.getDate()+" "+M[dt.getMonth()]+" "+dt.getFullYear();}catch(e){return d;}};
 const LIME="#C7F94E";const LIMED="#12200a";
@@ -790,6 +793,7 @@ export default function App(){
   const [editObj,setEditObj]=useState(false);
   const [fqStep,setFqStep]=useState(0);
   const [fqData,setFqData]=useState({});
+  const [editFisio,setEditFisio]=useState(false);
   const [dayModal,setDayModal]=useState(null);
   const [doneModal,setDoneModal]=useState(null);
   const [chartKcal,setChartKcal]=useState(false);
@@ -895,7 +899,7 @@ export default function App(){
           if(prof&&active){
             const p=applyTrialState(profileToPlayer(prof));
             if(p.isBanned){await supabase.auth.signOut();}
-            else{setUser(p);setIsAdmin(false);setScreen("metas");}
+            else{setUser(demoFresh(p));setIsAdmin(false);setScreen("metas");}
           }
         }
       }catch(e){console.error("Error restaurando sesión:",e);}
@@ -915,8 +919,9 @@ export default function App(){
   };
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);};
   const saveQuickCategory=(cat)=>{if(!cat||!user)return;const u={...user,category:cat,categoryLocked:true};updateUser(u);try{supabase.from("profiles").update({category:cat,category_locked:true}).eq("auth_id",user.id);}catch(e){}setShowSetCat(false);};
-  const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);const we=editObj;setEditObj(false);setScreen(we?"metas":((arr.includes("fisico")||arr.includes("mejorar"))?"fisio-q":"metas"));};
-  const saveFisioQ=()=>{const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:(fqData.goalPhys&&fqData.goalPhys.length?fqData.goalPhys:["rendimiento"]),injury:(fqData.injury||"Ninguna").toLowerCase(),experience:fqData.experience||"Intermedio",freq:fqData.freq||3};const u={...user,physical:phys};updateUser(u);try{supabase.from("profiles").update({physical:phys}).eq("auth_id",user.id);}catch(e){}setFqStep(0);setScreen("plan");};
+  const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);const we=editObj;setEditObj(false);if(we){setFqStep(0);setFqData({age:(user.physical&&user.physical.age),weight:(user.physical&&user.physical.weight),height:(user.physical&&user.physical.height),goalPhys:(user.physical&&user.physical.goalPhys)||[],injury:capFirst(user.physical&&user.physical.injury),experience:(user.physical&&user.physical.experience),freq:(user.physical&&user.physical.freq),category:user.category});setEditFisio(true);}setScreen("fisio-q");};
+  const saveFisioQ=()=>{const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:(fqData.goalPhys&&fqData.goalPhys.length?fqData.goalPhys:["rendimiento"]),injury:(fqData.injury||"Ninguna").toLowerCase(),experience:fqData.experience||"Intermedio",freq:fqData.freq||3};const setCat=(fqData.category&&!user?.categoryLocked)?fqData.category:null;const u={...user,physical:phys,...(setCat?{category:setCat}:{})};updateUser(u);try{supabase.from("profiles").update(Object.assign({physical:phys},setCat?{category:setCat}:{})).eq("auth_id",user.id);}catch(e){}setEditFisio(false);setFqStep(0);setScreen("metas");};
+  useEffect(()=>{if(!user||user.id==="__guest__"||isAdmin||guest)return;if(editFisio||editObj)return;if(["welcome","auth","fisio-q"].includes(screen))return;const physDone=!!(user.physical&&user.physical.weight&&user.physical.height&&user.category);if(user.objectivesSet&&!physDone){setFqStep(0);setScreen("fisio-q");}/* eslint-disable-next-line */},[screen,user,isAdmin,guest,editFisio,editObj]);
   const markDone=(dd)=>{const g={...(user&&user.goals||{})};const today=new Date().toISOString().slice(0,10);const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);if(g.doneToday!==today){g.streak=g.lastDone===yest?(g.streak||0)+1:1;g.lastDone=today;g.doneToday=today;g.weekDone=Math.min(7,(g.weekDone||0)+1);const wk=(g.week&&g.week.length===7)?[...g.week]:[false,false,false,false,false,false,false];const ti=(new Date().getDay()+6)%7;wk[ti]=true;g.week=wk;}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}setDayModal(null);setDoneModal(g.streak||1);};
   const markFisioDone=()=>{if(!user)return;const g={...(user.goals||{})};const t=new Date().toISOString().slice(0,10);if(g.fisioDoneToday===t){g.fisioDoneToday=null;}else{const y=new Date(Date.now()-86400000).toISOString().slice(0,10);g.fisioStreak=g.fisioLast===y?(g.fisioStreak||0)+1:1;g.fisioLast=t;g.fisioDoneToday=t;}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}};
   const connectHealth=async()=>{const H=await getHealth();if(!H){alert("Esta función solo está disponible en la app de iPhone.");return;}try{const av=await H.isAvailable();if(!av||!av.available){alert("Este dispositivo no tiene datos de salud disponibles.");return;}await H.requestAuthorization();const sum=await H.getTodaySummary();if(sum&&sum.available!==false)setHealth(sum);const ph={...((user&&user.physical)||{})};let ch=false;if(sum&&sum.weight&&!ph.weight){ph.weight=Math.round(sum.weight);ch=true;}if(sum&&sum.height&&!ph.height){ph.height=sum.height;ch=true;}const g={...((user&&user.goals)||{}),healthOn:true};updateUser({...user,physical:ch?ph:(user&&user.physical),goals:g});try{supabase.from("profiles").update(Object.assign({goals:g},ch?{physical:ph}:{})).eq("auth_id",user.id);}catch(e){}}catch(e){alert("No se pudo conectar con Salud. Revisa los permisos en Ajustes → Salud → SMT.");}};
@@ -937,7 +942,7 @@ export default function App(){
         if(pErr||!prof){setAuthErr("No se encontró tu perfil. Contacta al administrador.");return;}
         const p=applyTrialState(profileToPlayer(prof));
         if(p.isBanned){await supabase.auth.signOut();setAuthErr("Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
-        setAuthErr("");setUser(p);setIsAdmin(false);
+        setAuthErr("");setUser(demoFresh(p));setIsAdmin(false);
         if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
         setScreen("metas");setAuthForm({email:"",password:"",name:""});trigWelcome();
       }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
@@ -2169,7 +2174,7 @@ export default function App(){
       </div>
     </div>;
   }
-  const ShowTabBar=()=>{const hidden=["welcome","auth"].includes(screen)||showProfileEdit||showChangePass||showSvModal||showDeleteAccount||showPremium||trialModal||showSetCat;return hidden?null:<TabBar/>;};
+  const ShowTabBar=()=>{const onbNeed=user&&user.id!=="__guest__"&&!isAdmin&&!guest&&(!user.objectivesSet||!(user.physical&&user.physical.weight&&user.physical.height&&user.category));const hidden=["welcome","auth"].includes(screen)||showProfileEdit||showChangePass||showSvModal||showDeleteAccount||showPremium||trialModal||showSetCat||onbNeed;return hidden?null:<TabBar/>;};
   // Spacer para que el contenido no quede bajo la tab bar
   const TabSpacer=()=><div style={{height:user?92:0}}/>;
 
@@ -2725,25 +2730,26 @@ export default function App(){
   // HOME
   if(screen==="fisio-q"){
     const IB="#0A0F0C",IC="#141B14",IC2="#20291f",TX="#F2F5EA",MU="#95a08f";
-    const N=7;const set=(k,v)=>setFqData({...fqData,[k]:v});
+    const set=(k,v)=>setFqData({...fqData,[k]:v});
     const Choice=({opts,k,grid,multi})=><div style={{display:grid?"grid":"flex",gridTemplateColumns:grid?"1fr 1fr":undefined,flexDirection:grid?undefined:"column",gap:10}}>{opts.map(o=>{const val=typeof o==="object"?o.k:o;const lab=typeof o==="object"?o.t:o;const arr=multi?(fqData[k]||[]):null;const sel=multi?arr.includes(val):fqData[k]===val;return <div key={String(val)} onClick={()=>multi?set(k,sel?arr.filter(x=>x!==val):[...arr,val]):set(k,val)} className="btn-press" style={{cursor:"pointer",background:sel?"rgba(199,249,78,0.12)":IC,border:`1.5px solid ${sel?LIME:IC2}`,borderRadius:14,padding:"15px 15px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}><span style={{fontFamily:F.ios,fontSize:14.5,fontWeight:700,color:TX}}>{lab}</span><div style={{width:22,height:22,borderRadius:7,flexShrink:0,border:`2px solid ${sel?LIME:"#3a4230"}`,background:sel?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<Ico n="check" s={14} c={LIMED}/>}</div></div>;})}</div>;
     const steps=[
       {q:"¿Cuántos años tienes?",s:"Personalizamos tu plan según tu edad.",c:<Wheel min={12} max={90} value={fqData.age||ageFrom(user?.birthdate)} onChange={v=>set("age",v)} unit="años"/>},
       {q:"¿Cuál es tu peso?",s:"Lo usamos para tu IMC y las calorías.",c:<Wheel min={40} max={160} value={fqData.weight||75} onChange={v=>set("weight",v)} unit="kg"/>},
       {q:"¿Cuál es tu altura?",s:"Para tu IMC y métricas de salud.",c:<Wheel min={140} max={210} value={fqData.height||175} onChange={v=>set("height",v)} unit="cm"/>},
+      {q:"¿Cuál es tu categoría?",s:"Define en qué torneos y contra quién juegas. Si no sabes, elige Di.",req:"category",c:<Choice k="category" grid opts={[{k:"Di",t:"Di"},{k:"D",t:"D"},{k:"C",t:"C"},{k:"B",t:"B"},{k:"Abierta",t:"Abierta"}]}/>},
       {q:"¿Qué quieres lograr?",s:"Ajustamos tu rutina a tu meta.",c:<Choice k="goalPhys" multi opts={[{k:"rendimiento",t:"Mejorar mi rendimiento"},{k:"lesiones",t:"Evitar lesiones"},{k:"dolor",t:"Tratar un dolor recurrente"}]}/>},
       {q:"¿Alguna lesión recurrente?",s:"Adaptamos la carga y la movilidad.",c:<Choice k="injury" grid opts={["Ninguna","Tobillo","Codo","Muñeca","Hombro","Rodilla","Espalda","Otro"]}/>},
       {q:"¿Tu experiencia en tenis?",s:"Para el nivel correcto de ejercicios.",c:<Choice k="experience" opts={["Sin experiencia","Principiante","Intermedio","Avanzado","Alto rendimiento"]}/>},
       {q:"¿Cuánto juegas o entrenas?",s:"Frecuencia semanal.",c:<Choice k="freq" opts={[{k:1,t:"1-2 días"},{k:3,t:"3-4 días"},{k:5,t:"5+ días"}]}/>},
     ];
-    const S=steps[fqStep];
+    const N=steps.length;const S=steps[fqStep];
     return <div key={screen} style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style>
       <div style={{maxWidth:480,margin:"0 auto",padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 22px max(120px,calc(env(safe-area-inset-bottom) + 92px))"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-          <button onClick={()=>{if(fqStep>0)setFqStep(fqStep-1);else setScreen("metas");}} className="btn-press" style={{width:32,height:32,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={15}/></button>
-          <span style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU}}>Perfil físico ({fqStep+1}/{N})</span>
-          <span onClick={()=>saveFisioQ()} className="btn-press" style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU,cursor:"pointer"}}>Omitir</span>
+          <button onClick={()=>{if(fqStep>0)setFqStep(fqStep-1);else if(editFisio){setEditFisio(false);setFqStep(0);setScreen("metas");}}} className="btn-press" style={{width:32,height:32,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={15}/></button>
+          <span style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU}}>Tus datos ({fqStep+1}/{N})</span>
+          {editFisio?<span onClick={()=>{setEditFisio(false);setFqStep(0);setScreen("metas");}} className="btn-press" style={{fontFamily:F.ios,fontSize:12,fontWeight:600,color:MU,cursor:"pointer"}}>Cerrar</span>:<span style={{width:32}}/>}
         </div>
         <div style={{height:4,background:IC2,borderRadius:3,marginBottom:22,overflow:"hidden"}}><div style={{height:"100%",width:((fqStep+1)/N*100)+"%",background:LIME,borderRadius:3,transition:"width .3s"}}/></div>
         <div key={fqStep} style={{animation:"fadeIn .3s"}}>
@@ -2751,7 +2757,7 @@ export default function App(){
           <div style={{fontFamily:F.ios,fontSize:13.5,color:MU,marginBottom:26,lineHeight:1.4}}>{S.s}</div>
           {S.c}
         </div>
-        <button onClick={()=>{if(fqStep<N-1)setFqStep(fqStep+1);else saveFisioQ();}} className="btn-press" style={{width:"100%",marginTop:28,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"16px",borderRadius:20,cursor:"pointer"}}>{fqStep<N-1?"CONTINUAR":"VER MI PLAN"}</button>
+        <button onClick={()=>{if(S.req&&!fqData[S.req])return;if(fqStep<N-1)setFqStep(fqStep+1);else saveFisioQ();}} className="btn-press" style={{width:"100%",marginTop:28,background:(S.req&&!fqData[S.req])?"#3a4230":LIME,border:"none",color:(S.req&&!fqData[S.req])?MU:LIMED,fontFamily:F.ios,fontSize:16,fontWeight:800,padding:"16px",borderRadius:20,cursor:"pointer"}}>{fqStep<N-1?"CONTINUAR":"TERMINAR"}</button>
       </div>
     </div>;
   }
@@ -3617,7 +3623,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="rankings"){
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
-    const inCat=accounts.filter(a=>a.email!=="demo@smt.mx"&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
+    const inCat=accounts.filter(a=>!HIDDEN_EMAILS.includes(a.email)&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
@@ -4116,7 +4122,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
     </div>;}
     // Solo mayores entre mayores (excluir admin de la lista de jugadores, excluir menores)
-    const others=accounts.filter(a=>a.email!=="demo@smt.mx"&&a.id!==user?.id&&!isMinor(a.birthdate));
+    const others=accounts.filter(a=>!HIDDEN_EMAILS.includes(a.email)&&a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
