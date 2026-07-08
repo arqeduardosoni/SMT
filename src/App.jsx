@@ -2214,18 +2214,18 @@ export default function App(){
       <button onClick={()=>{setScreen("welcome");setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(null);}} className="btn-press" style={{position:"absolute",top:18,left:18,background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",zIndex:5}}><Ico n="arrowLeft" s={15}/> Inicio</button>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px 40px",position:"relative",zIndex:1}}>
         <Logo size={88} glow/>
-        <div style={{width:"100%",maxWidth:360,background:"rgba(10,27,61,0.85)",backdropFilter:"blur(20px)",border:`0.5px solid ${C.cyanBdr}`,borderRadius:20,padding:28,marginTop:24,animation:"slideUp 0.4s",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}>
+        <div style={{width:"100%",maxWidth:360,background:"#0d130d",backdropFilter:"blur(20px)",border:`1px solid ${LIME}30`,borderRadius:22,padding:28,marginTop:24,animation:"slideUp 0.4s",boxShadow:"0 20px 60px rgba(0,0,0,0.55)"}}>
           <T size={28} style={{textAlign:"center",marginBottom:6}}>{authMode==="player-login"?"INICIAR SESIÓN":authMode==="player-register"?"CREAR CUENTA":authMode==="admin-login"?"ACCESO ADMIN":authMode==="player-recover"?"RECUPERAR ACCESO":"RECUPERAR ADMIN"}</T>
-          <div style={{textAlign:"center",fontFamily:F.bc,letterSpacing:"0.22em",textTransform:"uppercase",marginBottom:24,fontSize:11,color:C.cyan,fontWeight:600}}>{authMode?.startsWith("admin")?"PANEL ADMINISTRADOR":"JUGADOR"}</div>
+          <div style={{textAlign:"center",fontFamily:F.bc,letterSpacing:"0.22em",textTransform:"uppercase",marginBottom:24,fontSize:11,color:LIME,fontWeight:600}}>{authMode?.startsWith("admin")?"PANEL ADMINISTRADOR":"JUGADOR"}</div>
           {authMode==="player-register"&&<><FL>Nombre completo</FL><TI value={authForm.name} onChange={e=>setAuthForm({...authForm,name:e.target.value})} placeholder="Eduardo Soni"/><div style={{height:14}}/></>}
           
           {authMode!=="admin-login"&&authMode!=="admin-recover"&&<><FL>Email</FL><TI type="email" value={authForm.email} onChange={e=>setAuthForm({...authForm,email:e.target.value})} placeholder="tu@email.com" autoFocus={!authMode.includes("register")}/><div style={{height:14}}/></>}
           {authMode!=="player-recover"&&authMode!=="admin-recover"&&<><FL>Contraseña {authMode==="player-register"&&"(mín 8, 1 mayúscula, 1 número)"}</FL><TI type="password" value={authForm.password} onChange={e=>setAuthForm({...authForm,password:e.target.value})} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&(authMode==="player-register"?doRegister():doLogin())} autoFocus={authMode==="admin-login"}/></>}
           {authMode==="player-register"&&<><FL>Código de invitación (opcional)</FL><TI value={refCodeInput} onChange={e=>setRefCodeInput(e.target.value)} placeholder="SMT-XXXXX" style={{textTransform:"uppercase"}}/><Sub style={{fontSize:11,marginTop:6,color:C.muted}}>Si un amigo te invitó, pon su código aquí y ambos ganan 1 mes Premium 🎾</Sub><div style={{height:14}}/></>}
-          {authMode==="player-register"&&<div style={{marginTop:4,padding:"14px",background:C.surface2,border:`1px solid ${acceptedPrivacy?C.cyan:C.borderS}`,borderRadius:14,transition:"all 0.25s"}}>
+          {authMode==="player-register"&&<div style={{marginTop:4,padding:"14px",background:C.surface2,border:`1px solid ${acceptedPrivacy?LIME:C.borderS}`,borderRadius:14,transition:"all 0.25s"}}>
             <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
-              <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{flexShrink:0,width:22,height:22,borderRadius:6,border:`2px solid ${acceptedPrivacy?C.cyan:"rgba(255,255,255,0.25)"}`,background:acceptedPrivacy?C.cyan:"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,transition:"all 0.2s"}}>{acceptedPrivacy&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}</div>
-              <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{fontFamily:F.ios,fontSize:13,color:C.text,lineHeight:1.45,flex:1}}>Acepto el <span onClick={(e)=>{e.stopPropagation();setShowPrivacyModal(true);}} style={{color:C.cyan,fontWeight:600,textDecoration:"underline"}}>Aviso de Privacidad y Términos de Uso</span> de Sociedad Mexicana de Tenis</div>
+              <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{flexShrink:0,width:22,height:22,borderRadius:6,border:`2px solid ${acceptedPrivacy?LIME:"rgba(255,255,255,0.25)"}`,background:acceptedPrivacy?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,transition:"all 0.2s"}}>{acceptedPrivacy&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A0F0C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}</div>
+              <div onClick={()=>setAcceptedPrivacy(!acceptedPrivacy)} style={{fontFamily:F.ios,fontSize:13,color:C.text,lineHeight:1.45,flex:1}}>Acepto el <span onClick={(e)=>{e.stopPropagation();setShowPrivacyModal(true);}} style={{color:LIME,fontWeight:600,textDecoration:"underline"}}>Aviso de Privacidad y Términos de Uso</span> de Sociedad Mexicana de Tenis</div>
             </label>
           </div>}
           {authErr&&<Sub style={{color:C.red,marginTop:8,fontSize:13}}>{authErr}</Sub>}
@@ -2252,13 +2252,13 @@ export default function App(){
             <TI type="password" value={newRecPass} onChange={e=>setNewRecPass(e.target.value)} placeholder="••••••••" autoFocus onKeyDown={e=>e.key==="Enter"&&resetRecoveredPassword()}/>
             <BtnP onClick={resetRecoveredPassword}>GUARDAR Y ENTRAR</BtnP>
           </div>}
-          {(authMode==="player-login"||authMode==="admin-login")&&!recoveryFlow&&<BtnP onClick={doLogin}>INGRESAR</BtnP>}
-          {authMode==="player-register"&&<BtnP onClick={doRegister}>CREAR CUENTA</BtnP>}
+          {(authMode==="player-login"||authMode==="admin-login")&&!recoveryFlow&&<button onClick={doLogin} className="btn-press" style={{width:"100%",marginTop:12,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:17,fontWeight:800,padding:"15px",borderRadius:18,cursor:"pointer",boxShadow:`0 10px 28px ${LIME}33`}}>INGRESAR</button>}
+          {authMode==="player-register"&&<button onClick={doRegister} className="btn-press" style={{width:"100%",marginTop:12,background:LIME,border:"none",color:LIMED,fontFamily:F.ios,fontSize:17,fontWeight:800,padding:"15px",borderRadius:18,cursor:"pointer",boxShadow:`0 10px 28px ${LIME}33`}}>CREAR CUENTA</button>}
           {authMode==="player-recover"&&!resetRequestSent&&<BtnP onClick={doRecover}><Ico n="mail"/>ENVIARME CORREO DE RECUPERACIÓN</BtnP>}
           {authMode==="admin-recover"&&!recoveryFlow&&<BtnP onClick={doRecover}><Ico n="mail"/>ENVIARME CÓDIGO</BtnP>}
           <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6,alignItems:"center"}}>
-            {authMode==="player-login"&&!recoveryFlow&&<><button onClick={()=>{setAuthMode("player-recover");setRecoveryFlow(null);setResetRequestSent(false);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste tu contraseña?</button><button onClick={()=>{setAuthMode("player-register");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿No tienes cuenta? <span style={{color:C.cyan}}>Crear cuenta</span></button></>}
-            {authMode==="player-register"&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Ya tienes cuenta? <span style={{color:C.cyan}}>Iniciar sesión</span></button>}
+            {authMode==="player-login"&&!recoveryFlow&&<><button onClick={()=>{setAuthMode("player-recover");setRecoveryFlow(null);setResetRequestSent(false);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste tu contraseña?</button><button onClick={()=>{setAuthMode("player-register");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿No tienes cuenta? <span style={{color:LIME}}>Crear cuenta</span></button></>}
+            {authMode==="player-register"&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Ya tienes cuenta? <span style={{color:LIME}}>Iniciar sesión</span></button>}
             {authMode==="player-recover"&&!resetRequestSent&&<button onClick={()=>{setAuthMode("player-login");setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}><Ico n="arrowLeft" s={15}/> Volver a iniciar sesión</button>}
             {authMode==="admin-login"&&!recoveryFlow&&<button onClick={()=>{setAuthMode("admin-recover");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}>¿Olvidaste la contraseña?</button>}
             {authMode==="admin-recover"&&<button onClick={()=>{setAuthMode("admin-login");setRecoveryFlow(null);setAuthErr("");}} className="btn-press" style={{background:"none",border:"none",color:C.muted,fontFamily:F.ios,fontSize:13,cursor:"pointer"}}><Ico n="arrowLeft" s={15}/> Volver</button>}
@@ -2966,6 +2966,31 @@ export default function App(){
     const money=(tournaments||[]).reduce((a,t)=>{try{const ch=getChamp(t);if(ch&&ch.id===user?.id){return a+(parseInt(String(t.prize||"").replace(/[^0-9]/g,""))||0);}return a;}catch(e){return a;}},0);
     const g=user?.goals||{};const streak=g.streak||0;const weekDone=g.weekDone||0;const wp=Math.min(1,weekDone/5);
     const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];const _maxMin=Math.max(1,..._R.map(d=>d.min||0));const _maxKcal=Math.max(1,..._R.map(d=>d.kcal||0));const _FP=genFisioPlan(ph);const _fdone=(user?.goals?.fisioDoneToday)===new Date().toISOString().slice(0,10);const goalMoney=Math.max(2000,Math.ceil((money+1)/1000)*1000);const openT=(tournaments||[]).find(t=>(t.status==="open"||!t.status)&&!(t.players||[]).some(p=>p.id===user?.id));const nextPrize=openT?(parseInt(String(openT.prize||"").replace(/[^0-9]/g,""))||0):0;
+    const _rr=(c,px,py,w,h,rad)=>{c.beginPath();c.moveTo(px+rad,py);c.arcTo(px+w,py,px+w,py+h,rad);c.arcTo(px+w,py+h,px,py+h,rad);c.arcTo(px,py+h,px,py,rad);c.arcTo(px,py,px+w,py,rad);c.closePath();};
+    const shareMetas=()=>{try{const W=1080,H=1920;const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+      x.fillStyle="#0A0F0C";x.fillRect(0,0,W,H);
+      const grd=x.createRadialGradient(W/2,300,60,W/2,300,640);grd.addColorStop(0,"rgba(199,249,78,0.16)");grd.addColorStop(1,"rgba(10,15,12,0)");x.fillStyle=grd;x.fillRect(0,0,W,760);
+      x.textAlign="center";x.fillStyle="#C7F94E";x.font="700 46px Arial";x.fillText("S M T",W/2,120);
+      x.fillStyle="#95a08f";x.font="600 22px Arial";x.fillText("SOCIEDAD MEXICANA DE TENIS",W/2,158);
+      const cx=W/2,cy=350,r=115;
+      const rest=()=>{
+        x.textAlign="center";x.fillStyle="#F2F5EA";x.font="800 66px Arial";x.fillText((user?.firstName||user?.name||"Jugador").toUpperCase(),W/2,560);
+        x.fillStyle="#C7F94E";x.font="600 30px Arial";x.fillText((user?.category?"Categoría "+user.category:"Jugador")+(user?.city?" · "+user.city:""),W/2,608);
+        const stats=[[String(streak),"RACHA"],[String(_R.reduce((a,d)=>a+(d.kcal||0),0)),"KCAL/SEM"],[weekDone+"/5","ACTIVOS"]];
+        const cw=300,ch=190,gap=30,tot=cw*3+gap*2,sx=(W-tot)/2,sy=690;
+        stats.forEach((s,i)=>{const px=sx+i*(cw+gap);x.fillStyle="#141B14";_rr(x,px,sy,cw,ch,26);x.fill();x.textAlign="center";x.fillStyle="#C7F94E";x.font="800 70px Arial";x.fillText(s[0],px+cw/2,sy+105);x.fillStyle="#95a08f";x.font="600 22px Arial";x.fillText(s[1],px+cw/2,sy+150);});
+        const bx=90,by=940,bw=W-180,bh=420;x.fillStyle="#141B14";_rr(x,bx,by,bw,bh,30);x.fill();
+        x.textAlign="left";x.fillStyle="#F2F5EA";x.font="700 32px Arial";x.fillText("Mi semana de entrenamiento",bx+42,by+60);
+        const maxK=Math.max(1,..._R.map(d=>d.kcal||0));const n=_R.length;const step=(bw-84)/n;const bwi=step*0.58;
+        _R.forEach((d,i)=>{const val=d.kcal||0;const hh=Math.max(10,(val/maxK)*230);const px=bx+42+i*step+(step-bwi)/2;const py=by+bh-80-hh;x.fillStyle=d.today?"#4FC3F7":"#C7F94E";_rr(x,px,py,bwi,hh,10);x.fill();x.fillStyle="#95a08f";x.font="600 22px Arial";x.textAlign="center";x.fillText(d.d[0],px+bwi/2,by+bh-34);});
+        x.textAlign="center";x.fillStyle="#95a08f";x.font="600 28px Arial";x.fillText("Entrena con IA · mide tu progreso",W/2,H-130);
+        x.fillStyle="#C7F94E";x.font="700 32px Arial";x.fillText("smt-green.vercel.app",W/2,H-80);
+        cv.toBlob(async(blob)=>{if(!blob)return;try{const file=new File([blob],"smt-progreso.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Mi progreso en SMT",text:"Mi entrenamiento en SMT 🎾"});return;}}catch(e){}const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="smt-progreso.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);},"image/png");
+      };
+      x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.closePath();x.fillStyle="#141B14";x.fill();x.lineWidth=7;x.strokeStyle="#C7F94E";x.stroke();
+      if(user&&user.photo){const img=new Image();img.crossOrigin="anonymous";img.onload=()=>{x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();x.drawImage(img,cx-r,cy-r,r*2,r*2);x.restore();x.restore();rest();};img.onerror=()=>{x.restore();rest();};img.src=user.photo;}
+      else{x.fillStyle="#C7F94E";x.font="800 96px Arial";x.textAlign="center";x.textBaseline="middle";x.fillText((user&&user.avatar)||"?",cx,cy);x.textBaseline="alphabetic";x.restore();rest();}
+    }catch(e){alert("No se pudo generar la imagen para compartir.");}};
     const recs=[];
     if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
     if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
@@ -2984,6 +3009,7 @@ export default function App(){
             <div onClick={()=>setScreen("racha")} className="btn-press" style={{display:"flex",alignItems:"center",gap:5,background:"rgba(199,249,78,0.12)",border:`1px solid ${LIME}55`,borderRadius:16,padding:"7px 12px",cursor:"pointer"}}><Ico n="fire" s={19} c={LIME}/><span style={{fontFamily:F.bn,fontSize:16,color:LIME}}>{streak}</span></div>
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><T size={30}>MIS METAS</T><button onClick={()=>{setObjSel(user?.objectives||[]);setEditObj(true);}} className="btn-press" style={{background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}44`,color:LIME,fontFamily:F.ios,fontSize:12,fontWeight:700,padding:"7px 12px",borderRadius:12,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}><Ico n="edit" s={13} c={LIME}/>Editar</button></div>
+          <button onClick={shareMetas} className="btn-press" style={{width:"100%",marginBottom:11,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}44`,color:LIME,fontFamily:F.ios,fontSize:14,fontWeight:800,padding:"12px",borderRadius:14,cursor:"pointer"}}><Ico n="upload" s={16} c={LIME}/>Compartir mi progreso</button>
           <div onClick={()=>setScreen("racha")} className="btn-press" style={{display:"flex",alignItems:"center",gap:14,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,marginBottom:11,cursor:"pointer"}}>
             <svg width="58" height="58" viewBox="0 0 58 58" style={{flexShrink:0}}><circle cx="29" cy="29" r="23" fill="none" stroke={C.surface2} strokeWidth="6"/><circle cx="29" cy="29" r="23" fill="none" stroke={LIME} strokeWidth="6" strokeLinecap="round" strokeDasharray="145" strokeDashoffset={145*(1-wp)} transform="rotate(-90 29 29)"/></svg>
             <div><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Tu semana</div><Sub style={{fontSize:12,marginTop:2}}>{weekDone} de 5 días activos</Sub><div style={{fontFamily:F.ios,fontSize:11,fontWeight:700,color:LIME,marginTop:3}}>{weekDone===0?"¡Empieza hoy!":weekDone>=5?"¡Semana completa!":"¡Vas bien, sigue!"}</div></div><div style={{marginLeft:"auto",fontFamily:F.ios,fontSize:11,fontWeight:700,color:C.cyan}}>Ver mes ›</div>
@@ -3703,7 +3729,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="rankings"){
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
-    const inCat=accounts.filter(a=>!HIDDEN_EMAILS.includes(a.email)&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
+    const inCat=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
@@ -4202,7 +4228,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
     </div>;}
     // Solo mayores entre mayores (excluir admin de la lista de jugadores, excluir menores)
-    const others=accounts.filter(a=>!HIDDEN_EMAILS.includes(a.email)&&a.id!==user?.id&&!isMinor(a.birthdate));
+    const others=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
