@@ -802,6 +802,8 @@ export default function App(){
   const [passForm,setPassForm]=useState({old:"",new:""});
   const [addPlayerModal,setAddPlayerModal]=useState(null);
   const [addSearch,setAddSearch]=useState("");
+  const [ghostModal,setGhostModal]=useState(null);
+  const [linkSearch,setLinkSearch]=useState("");
   const [newT,setNewT]=useState({name:"",date:"",surface:"Clay",location:"",city:"",state:"Nuevo León",country:"México",maxPlayers:"8",prize:"",format:"groups+ko",modality:"singles",gender:"M",category:"B",image:null});
   const [categoryRequests,setCategoryRequests]=useState([]);
   const [tournamentRequests,setTournamentRequests]=useState([]);
@@ -1121,6 +1123,9 @@ export default function App(){
   const adminApprove=(tid,pid)=>{const t=tournaments.find(x=>x.id===tid),p=t.pendingPlayers.find(p=>p.id===pid);setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)}:x));if(p)createNotif(p.id,{type:"approval",title:"¡Inscripción aprobada!",body:`Ya estás dentro del torneo "${t?.name}". ¡Mucha suerte!`,link:"home"});};
   const adminReject=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,pendingPlayers:x.pendingPlayers.filter(p=>p.id!==pid)}:x));
   const adminAdd=(tid,pid)=>{const p=accounts.find(a=>a.id===pid);setTournaments(prev=>prev.map(x=>{if(x.id!==tid)return x;if(x.players.find(pp=>pp.id===pid))return x;return{...x,players:[...x.players,p],pendingPlayers:x.pendingPlayers.filter(pp=>pp.id!==pid)};}));};
+  const adminAddGhost=(tid,name)=>{const nm=(name||"").trim();if(!nm)return;setTournaments(prev=>prev.map(x=>{if(x.id!==tid)return x;if(x.players.length>=parseInt(x.maxPlayers))return x;const gp={id:"ghost-"+Date.now()+"-"+Math.floor(Math.random()*99999),name:nm,firstName:nm.split(" ")[0],lastName:nm.split(" ").slice(1).join(" "),ghost:true,sex:(x.gender&&x.gender!=="Mixed")?x.gender:null,category:x.category||null,ranking:0,points:0,wins:0,losses:0,titles:0,photo:null,avatar:ini(nm),club:"",stats:{...DSTATS}};return{...x,players:[...x.players,gp]};}));};
+  const adminDeleteGhost=(tid,gid)=>{setTournaments(prev=>prev.map(x=>x.id!==tid?x:{...x,players:x.players.filter(p=>p.id!==gid),pendingPlayers:(x.pendingPlayers||[]).filter(p=>p.id!==gid)}));};
+  const adminConvertGhost=(tid,gid,acct)=>{setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const rep2=p=>(p&&p.id===gid)?acct:p;return{...t,players:t.players.map(rep2),pendingPlayers:(t.pendingPlayers||[]).filter(p=>p.id!==acct.id),groups:(t.groups||[]).map(g=>({...g,players:(g.players||[]).map(rep2),matches:(g.matches||[]).map(m=>({...m,p1:rep2(m.p1),p2:rep2(m.p2),winner:rep2(m.winner)}))})),rounds:(t.rounds||[]).map(r=>(r||[]).map(m=>({...m,p1:rep2(m.p1),p2:rep2(m.p2),winner:rep2(m.winner)})))};}));};
   const adminRemove=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:x.players.filter(p=>p.id!==pid)}:x));
 
   const generateDraw=(tid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid||t.players.length<2)return t;if(t.format==="groups+ko")return{...t,groups:buildGroups(t.players,t.groupSize||4),rounds:[],status:"groups"};return{...t,rounds:buildKO(t.players),groups:[],status:"inprogress"};}));
@@ -3514,9 +3519,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <div style={{height:14}}/>
             </>}
             <SL>Inscritos ({t.players.length})</SL>
-            {t.players.map((p,i)=><div key={p.id} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:`0.5px solid ${C.borderS}`,animation:`slideLeft 0.35s ${i*0.04}s backwards`,cursor:"pointer"}} onClick={()=>{setViewP(p);setScreen("player-card");}}>
+            {t.players.map((p,i)=><div key={p.id} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:`0.5px solid ${C.borderS}`,animation:`slideLeft 0.35s ${i*0.04}s backwards`,cursor:"pointer"}} onClick={()=>{if(isAdmin&&p.ghost){setGhostModal({tid:t.id,ghost:p});setLinkSearch("");}else{setViewP(p);setScreen("player-card");}}}>
               <PA photo={p.photo} avatar={p.avatar} size={42} animated/>
-              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:600,color:C.text}}>{p.name}</div><Sub style={{marginTop:2,fontSize:12}}>{p.points} pts · {p.wins}W-{p.losses}L · {p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</Sub></div>
+              <div style={{flex:1}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{fontFamily:F.ios,fontSize:15,fontWeight:600,color:C.text}}>{p.name}</div>{p.ghost&&<span style={{fontFamily:F.bc,fontSize:8,letterSpacing:"0.12em",fontWeight:700,color:LIME,background:"rgba(199,249,78,0.12)",border:`1px solid ${LIME}55`,borderRadius:6,padding:"2px 5px"}}>INVITADO</span>}</div><Sub style={{marginTop:2,fontSize:12}}>{p.ghost?"Jugador sin cuenta · toca para gestionar":<>{p.points} pts · {p.wins}W-{p.losses}L · {p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</>}</Sub></div>
               <div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:C.cyan}}>#{i+1}</div><div style={{fontFamily:F.bc,textTransform:"uppercase",letterSpacing:"0.14em",fontSize:10,color:C.muted,fontWeight:600}}>seed</div></div>
               {isAdmin&&<button onClick={(e)=>{e.stopPropagation();adminRemove(t.id,p.id);}} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid rgba(255,59,48,0.4)`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:11,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>}
             </div>)}
@@ -3545,8 +3550,26 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <span style={{color:C.cyan,fontSize:18}}>+</span>
             </div>)}
           </div>
+          {addSearch.trim()&&<div onClick={()=>{adminAddGhost(addPlayerModal.tid,addSearch.trim());setAddSearch("");setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:12,background:"rgba(199,249,78,0.08)",border:`1px dashed ${LIME}66`,borderRadius:10,marginBottom:12,cursor:"pointer"}}><div style={{width:36,height:36,borderRadius:"50%",background:LIME,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="person" s={18} c={LIMED}/></div><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Agregar “{addSearch.trim()}” como invitado</div><Sub style={{fontSize:11,marginTop:2}}>Jugador sin cuenta, para rellenar el cuadro. Al vencerlo, la victoria sí le cuenta a tu rival.</Sub></div><span style={{color:LIME,fontSize:20}}>+</span></div>}
           <BtnX onClick={()=>setAddPlayerModal(null)}>CERRAR</BtnX>
         </Modal>}
+
+        {ghostModal&&(()=>{const gt=tournaments.find(x=>x.id===ghostModal.tid)||{};const opts=accounts.filter(a=>a.id&&a.id!=="__guest__"&&(a.name||"").toLowerCase().includes(linkSearch.toLowerCase())&&!(gt.players||[]).find(p=>p.id===a.id));return <Modal onClose={()=>setGhostModal(null)}>
+          <T size={22} style={{textAlign:"center",marginBottom:4}}>{ghostModal.ghost.name}</T>
+          <Sub style={{textAlign:"center",marginBottom:16,fontSize:12.5}}>Jugador invitado (sin cuenta). Sus partidos ya cuentan para sus rivales.</Sub>
+          <FL>Vincular a un usuario registrado</FL>
+          <Sub style={{fontSize:11.5,marginBottom:8}}>Cuando la persona se registre, pásale aquí todo su historial de este torneo.</Sub>
+          <TI value={linkSearch} onChange={e=>setLinkSearch(e.target.value)} placeholder="Buscar usuario registrado..."/>
+          <div style={{maxHeight:220,overflowY:"auto",marginTop:10,marginBottom:14}}>
+            {opts.length===0?<Sub style={{textAlign:"center",padding:"14px 0",fontSize:12}}>{linkSearch?"Sin resultados":"Escribe un nombre para buscar"}</Sub>:opts.slice(0,20).map(a=><div key={a.id} onClick={()=>{if((gt.players||[]).find(p=>p.id===a.id)){alert("Ese usuario ya está en el torneo.");return;}adminConvertGhost(ghostModal.tid,ghostModal.ghost.id,a);setGhostModal(null);setLinkSearch("");alert(a.name+" hereda el historial de "+ghostModal.ghost.name+" en este torneo.");}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:10,background:C.surface2,border:`0.5px solid ${C.borderS}`,borderRadius:10,marginBottom:6,cursor:"pointer"}}>
+              <PA photo={a.photo} avatar={a.avatar} size={34}/>
+              <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{a.name}</div><Sub style={{fontSize:11}}>#{a.ranking||"—"} · {a.points||0} pts</Sub></div>
+              <span style={{color:C.cyan,fontSize:18}}>→</span>
+            </div>)}
+          </div>
+          <button onClick={()=>{adminDeleteGhost(ghostModal.tid,ghostModal.ghost.id);setGhostModal(null);}} className="btn-press" style={{width:"100%",background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"12px",borderRadius:12,fontFamily:F.ios,fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>Borrar del torneo</button>
+          <BtnX onClick={()=>setGhostModal(null)}>CERRAR</BtnX>
+        </Modal>;})()}
 
         {subData&&<Modal onClose={()=>setSubData(null)} center>
           {subStep==="pick"?<>
