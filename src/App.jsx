@@ -1081,7 +1081,7 @@ export default function App(){
   };
   const doLogout=async()=>{try{await supabase.auth.signOut();}catch(e){}setDataLoaded(false);tPrevIds.current=null;mPrevIds.current=null;setGuest(false);setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
   // Entrar a explorar sin cuenta: usuario "invitado" con valores seguros por defecto (evita crashes en render)
-  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{}});setScreen("home");setShowOnboarding(true);};
+  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{}});setScreen("metas");setShowOnboarding(true);};
   // Salir del modo invitado hacia login o registro
   const guestToAuth=(mode)=>{setGuest(false);setUser(null);setGuestPrompt(null);setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(mode);setScreen("auth");};
   // Compuerta: si es invitado, muestra el modal de "crea tu cuenta" y bloquea la acción. Devuelve true si bloqueó.
@@ -2159,7 +2159,6 @@ export default function App(){
       ...(userIsMinor?[]:[{k:"marketplace",icon:"bag",label:"Market"}]),
       ...(userIsMinor?[]:[{k:"social",icon:"chat",label:"Social"}]),
       {k:"rankings",icon:"chart",label:"Rank"},
-      ...(userIsMinor?[]:[{k:"media",icon:"film",label:"Media"}]),
       {k:"profile-tab",icon:"person",label:"Perfil"}
     ];
     const handleTab=(k)=>{
