@@ -2557,11 +2557,32 @@ export default function App(){
             </>}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 45%,rgba(4,10,24,0.5) 70%,rgba(4,10,24,0.97))"}}/>
             <div style={{position:"absolute",top:14,left:14,display:"flex",gap:6}}><Chip type="cyan" style={{fontSize:10,padding:"4px 10px"}}>{p.country||"México"}</Chip>{p.sex&&<Chip style={{fontSize:10,padding:"4px 10px"}}>{p.sex==="F"?"FEM":"MAS"}</Chip>}{pIsMinor&&<Chip type="green" style={{fontSize:10,padding:"4px 10px"}}>MENOR</Chip>}</div>
-            <div style={{position:"absolute",left:0,right:0,bottom:0,padding:22}}>
-              <div style={{fontFamily:F.bc,color:C.cyan,letterSpacing:"0.32em",textTransform:"uppercase",fontSize:11,marginBottom:6,fontWeight:600}}>RANKING #{p.ranking||"—"} · {p.points||0} PTS</div>
-              <T size={36} style={{lineHeight:0.95,marginBottom:4}}>{(p.firstName||p.name?.split(" ")[0]||"").toUpperCase()}</T>
-              <T size={36} style={{lineHeight:0.95,color:C.cyan}}>{(p.lastName||p.name?.split(" ").slice(1).join(" ")||"").toUpperCase()}</T>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}><Chip>{p.club||"—"}</Chip><Chip>{p.hand||"—"}</Chip>{p.category&&<Chip type="gold" style={{background:`${CAT_C[p.category]}25`,color:CAT_C[p.category],borderColor:`${CAT_C[p.category]}55`}}>CAT {p.category}</Chip>}{p.racket&&<Chip type="cyan">{p.racket}</Chip>}</div>
+            <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 16px 15px"}}>
+              <div style={{fontFamily:F.bc,color:C.cyan,letterSpacing:"0.32em",textTransform:"uppercase",fontSize:10.5,marginBottom:5,fontWeight:600}}>RANKING #{p.ranking||"—"} · {p.points||0} PTS</div>
+              <T size={32} style={{lineHeight:0.94,marginBottom:2}}>{(p.firstName||p.name?.split(" ")[0]||"").toUpperCase()}</T>
+              <T size={32} style={{lineHeight:0.94,color:C.cyan,marginBottom:9}}>{(p.lastName||p.name?.split(" ").slice(1).join(" ")||"").toUpperCase()}</T>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:11}}><Chip>{p.club||"—"}</Chip>{p.category&&<Chip type="gold" style={{background:`${CAT_C[p.category]}25`,color:CAT_C[p.category],borderColor:`${CAT_C[p.category]}55`}}>CAT {p.category}</Chip>}{p.hand&&<Chip>{p.hand}</Chip>}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:7}}>
+                <div style={{position:"relative",borderRadius:14,padding:2,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:`conic-gradient(from 0deg,${LIME},${C.cyan},${LIME}22,${LIME})`,animation:"spin 4.5s linear infinite"}}/>
+                  <div style={{position:"relative",background:"rgba(8,16,34,0.94)",borderRadius:12,padding:"9px 5px",textAlign:"center"}}>
+                    <div style={{fontFamily:F.bn,fontSize:22,color:LIME,lineHeight:1}}>{wr}<span style={{fontSize:11}}>%</span></div>
+                    <div style={{fontFamily:F.bc,fontSize:7.5,letterSpacing:"0.08em",color:"rgba(255,255,255,0.62)",fontWeight:700,marginTop:3}}>WIN RATE</div>
+                  </div>
+                </div>
+                <div style={{borderRadius:14,padding:"11px 5px",textAlign:"center",background:"rgba(8,16,34,0.62)",border:`1px solid ${C.borderS}`,backdropFilter:"blur(7px)",WebkitBackdropFilter:"blur(7px)"}}>
+                  <div style={{fontFamily:F.bn,fontSize:22,color:C.text,lineHeight:1}}>{p.wins||0}<span style={{fontSize:12,color:LIME,margin:"0 1px"}}>-</span>{p.losses||0}</div>
+                  <div style={{fontFamily:F.bc,fontSize:7.5,letterSpacing:"0.08em",color:"rgba(255,255,255,0.62)",fontWeight:700,marginTop:3}}>RÉCORD</div>
+                </div>
+                <div style={{borderRadius:14,padding:"11px 5px",textAlign:"center",background:"rgba(8,16,34,0.62)",border:`1px solid ${C.borderS}`,backdropFilter:"blur(7px)",WebkitBackdropFilter:"blur(7px)"}}>
+                  <div style={{fontFamily:F.bn,fontSize:22,color:C.gold,lineHeight:1}}>{p.titles||0}</div>
+                  <div style={{fontFamily:F.bc,fontSize:7.5,letterSpacing:"0.08em",color:"rgba(255,255,255,0.62)",fontWeight:700,marginTop:3}}>TÍTULOS</div>
+                </div>
+                <div style={{borderRadius:14,padding:"11px 5px",textAlign:"center",background:"rgba(8,16,34,0.62)",border:`1px solid ${C.borderS}`,backdropFilter:"blur(7px)",WebkitBackdropFilter:"blur(7px)"}}>
+                  <div style={{fontFamily:F.bn,fontSize:22,color:C.cyan,lineHeight:1}}>#{p.ranking||"—"}</div>
+                  <div style={{fontFamily:F.bc,fontSize:7.5,letterSpacing:"0.08em",color:"rgba(255,255,255,0.62)",fontWeight:700,marginTop:3}}>RANKING</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2572,28 +2593,6 @@ export default function App(){
           {isMe&&<BtnG onClick={()=>setShowChangePass(true)} style={{flex:"1 1 140px",padding:12}}><Ico n="lock"/>CONTRASEÑA</BtnG>}
           {isMe&&<BtnG onClick={()=>setShowReferModal(true)} style={{flex:"1 1 140px",padding:12,background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,color:"#fff",border:"none"}}><Ico n="medal"/>INVITA Y GANA 1 MES</BtnG>}
         </div>}
-        <div style={{padding:"6px 16px 0"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,animation:"statPop 0.4s backwards"}}>
-              <div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:C.muted,fontWeight:600,marginBottom:6}}>WIN RATE</div>
-              <div style={{fontFamily:F.bn,fontSize:32,color:C.cyan,lineHeight:1}}>{wr}%</div>
-              <div style={{height:6,background:C.surface3,borderRadius:4,overflow:"hidden",marginTop:9}}><div style={{height:"100%",width:wr+"%",background:`linear-gradient(90deg,${C.cyanBright},${C.cyanDeep})`,borderRadius:4,animation:"growW 1.1s ease both"}}/></div>
-            </div>
-            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,animation:"statPop 0.4s 0.07s backwards"}}>
-              <div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:C.muted,fontWeight:600,marginBottom:6}}>RÉCORD</div>
-              <div style={{fontFamily:F.bn,fontSize:32,color:C.text,lineHeight:1}}>{p.wins||0}<span style={{fontSize:15,color:C.cyan}}>W</span> {p.losses||0}<span style={{fontSize:15,color:C.muted}}>L</span></div>
-              <div style={{fontFamily:F.ios,fontSize:11,color:C.muted,marginTop:8}}>{(p.wins||0)+(p.losses||0)} partidos jugados</div>
-            </div>
-            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,display:"flex",alignItems:"center",gap:11,animation:"statPop 0.4s 0.14s backwards"}}>
-              <span style={{width:38,height:38,borderRadius:11,background:"rgba(201,168,76,0.14)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="trophy" s={20} c={C.gold}/></span>
-              <div><div style={{fontFamily:F.bn,fontSize:28,color:C.gold,lineHeight:1}}>{p.titles||0}</div><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:C.muted,fontWeight:600}}>TÍTULOS</div></div>
-            </div>
-            <div style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:16,padding:14,display:"flex",alignItems:"center",gap:11,animation:"statPop 0.4s 0.21s backwards"}}>
-              <span style={{width:38,height:38,borderRadius:11,background:p.category?`${CAT_C[p.category]}22`:"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:F.bn,fontSize:16,color:p.category?CAT_C[p.category]:C.muted}}>{p.category||"—"}</span>
-              <div><div style={{fontFamily:F.bn,fontSize:28,color:C.cyan,lineHeight:1}}>#{p.ranking||"—"}</div><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:C.muted,fontWeight:600}}>RANKING · {p.points||0} PTS</div></div>
-            </div>
-          </div>
-        </div>
         <div style={{background:C.surface,padding:"18px 20px",margin:"10px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
           <SL>Resumen de temporada</SL>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px 24px"}}>
@@ -2966,30 +2965,31 @@ export default function App(){
     const g=user?.goals||{};const streak=g.streak||0;const weekDone=g.weekDone||0;const wp=Math.min(1,weekDone/5);
     const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];const _maxMin=Math.max(1,..._R.map(d=>d.min||0));const _maxKcal=Math.max(1,..._R.map(d=>d.kcal||0));const _FP=genFisioPlan(ph);const _fdone=(user?.goals?.fisioDoneToday)===new Date().toISOString().slice(0,10);const goalMoney=Math.max(2000,Math.ceil((money+1)/1000)*1000);const openT=(tournaments||[]).find(t=>(t.status==="open"||!t.status)&&!(t.players||[]).some(p=>p.id===user?.id));const nextPrize=openT?(parseInt(String(openT.prize||"").replace(/[^0-9]/g,""))||0):0;
     const _rr=(c,px,py,w,h,rad)=>{c.beginPath();c.moveTo(px+rad,py);c.arcTo(px+w,py,px+w,py+h,rad);c.arcTo(px+w,py+h,px,py+h,rad);c.arcTo(px,py+h,px,py,rad);c.arcTo(px,py,px+w,py,rad);c.closePath();};
-    const shareMetas=()=>{try{const W=1080,H=1920;const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
-      x.fillStyle="#0A0F0C";x.fillRect(0,0,W,H);
-      const grd=x.createRadialGradient(W/2,300,60,W/2,300,640);grd.addColorStop(0,"rgba(199,249,78,0.16)");grd.addColorStop(1,"rgba(10,15,12,0)");x.fillStyle=grd;x.fillRect(0,0,W,760);
-      x.textAlign="center";x.fillStyle="#C7F94E";x.font="700 46px Arial";x.fillText("S M T",W/2,120);
-      x.fillStyle="#95a08f";x.font="600 22px Arial";x.fillText("SOCIEDAD MEXICANA DE TENIS",W/2,158);
-      const cx=W/2,cy=350,r=115;
-      const rest=()=>{
-        x.textAlign="center";x.fillStyle="#F2F5EA";x.font="800 66px Arial";x.fillText((user?.firstName||user?.name||"Jugador").toUpperCase(),W/2,560);
-        x.fillStyle="#C7F94E";x.font="600 30px Arial";x.fillText((user?.category?"Categoría "+user.category:"Jugador")+(user?.city?" · "+user.city:""),W/2,608);
-        const stats=[[String(streak),"RACHA"],[String(_R.reduce((a,d)=>a+(d.kcal||0),0)),"KCAL/SEM"],[weekDone+"/5","ACTIVOS"]];
-        const cw=300,ch=190,gap=30,tot=cw*3+gap*2,sx=(W-tot)/2,sy=690;
-        stats.forEach((s,i)=>{const px=sx+i*(cw+gap);x.fillStyle="#141B14";_rr(x,px,sy,cw,ch,26);x.fill();x.textAlign="center";x.fillStyle="#C7F94E";x.font="800 70px Arial";x.fillText(s[0],px+cw/2,sy+105);x.fillStyle="#95a08f";x.font="600 22px Arial";x.fillText(s[1],px+cw/2,sy+150);});
-        const bx=90,by=940,bw=W-180,bh=420;x.fillStyle="#141B14";_rr(x,bx,by,bw,bh,30);x.fill();
-        x.textAlign="left";x.fillStyle="#F2F5EA";x.font="700 32px Arial";x.fillText("Mi semana de entrenamiento",bx+42,by+60);
-        const maxK=Math.max(1,..._R.map(d=>d.kcal||0));const n=_R.length;const step=(bw-84)/n;const bwi=step*0.58;
-        _R.forEach((d,i)=>{const val=d.kcal||0;const hh=Math.max(10,(val/maxK)*230);const px=bx+42+i*step+(step-bwi)/2;const py=by+bh-80-hh;x.fillStyle=d.today?"#4FC3F7":"#C7F94E";_rr(x,px,py,bwi,hh,10);x.fill();x.fillStyle="#95a08f";x.font="600 22px Arial";x.textAlign="center";x.fillText(d.d[0],px+bwi/2,by+bh-34);});
-        x.textAlign="center";x.fillStyle="#95a08f";x.font="600 28px Arial";x.fillText("Entrena con IA · mide tu progreso",W/2,H-130);
-        x.fillStyle="#C7F94E";x.font="700 32px Arial";x.fillText("smt-green.vercel.app",W/2,H-80);
-        cv.toBlob(async(blob)=>{if(!blob)return;try{const file=new File([blob],"smt-progreso.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Mi progreso en SMT",text:"Mi entrenamiento en SMT 🎾"});return;}}catch(e){}const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="smt-progreso.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);},"image/png");
-      };
-      x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.closePath();x.fillStyle="#141B14";x.fill();x.lineWidth=7;x.strokeStyle="#C7F94E";x.stroke();
-      if(user&&user.photo){const img=new Image();img.crossOrigin="anonymous";img.onload=()=>{x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();x.drawImage(img,cx-r,cy-r,r*2,r*2);x.restore();x.restore();rest();};img.onerror=()=>{x.restore();rest();};img.src=user.photo;}
-      else{x.fillStyle="#C7F94E";x.font="800 96px Arial";x.textAlign="center";x.textBaseline="middle";x.fillText((user&&user.avatar)||"?",cx,cy);x.textBaseline="alphabetic";x.restore();rest();}
-    }catch(e){alert("No se pudo generar la imagen para compartir.");}};
+    const shareMetas=()=>{try{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.setAttribute("capture","user");inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>drawShareCard(im);im.onerror=()=>drawShareCard(null);im.src=rd.result;};rd.readAsDataURL(f);};inp.click();}catch(e){alert("No se pudo abrir la camara.");}};
+    const drawShareCard=(selfie)=>{try{const W=1080,H=1920;const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+      if(selfie){const s=Math.max(W/selfie.width,H/selfie.height);const dw=selfie.width*s,dh=selfie.height*s;x.drawImage(selfie,(W-dw)/2,(H-dh)/2,dw,dh);}else{x.fillStyle="#12181f";x.fillRect(0,0,W,H);}
+      x.fillStyle="rgba(6,10,14,0.4)";x.fillRect(0,0,W,150);x.fillStyle="rgba(6,10,14,0.42)";x.fillRect(0,H-760,W,760);
+      x.textAlign="left";x.fillStyle="#C7F94E";x.font="800 62px Arial";x.fillText("SMT",56,120);
+      const md=_today||_R[0];
+      const tx=56,ty=1250,tw=470,th=360;
+      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,tx,ty,tw,th,26);x.fill();x.strokeStyle="rgba(199,249,78,0.4)";x.lineWidth=2;_rr(x,tx,ty,tw,th,26);x.stroke();
+      x.textAlign="left";x.fillStyle="#7fd0ff";x.font="700 22px Arial";x.fillText("HOY · "+(md?md.min:0)+" MIN",tx+30,ty+52);
+      x.fillStyle="#fff";x.font="800 36px Arial";x.fillText(md?md.t:"Entrenamiento",tx+30,ty+100);
+      x.fillStyle="#95a08f";x.font="700 19px Arial";x.fillText("DIFICULTAD",tx+30,ty+148);
+      for(let k=0;k<5;k++){const on=md&&k<md.int;x.fillStyle=on?(md.int<=2?"#C7F94E":md.int===3?"#EF9F27":"#F0997B"):"#2a3320";_rr(x,tx+30+k*54,ty+166,44,14,4);x.fill();}
+      x.fillStyle="#95a08f";x.font="700 18px Arial";x.fillText("TIEMPO",tx+30,ty+250);x.fillStyle="#C7F94E";x.font="800 46px Arial";x.fillText((md?md.min:0)+" MIN",tx+30,ty+300);
+      const kx=560,kw=460,kh=360,ky=1250;
+      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,kx,ky,kw,kh,26);x.fill();x.strokeStyle="rgba(79,195,247,0.4)";x.lineWidth=2;_rr(x,kx,ky,kw,kh,26);x.stroke();
+      x.textAlign="right";x.fillStyle="#95a08f";x.font="700 20px Arial";x.fillText("KCAL QUEMADAS",kx+kw-28,ky+52);
+      x.fillStyle="#C7F94E";x.font="800 100px Arial";x.fillText(String(md?md.kcal:0),kx+kw-28,ky+160);
+      const maxK2=Math.max(1,..._R.map(d=>d.kcal||0));_R.forEach((d,i)=>{const hh=Math.max(8,(d.kcal||0)/maxK2*95);const bwi=34,g2=8;const bx2=kx+30+i*(bwi+g2);x.fillStyle=d.today?"#4FC3F7":"#C7F94E";_rr(x,bx2,ky+kh-38-hh,bwi,hh,6);x.fill();});
+      const musc=(md&&WK_MUSCLES[md.kind])?WK_MUSCLES[md.kind].slice(0,3):[];
+      const mx=56,my=1650,mw=W-112,mh=210;
+      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,mx,my,mw,mh,26);x.fill();x.strokeStyle="rgba(255,255,255,0.14)";x.lineWidth=2;_rr(x,mx,my,mw,mh,26);x.stroke();
+      x.textAlign="left";x.fillStyle="#95a08f";x.font="700 20px Arial";x.fillText("MUSCULOS QUE TRABAJE",mx+30,my+45);
+      musc.forEach((m,i)=>{const ry=my+78+i*42;const col=m.p>=65?"#C7F94E":m.p>=40?"#EF9F27":"#F0997B";x.textAlign="left";x.fillStyle="#e8eef5";x.font="600 26px Arial";x.fillText(m.n,mx+30,ry+22);x.fillStyle="#222c22";_rr(x,mx+240,ry+5,mw-390,20,10);x.fill();x.fillStyle=col;_rr(x,mx+240,ry+5,(mw-390)*m.p/100,20,10);x.fill();x.textAlign="right";x.fillStyle=col;x.font="700 28px Arial";x.fillText(m.p+"%",mx+mw-30,ry+24);});
+      cv.toBlob(async(blob)=>{if(!blob)return;try{const file=new File([blob],"smt-progreso.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Mi progreso en SMT"});return;}}catch(e){}const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="smt-progreso.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);},"image/png");
+    }catch(e){alert("No se pudo generar la imagen.");}};
     const recs=[];
     if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
     if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
