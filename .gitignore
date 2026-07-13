@@ -7,3 +7,8 @@ android/
 *.p8
 GoogleService-Info.plist
 AuthKey_*.p8
+
+# Llave de firma Android (NO subir a git)
+smt-upload.jks
+*.jks
+smt-upload.jks.b64

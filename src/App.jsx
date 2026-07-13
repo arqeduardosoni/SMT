@@ -717,7 +717,7 @@ export default function App(){
   const [accounts,setAccounts]=useState([]);
   const [authLoading,setAuthLoading]=useState(true);
   const [adminPass,setAdminPass]=useState(ADMIN_PASS);
-  const [tournaments,setTournaments]=useState(DEMO_T);
+  const [tournaments,setTournaments]=useState([]);
   const [user,setUser]=useState(null);
   const [isAdmin,setIsAdmin]=useState(false);
   // PALETA: si jugadora femenina (no admin), usar rosa pastel
@@ -1196,7 +1196,7 @@ export default function App(){
 
   const createTourney=()=>{if(!newT.name.trim())return;if(!isAdmin&&!createPermissions[user.id]){alert("No tienes permisos para crear torneos.");return;}const creatorIsMinor=!isAdmin&&isMinor(user.birthdate);const t={id:`t-${Date.now()}`,name:newT.name,date:newT.date,surface:newT.surface,location:newT.location||"Monterrey, NL",city:newT.city||"Monterrey",state:newT.state||"Nuevo León",country:newT.country||"México",maxPlayers:parseInt(newT.maxPlayers)||8,format:newT.format,modality:newT.modality,gender:newT.gender,category:newT.category,forMinors:isAdmin?(newT.forMinors||false):creatorIsMinor,groupSize:4,players:[],pendingPlayers:[],groups:[],rounds:[],status:"open",prize:newT.prize||"TBD",image:newT.image,createdBy:isAdmin?"admin":user.id};setTournaments(prev=>[...prev,t]);if(!isAdmin)setCreatePermissions(prev=>({...prev,[user.id]:Math.max(0,(prev[user.id]||1)-1)}));setShowCreate(false);setNewT({name:"",date:"",surface:"Clay",location:"",city:"",state:"Nuevo León",country:"México",maxPlayers:"8",prize:"",format:"groups+ko",modality:"singles",gender:"M",category:"B",image:null,forMinors:false});};
   const saveTEdit=()=>{setTournaments(prev=>prev.map(t=>t.id===editTourney.id?{...t,...editTourney}:t));setEditTourney(null);};
-  const confDelT=()=>{setTournaments(prev=>prev.filter(t=>t.id!==deleteTId));setDeleteTId(null);};
+  const confDelT=async()=>{const _id=deleteTId;setTournaments(prev=>prev.filter(t=>String(t.id)!==String(_id)));setDeleteTId(null);try{await supabase.from("tournament_data").delete().eq("id",String(_id));}catch(e){console.error("delT",e);}};
 
   const saveProfile=()=>{
     const orig=accounts.find(a=>a.id===editProfile.id);
@@ -1707,14 +1707,14 @@ export default function App(){
 
   // Procesa el link/QR de inscripción a torneo (?jt=ID) tras iniciar sesión
   useEffect(()=>{
-    if(user&&pendingJoinTourney){
+    if(user&&pendingJoinTourney&&dataLoaded){
       if(guest){setGuestPrompt("Crea tu cuenta gratis para inscribirte al torneo.");return;} // se conserva y se procesa al registrarse
       if(isAdmin){setPendingJoinTourney(null);return;}
       const tid=pendingJoinTourney;setPendingJoinTourney(null);
       joinTournamentByLink(tid);
     }
     /* eslint-disable-next-line */
-  },[user,guest,pendingJoinTourney]);
+  },[user,guest,pendingJoinTourney,dataLoaded]);
   // ==================== FIN SOCIAL: funciones ====================
 
 
@@ -3728,7 +3728,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="rankings"){
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
-    const inCat=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.category===rankingTab&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
+    const inCat=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&(rankingTab==="Sin cat"?!a.category:a.category===rankingTab)&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
@@ -3737,7 +3737,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <T size={32}>RANKINGS</T><Sub style={{marginTop:4,marginBottom:14}}>Top 100 por categoría y género</Sub>
           <Seg options={[{v:"M",l:"Varonil"},{v:"F",l:"Femenil"},{v:"All",l:"Todos"}]} value={rankingGender} onChange={setRankingGender} style={{marginBottom:14}}/>
           <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:6}}>
-            {CATS.map(cat=><button key={cat} onClick={()=>setRankingTab(cat)} className="btn-press" style={{padding:"9px 16px",borderRadius:10,border:rankingTab===cat?`2px solid ${CAT_C[cat]}`:`1px solid ${C.borderS}`,background:rankingTab===cat?`${CAT_C[cat]}25`:"transparent",color:rankingTab===cat?CAT_C[cat]:C.muted,fontFamily:F.bn,fontSize:16,letterSpacing:"0.1em",cursor:"pointer",whiteSpace:"nowrap",fontWeight:700}}>{cat}</button>)}
+            {[...CATS,...(isAdmin?["Sin cat"]:[])].map(cat=><button key={cat} onClick={()=>setRankingTab(cat)} className="btn-press" style={{padding:"9px 16px",borderRadius:10,border:rankingTab===cat?`2px solid ${CAT_C[cat]||"#95a08f"}`:`1px solid ${C.borderS}`,background:rankingTab===cat?`${CAT_C[cat]||"#95a08f"}25`:"transparent",color:rankingTab===cat?(CAT_C[cat]||"#95a08f"):C.muted,fontFamily:F.bn,fontSize:16,letterSpacing:"0.1em",cursor:"pointer",whiteSpace:"nowrap",fontWeight:700}}>{cat}</button>)}
           </div>
           {(()=>{const eoy=new Date(new Date().getFullYear(),11,31,23,59,59);const daysLeft=Math.max(0,Math.ceil((eoy-new Date())/86400000));const leader=inCat.filter(a=>a.premium)[0];const top=inCat[0];return <div style={{position:"relative",overflow:"hidden",borderRadius:18,padding:"16px",marginBottom:16,background:"linear-gradient(135deg,rgba(201,168,76,0.18),rgba(255,209,92,0.05))",border:"1px solid rgba(201,168,76,0.5)",boxShadow:"0 0 24px rgba(201,168,76,0.14)"}}>
             <div style={{position:"absolute",top:-24,right:-24,opacity:0.16,animation:"breathing 5s infinite"}}><Ico n="trophy" s={120} c={C.gold}/></div>
