@@ -285,7 +285,7 @@ const profileToPlayer=(r)=>({
   ranking:r.ranking||0, points:r.points||0, wins:r.wins||0, losses:r.losses||0, titles:r.titles||0,
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
-  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:r.premium||false, premiumUntil:r.premium_until||null, trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false, objectives:r.objectives||[], objectivesSet:r.objectives_set||false, physical:r.physical||{}, goals:r.goals||{},
+  requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:FREE_PREMIUM_ALL?true:(r.premium||false), premiumUntil:FREE_PREMIUM_ALL?(r.premium_until||new Date(Date.now()+365*86400000).toISOString()):(r.premium_until||null), trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false, objectives:r.objectives||[], objectivesSet:r.objectives_set||false, physical:r.physical||{}, goals:r.goals||{},
   referralCode:r.referral_code||null,
 });
 const playerToProfile=(p,authId)=>({
@@ -441,6 +441,8 @@ function Ico({n,s=15,c="currentColor"}){
   return <svg width={s} height={s} viewBox="0 0 24 24" fill={n==="star"?c:"none"} stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:6,flexShrink:0}}><path d={paths[n]}/></svg>;
 }
 const IS_ANDROID=(typeof window!=="undefined"&&window.Capacitor&&typeof window.Capacitor.getPlatform==="function"&&window.Capacitor.getPlatform()==="android");
+const FREE_PREMIUM_ALL=true; // TEMP: todos Premium gratis 1 anio hasta aprobacion App Store
+const PREMIUM_HIDDEN=true; // TEMP: oculta compra Premium (Guideline 3.1.1)
 // ===== SMT PREMIUM (panel de beneficios) =====
 function PremiumPanel({onClose,onPremiumChange}){
   const benefits=[
@@ -508,7 +510,7 @@ function PremiumPanel({onClose,onPremiumChange}){
           <div><div style={{fontFamily:F.ios,fontSize:15,fontWeight:700,color:C.text}}>{b[1]}</div><div style={{fontFamily:F.ios,fontSize:12.5,color:C.muted,marginTop:2,lineHeight:1.4}}>{b[2]}</div></div>
         </div>)}
       </div>
-      {IS_ANDROID?<div style={{padding:"6px 0 2px"}}><Sub style={{fontSize:13,lineHeight:1.5}}>Muy pronto podrás activar <b style={{color:"#FFD15C"}}>SMT Premium</b> en Android. Por ahora, disfruta SMT gratis.</Sub></div>:loading?<div style={{padding:"16px 0"}}><Sub>Cargando planes…</Sub></div>:hasNative?<>
+      {(PREMIUM_HIDDEN||IS_ANDROID)?<div style={{padding:"6px 0 2px"}}><Sub style={{fontSize:13,lineHeight:1.5}}>Muy pronto podrás activar <b style={{color:"#FFD15C"}}>SMT Premium</b> en Android. Por ahora, disfruta SMT gratis.</Sub></div>:loading?<div style={{padding:"16px 0"}}><Sub>Cargando planes…</Sub></div>:hasNative?<>
         <div style={{display:"flex",gap:10,marginBottom:12}}>
           {pkgs.annual&&planBtn(pkgs.annual,"$799","al año · ahorra 2 meses",true)}
           {pkgs.monthly&&planBtn(pkgs.monthly,"$79","al mes",false)}
@@ -588,7 +590,7 @@ function Bracket({rounds,canEdit,onMatchClick}){
     {rounds.map((_,ri)=><div key={ri} style={{position:"absolute",left:bX(ri),top:-26,width:BK.CW,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:C.cyan,fontWeight:600}}>{rLabel(ri,numR)}</div>)}
     <svg width={totalW} height={totalH} style={{position:"absolute",top:0,left:0,pointerEvents:"none"}}><defs><linearGradient id="brl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={C.cyan} stopOpacity="0.15"/><stop offset="100%" stopColor={C.cyan} stopOpacity="0.4"/></linearGradient></defs>{paths.map(({d,k})=><path key={k} d={d} fill="none" stroke="url(#brl)" strokeWidth={1.5}/>)}</svg>
     {rounds.map((round,ri)=>round.map((match,mi)=>{
-      const click=match.status==="pending"&&match.p1&&match.p2&&canEdit(match);
+      const click=match.p1&&match.p2&&canEdit(match);
       const pr=match.pendingResult,isDone=match.status==="done";
       return <div key={match.id} onClick={()=>{if(click)onMatchClick(match,ri);}} style={{position:"absolute",left:bX(ri),top:bY(ri,mi),width:BK.CW,height:BK.CH,background:C.surface,border:`1px solid ${pr?C.amber:click?C.cyanBdr:isDone?"rgba(52,199,89,0.4)":C.borderS}`,borderRadius:8,cursor:click?"pointer":"default",overflow:"hidden",animation:"fadeIn 0.4s"}}>
         {pr&&<div style={{position:"absolute",top:2,right:4,fontFamily:F.bc,fontSize:8,color:C.amber,letterSpacing:"0.15em",fontWeight:600}}>PENDIENTE</div>}
@@ -937,7 +939,7 @@ export default function App(){
   useEffect(()=>{if(!user||user.id==="__guest__")return;if(!(user.goals&&user.goals.healthOn))return;(async()=>{try{const H=await getHealth();if(!H)return;const sum=await H.getTodaySummary();if(sum&&sum.available!==false)setHealth(sum);}catch(e){}})();/* eslint-disable-next-line */},[screen,user&&user.id]);
   useEffect(()=>{if(!user||user.id==="__guest__"||isAdmin)return;if(user.goals&&user.goals.healthOn)return;let cancel=false;(async()=>{try{const H=await getHealth();if(!H)return;const av=await H.isAvailable();if(!av||!av.available)return;await H.requestAuthorization();const sum=await H.getTodaySummary();if(!cancel&&sum&&sum.available!==false){setHealth(sum);const ph={...((user&&user.physical)||{})};let ch=false;if(sum.weight&&!ph.weight){ph.weight=Math.round(sum.weight);ch=true;}if(sum.height&&!ph.height){ph.height=sum.height;ch=true;}const g={...((user&&user.goals)||{}),healthOn:true};updateUser({...user,physical:ch?ph:(user&&user.physical),goals:g});try{supabase.from("profiles").update(Object.assign({goals:g},ch?{physical:ph}:{})).eq("auth_id",user.id);}catch(e){}}}catch(e){}})();return ()=>{cancel=true;};/* eslint-disable-next-line */},[user&&user.id]);
   const updateAccount=(u)=>updateEverywhere(u);
-  const applyTrialState=(p)=>{try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
+  const applyTrialState=(p)=>{if(FREE_PREMIUM_ALL)return p;try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
 
   const doLogin=async()=>{setAuthErr("");
@@ -1082,7 +1084,7 @@ export default function App(){
   };
   const doLogout=async()=>{try{await supabase.auth.signOut();}catch(e){}setDataLoaded(false);tPrevIds.current=null;mPrevIds.current=null;setGuest(false);setUser(null);setIsAdmin(false);setScreen("welcome");setAuthMode(null);setAuthForm({email:"",password:"",name:""});};
   // Entrar a explorar sin cuenta: usuario "invitado" con valores seguros por defecto (evita crashes en render)
-  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{}});setScreen("metas");setShowOnboarding(true);};
+  const enterGuest=()=>{setGuest(true);setIsAdmin(false);setUser({id:"__guest__",name:"Invitado",firstName:"Invitado",lastName:"",avatar:"?",photo:null,email:"",phone:"",city:"",club:"",category:"",sex:"",birthdate:"",ranking:"—",points:0,wins:0,losses:0,titles:0,stats:{},premium:true});setScreen("metas");setShowOnboarding(true);};
   // Salir del modo invitado hacia login o registro
   const guestToAuth=(mode)=>{setGuest(false);setUser(null);setGuestPrompt(null);setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(mode);setScreen("auth");};
   // Compuerta: si es invitado, muestra el modal de "crea tu cuenta" y bloquea la acción. Devuelve true si bloqueó.
@@ -1348,7 +1350,7 @@ export default function App(){
 
   // ==================== REVENUECAT (compras Premium) ====================
   const RC_KEY="appl_VfwfvzlfCuwIjMStzBVCIaiqpSl";
-  const syncPremium=(ci)=>{try{
+  const syncPremium=(ci)=>{if(FREE_PREMIUM_ALL)return;try{
     const active=!!(ci&&ci.entitlements&&ci.entitlements.active&&ci.entitlements.active["premium"]);
     const trialActive=!!(user&&user.premiumUntil&&Date.now()<new Date(user.premiumUntil).getTime());
     const eff=active||trialActive;
@@ -3100,7 +3102,7 @@ export default function App(){
             <div style={{marginTop:14,display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
               <button onClick={()=>{if(gate("Crea tu cuenta gratis para solicitar un torneo."))return;if(!user.category){alert("Primero selecciona tu categoría en tu perfil.");return;}setNewReqT({name:"",date:"",surface:"Clay",location:"",prize:"",modality:"singles",gender:user.sex||"M",category:user.category,format:"groups+ko"});setReqTourModal(true);}} className="btn-press" style={{display:"flex",alignItems:"center",gap:10,background:"rgba(199,249,78,0.08)",border:`1px solid ${LIME}44`,borderRadius:14,padding:"11px 12px",cursor:"pointer",textAlign:"left"}}><span style={{width:34,height:34,borderRadius:10,background:LIME,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="edit" s={16} c={LIMED}/></span><div style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:C.text,lineHeight:1.15}}>Solicitar torneo{createPermissions[user.id]>0?` (${createPermissions[user.id]})`:""}</div></button>
               <button onClick={()=>setScreen("scoreboard")} className="btn-press" style={{display:"flex",alignItems:"center",gap:10,background:"rgba(79,195,247,0.08)",border:`1px solid ${C.cyanBdr}`,borderRadius:14,padding:"11px 12px",cursor:"pointer",textAlign:"left"}}><span style={{width:34,height:34,borderRadius:10,background:C.cyan,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="chart" s={16} c="#04121f"/></span><div style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:C.text,lineHeight:1.15}}>Marcador en vivo</div></button>
-              {!IS_ANDROID&&<button onClick={()=>setShowPremium(true)} className="btn-press" style={{gridColumn:"1 / -1",display:"flex",alignItems:"center",gap:11,background:"linear-gradient(135deg,rgba(255,209,92,0.14),rgba(255,209,92,0.05))",border:"1px solid rgba(255,209,92,0.5)",borderRadius:14,padding:"12px 14px",cursor:"pointer",boxShadow:"0 6px 20px rgba(255,209,92,0.12)"}}><span style={{width:34,height:34,borderRadius:10,background:"#FFD15C",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,animation:"glowPulse 2.5s ease-in-out infinite"}}><Ico n="star" s={17} c="#1a1200"/></span><div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:13.5,fontWeight:800,color:"#FFD15C"}}>SMT PREMIUM</div><Sub style={{fontSize:10.5}}>Coach, físio y torneos privados</Sub></div><span style={{color:"#FFD15C",fontSize:16}}>›</span></button>}
+              {!PREMIUM_HIDDEN&&!IS_ANDROID&&<button onClick={()=>setShowPremium(true)} className="btn-press" style={{gridColumn:"1 / -1",display:"flex",alignItems:"center",gap:11,background:"linear-gradient(135deg,rgba(255,209,92,0.14),rgba(255,209,92,0.05))",border:"1px solid rgba(255,209,92,0.5)",borderRadius:14,padding:"12px 14px",cursor:"pointer",boxShadow:"0 6px 20px rgba(255,209,92,0.12)"}}><span style={{width:34,height:34,borderRadius:10,background:"#FFD15C",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,animation:"glowPulse 2.5s ease-in-out infinite"}}><Ico n="star" s={17} c="#1a1200"/></span><div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:13.5,fontWeight:800,color:"#FFD15C"}}>SMT PREMIUM</div><Sub style={{fontSize:10.5}}>Coach, físio y torneos privados</Sub></div><span style={{color:"#FFD15C",fontSize:16}}>›</span></button>}
             </div>
             {isMinor(user?.birthdate)&&<div style={{marginTop:14,background:"rgba(91,173,111,0.12)",border:`1px solid rgba(91,173,111,0.4)`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
               <div style={{lineHeight:0}}><Ico n="shield" s={22} c={C.cyan}/></div>
@@ -3568,7 +3570,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {!isAdmin&&isPending&&<Chip type="amber"><Ico n="clock"/>ESPERANDO APROBACIÓN</Chip>}
           {!isAdmin&&isReg&&<span style={{fontFamily:F.ios,fontSize:13,color:C.green,fontWeight:600}}><Ico n="check" s={14}/>Inscrito</span>}
           {isAdmin&&<BtnG onClick={()=>{setShareTourney(t);setShareTCopied(false);}} style={{flex:1,padding:12,background:C.cyanDim}}><Ico n="link"/>LINK / QR INSCRIPCIÓN</BtnG>}
-          {isAdmin&&t.status==="open"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
+          {isAdmin&&t.status!=="completed"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
           {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"INICIAR GRUPOS":"GENERAR DRAW"}</BtnG>}
           {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}><Ico n="bolt"/>GENERAR ELIMINATORIA</BtnG>}
           {isFull&&!isReg&&!isPending&&!isAdmin&&<Chip type="red">TORNEO LLENO</Chip>}
@@ -3599,7 +3601,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <div style={{padding:"10px 16px"}}>
                 <SL>Partidos</SL>
                 {g.matches.map(match=>{
-                  const click=match.status==="pending"&&canEdit(match);
+                  const click=match.p1&&match.p2&&canEdit(match);
                   const isDone=match.status==="done";
                   return <div key={match.id} onClick={()=>{if(click){setSubData({tid:t.id,kind:"group",gi,match});setSubStep("pick");setPicked(null);}}} style={{padding:10,background:C.surface2,borderRadius:10,marginBottom:6,cursor:click?"pointer":"default",border:`1px solid ${match.pendingResult?C.amber:click?C.cyanBdr:isDone?"rgba(52,199,89,0.3)":"transparent"}`}}>
                     {match.pendingResult&&<div style={{fontFamily:F.bc,fontSize:9,color:C.amber,letterSpacing:"0.18em",marginBottom:6,textTransform:"uppercase",fontWeight:600}}><Ico n="clock"/>Pendiente aprobación</div>}
