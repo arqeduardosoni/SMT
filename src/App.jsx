@@ -286,7 +286,7 @@ const profileToPlayer=(r)=>({
   photo:r.photo_url||null, avatar:r.avatar||ini(r.name||""),
   stats:{...DSTATS,...(r.stats||{})},
   requirePasswordChange:r.require_password_change||false, isBanned:r.is_banned||false, premium:FREE_PREMIUM_ALL?true:(r.premium||false), premiumUntil:FREE_PREMIUM_ALL?(r.premium_until||new Date(Date.now()+365*86400000).toISOString()):(r.premium_until||null), trialUsed:r.trial_used||false, trialEndedSeen:r.trial_ended_seen||false, objectives:r.objectives||[], objectivesSet:r.objectives_set||false, physical:r.physical||{}, goals:r.goals||{},
-  referralCode:r.referral_code||null,
+  referralCode:r.referral_code||null, blocked:Array.isArray(r.blocked)?r.blocked:[],
 });
 const playerToProfile=(p,authId)=>({
   id:authId||p.id, auth_id:authId||p.id, email:(p.email||"").toLowerCase(),
@@ -297,7 +297,7 @@ const playerToProfile=(p,authId)=>({
   photo_url:p.photo||null, avatar:p.avatar||ini(p.name||""),
   ranking:p.ranking||0, points:p.points||0, wins:p.wins||0, losses:p.losses||0, titles:p.titles||0,
   hand:p.hand||"Diestro", racket:p.racket||"Wilson Pro Staff", stats:p.stats||{},
-  require_password_change:p.requirePasswordChange||false, premium:p.premium||false, premium_until:p.premiumUntil||null, trial_used:p.trialUsed||false, trial_ended_seen:p.trialEndedSeen||false, objectives:p.objectives||[], objectives_set:p.objectivesSet||false, physical:p.physical||{}, goals:p.goals||{},
+  require_password_change:p.requirePasswordChange||false, premium:p.premium||false, premium_until:p.premiumUntil||null, trial_used:p.trialUsed||false, trial_ended_seen:p.trialEndedSeen||false, objectives:p.objectives||[], objectives_set:p.objectivesSet||false, physical:p.physical||{}, goals:p.goals||{}, blocked:Array.isArray(p.blocked)?p.blocked:[],
   privacy_accepted_at:p.privacyAcceptedAt?new Date(p.privacyAcceptedAt).toISOString():new Date().toISOString(),
 });
 
@@ -749,6 +749,8 @@ export default function App(){
   const [welcomeAnim,setWelcomeAnim]=useState(false);
   const [selT,setSelT]=useState(null);
   const [viewP,setViewP]=useState(null);
+  const [reportTarget,setReportTarget]=useState(null);
+  const [reportReason,setReportReason]=useState("");
   // ===== SOCIAL (grupos + chat) =====
   const [myGroups,setMyGroups]=useState([]);
   const [discoverGroups,setDiscoverGroups]=useState([]);
@@ -1517,6 +1519,9 @@ export default function App(){
   };
 
   // Notifica SIEMPRE por push a Eduardo (admin) y al Coach Alan Lopez
+  const isBlockedId=(id)=>(((user&&user.blocked)||[]).includes(id));
+  const toggleBlock=(p)=>{if(!user||user.id==="__guest__"||!p||!p.id||p.id===user.id)return;const cur=(user.blocked||[]);const has=cur.includes(p.id);const nb=has?cur.filter(x=>x!==p.id):[...cur,p.id];updateUser({...user,blocked:nb});try{supabase.from("profiles").update({blocked:nb}).eq("auth_id",user.id);}catch(e){}if(!has){alert((p.name||"El usuario")+" fue bloqueado. Ya no verás su contenido ni podrá contactarte.");if(viewP&&viewP.id===p.id)setScreen("rank");}};
+  const submitReport=()=>{if(!reportTarget)return;const rt=reportTarget;notifyAdmins({type:"admin",title:"Reporte de contenido",body:((user&&user.name)||"Un usuario")+" reportó "+(rt.kind==="player"?"al jugador":"la publicación")+" \""+rt.name+"\""+(reportReason?": "+reportReason:"")+".",link:"admin-inbox"});try{supabase.from("reports").insert({reporter_id:user&&user.id,reporter_name:user&&user.name,kind:rt.kind,target_id:rt.id,target_name:rt.name,reason:reportReason||null});}catch(e){}setReportTarget(null);setReportReason("");alert("Gracias. Recibimos tu reporte y lo revisaremos en un máximo de 24 horas.");};
   const notifyAdmins=(payload)=>{try{(accounts||[]).forEach(a=>{const em=(a.email||"").toLowerCase(),nm=(a.name||"").toLowerCase();if(em==="arqeduardosoni@gmail.com"||(/alan/.test(nm)&&/l[oó]pez/.test(nm)))createNotif(a.id,payload);});}catch(e){}};
 
   const loadNotifications=async()=>{
@@ -2116,6 +2121,14 @@ export default function App(){
         <button onClick={()=>setPlayVideo(null)} className="btn-press" style={{width:"100%",marginTop:14,background:"rgba(255,255,255,0.12)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:15,fontWeight:600,padding:"13px",borderRadius:14,cursor:"pointer"}}>Cerrar</button>
       </div>
     </div>}
+    {reportTarget&&<Modal onClose={()=>{setReportTarget(null);setReportReason("");}} center>
+      <div style={{textAlign:"center",marginBottom:8}}><div style={{marginBottom:6,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="warn" s={38} c={C.amber}/></div><T size={22}>REPORTAR</T></div>
+      <Sub style={{textAlign:"center",fontSize:13.5,lineHeight:1.5,marginBottom:14}}>Cuéntanos qué pasa con {reportTarget.kind==="player"?reportTarget.name:'"'+reportTarget.name+'"'}. Revisamos todos los reportes en un máximo de 24 horas y tomamos acción sobre el contenido o la cuenta.</Sub>
+      <FL>Motivo</FL>
+      <textarea value={reportReason} onChange={e=>setReportReason(e.target.value)} placeholder="Describe el problema..." style={{width:"100%",minHeight:80,background:C.iosField,border:"none",borderRadius:12,padding:"12px 14px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical",boxSizing:"border-box"}}/>
+      <button onClick={submitReport} className="btn-press" style={{width:"100%",marginTop:16,background:C.amber,border:"none",color:"#1a1200",padding:"14px",fontFamily:F.ios,fontSize:15,fontWeight:700,cursor:"pointer",borderRadius:14}}>Enviar reporte</button>
+      <button onClick={()=>{setReportTarget(null);setReportReason("");}} className="btn-press" style={{width:"100%",marginTop:9,background:"transparent",border:`1px solid ${C.borderS}`,color:C.text,padding:"12px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cancelar</button>
+    </Modal>}
     {showPremium&&<PremiumPanel onClose={()=>setShowPremium(false)} onPremiumChange={(v)=>{if(user&&user.id!=="__guest__"){updateUser({...user,premium:v,premiumUntil:v?null:user.premiumUntil});try{supabase.from("profiles").update(v?{premium:true,premium_until:null}:{premium:v}).eq("auth_id",user.id);}catch(e){}}}}/>}
     {guestPrompt&&<div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(2,6,16,0.72)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setGuestPrompt(null)}>
       <div onClick={e=>e.stopPropagation()} style={{width:"min(380px,94vw)",background:C.surface,border:`1px solid ${C.cyanBdr}`,borderRadius:22,boxShadow:"0 24px 70px rgba(0,0,0,0.6)",padding:"26px 22px",textAlign:"center",animation:"slideUp 0.3s"}}>
@@ -2589,6 +2602,10 @@ export default function App(){
             </div>
           </div>
         </div>
+        {user&&user.id!=="__guest__"&&p.id!==user?.id&&<div style={{padding:"12px 16px 0",display:"flex",gap:8}}>
+          <button onClick={()=>setReportTarget({kind:"player",id:p.id,name:p.name})} className="btn-press" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:"rgba(255,255,255,0.05)",border:`1px solid ${C.borderS}`,color:C.muted,padding:"11px",borderRadius:12,fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer"}}><Ico n="warn" s={15} c={C.muted}/>Reportar</button>
+          <button onClick={()=>toggleBlock(p)} className="btn-press" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:isBlockedId(p.id)?"rgba(255,59,48,0.12)":"rgba(255,255,255,0.05)",border:`1px solid ${isBlockedId(p.id)?"rgba(255,59,48,0.4)":C.borderS}`,color:isBlockedId(p.id)?C.red:C.muted,padding:"11px",borderRadius:12,fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer"}}><Ico n="ban" s={15} c={isBlockedId(p.id)?C.red:C.muted}/>{isBlockedId(p.id)?"Desbloquear":"Bloquear"}</button>
+        </div>}
         {(isMe||(isAdmin&&p.id!==user?.id))&&<div style={{padding:"14px 16px",display:"flex",gap:8,flexWrap:"wrap"}}>
           <BtnG onClick={()=>setScreen("stats")} style={{flex:"1 1 140px",padding:12}}><Ico n="chart"/>ESTADÍSTICAS</BtnG>
           <BtnG onClick={()=>{setEditProfile({...p});setEditAsAdmin(isAdmin&&p.id!==user?.id);setShowProfileEdit(true);}} style={{flex:"1 1 140px",padding:12}}><Ico n="edit"/>{isAdmin&&p.id!==user?.id?"EDITAR (ADMIN)":"EDITAR PERFIL"}</BtnG>
@@ -3731,7 +3748,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="rankings"){
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
-    const inCat=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&(rankingTab==="Sin cat"?!a.category:a.category===rankingTab)&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
+    const inCat=accounts.filter(a=>!isBlockedId(a.id)&&(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&(rankingTab==="Sin cat"?!a.category:a.category===rankingTab)&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
@@ -4230,7 +4247,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
     </div>;}
     // Solo mayores entre mayores (excluir admin de la lista de jugadores, excluir menores)
-    const others=accounts.filter(a=>(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.id!==user?.id&&!isMinor(a.birthdate));
+    const others=accounts.filter(a=>!isBlockedId(a.id)&&(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
@@ -4686,7 +4703,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>
       </div>
     </div>;}
-    const _demoId=accounts.find(a=>a.email==="demo@smt.mx")?.id;const _mp=marketplace.filter(l=>l.sellerId!==_demoId&&l.sellerName!=="Demo");const filtered=mpFilter==="Todos"?_mp:_mp.filter(l=>l.category===mpFilter);
+    const _demoId=accounts.find(a=>a.email==="demo@smt.mx")?.id;const _mp=marketplace.filter(l=>l.sellerId!==_demoId&&l.sellerName!=="Demo"&&!isBlockedId(l.sellerId));const filtered=mpFilter==="Todos"?_mp:_mp.filter(l=>l.category===mpFilter);
     const incomingPur=purchaseRequests.filter(p=>p.sellerId===user?.id);
     const myPur=purchaseRequests.filter(p=>p.buyerId===user?.id);
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
@@ -4759,6 +4776,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{flex:1}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.muted,fontWeight:600}}>VENDEDOR</div><div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginTop:2}}>{l.sellerName}</div></div>
                 <span style={{color:C.muted,fontSize:20}}>›</span>
               </div>
+              {l.sellerId!==user?.id&&user&&user.id!=="__guest__"&&<button onClick={()=>setReportTarget({kind:"listing",id:l.id,name:l.title})} className="btn-press" style={{width:"100%",marginBottom:10,background:"transparent",border:`1px solid ${C.borderS}`,color:C.muted,fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"11px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:7}}><Ico n="warn" s={14} c={C.muted}/>Reportar publicación</button>}
               {l.sellerId!==user?.id&&l.sellerPay&&<button onClick={()=>{const pay=(l.sellerPay||"").trim();if(/^https?:\/\//i.test(pay)){try{window.open(pay,"_system");}catch(e){window.open(pay,"_blank");}}else{try{navigator.clipboard.writeText(pay);}catch(e){}alert("Datos de pago del vendedor (copiados):\n\n"+pay+"\n\nP\u00e1gale directo por MercadoPago o transferencia y acuerden la entrega. SMT no cobra comisi\u00f3n.");}}} className="btn-press" style={{width:"100%",marginBottom:10,background:"linear-gradient(135deg,#009EE3,#00B1EA)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:15,fontWeight:700,padding:"14px",borderRadius:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n="cart" s={16} c="#fff"/>PAGAR AL VENDEDOR</button>}
               {l.sellerId===user?.id?<>
                 <div style={{padding:"12px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,marginBottom:10,fontFamily:F.ios,fontSize:13,color:C.cyan,textAlign:"center",fontWeight:600}}>Este es tu producto</div>
