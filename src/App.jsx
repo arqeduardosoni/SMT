@@ -62,10 +62,10 @@ button:active{transform:scale(0.96);filter:brightness(0.78)}
 .tab-btn{transition:transform 0.15s ease,filter 0.15s ease}
 .tab-btn:active{transform:scale(0.88);filter:brightness(0.78)}
 @media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
-.screen-fade{animation:scrSlide 0.34s cubic-bezier(0.22,1,0.36,1)}@keyframes scrSlide{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:translateX(0)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
+.screen-fade{animation:scrSlide 0.5s cubic-bezier(0.22,1,0.36,1)}@keyframes scrSlide{from{transform:translateX(100%)}to{transform:translateX(0)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
 @keyframes scrFade{from{opacity:0}to{opacity:1}}
 @keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
-html,body{background:#040A18;margin:0}
+html,body{background:#040A18;margin:0;overflow-x:hidden}
 @media(min-width:768px){
   #root{max-width:720px;margin:0 auto;border-left:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);min-height:100vh;box-shadow:0 0 80px rgba(0,0,0,0.5)}
 }`;
@@ -124,8 +124,7 @@ const CX_AX=[["Técnica",["técnica","servicio","resto","volea"]],["Estrategia",
 const _hsh=(x)=>{let h=0;const t=String(x||"z");for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return h;};
 const coachStr=(c)=>{const sp=((c&&c.specialties)||[]).map(x=>String(x).toLowerCase());const ex=String((c&&c.experience)||"");
 const eb=/10\+/.test(ex)?16:/5-10/.test(ex)?12:/3-5/.test(ex)?8:/1-3/.test(ex)?4:0;const h=_hsh(c&&c.id);
-return CX_AX.map(([nm,keys],i)=>{const hits=keys.filter(k=>sp.some(v=>v.indexOf(k)>=0)).length;const jit=((h>>(i*3))&7)-3;
-return {n:nm,v:Math.max(28,Math.min(97,42+hits*15+eb+jit))};});};
+const _ax=CX_AX.map(([nm,keys],i)=>{const hits=keys.filter(k=>sp.some(v=>v.indexOf(k)>=0)).length;const jit=((h>>(i*3))&7)-3;return {n:nm,v:Math.max(28,Math.min(97,42+hits*15+eb+jit))};});const _nm=String((c&&c.playerName)||"").toLowerCase();if(/alan/.test(_nm)&&/l[oó]pez/.test(_nm))_ax.forEach(a=>{if(a.n==="Mental")a.v=90;if(a.n==="Estrategia")a.v=90;});return _ax;};
 const COACH_SPECIALTIES=["Técnica","Estrategia","Servicio","Resto","Volea","Físico","Mental","Juniors","Principiantes","Avanzados","Dobles","Singles"];
 const VIDEO_TOPICS=["Servicio flat","Servicio slice","Servicio kick","Flat forehand","Topspin forehand","Revés a dos manos","Revés a una mano","Slice","Volea","Volea de revés","Drive volley","Overhead smash","Drills intermedios","Drills avanzados","Táctica","Físico","Mental","Otro"];
 const COACH_FREQ=[{v:"once",l:"Una vez"},{v:"weekly",l:"Semanal"},{v:"biweekly",l:"2x semana"},{v:"intensive",l:"Intensivo"}];
@@ -979,31 +978,7 @@ export default function App(){
     return()=>clearTimeout(t);/* eslint-disable-next-line */},[screen,user&&user.id]);
   const markDone=(dd)=>{const g={...(user&&user.goals||{})};const today=new Date().toISOString().slice(0,10);const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);if(g.doneToday!==today){g.streak=g.lastDone===yest?(g.streak||0)+1:1;g.lastDone=today;g.doneToday=today;g.weekDone=Math.min(7,(g.weekDone||0)+1);const wk=(g.week&&g.week.length===7)?[...g.week]:[false,false,false,false,false,false,false];const ti=(new Date().getDay()+6)%7;wk[ti]=true;g.week=wk;g.doneDates=Array.from(new Set([...(g.doneDates||[]),today]));g.doneMeta={...(g.doneMeta||{}),[today]:{m:(dd&&dd.min)||0,i:(dd&&dd.int)||3,k:(dd&&dd.kcal)||0}};setTimeout(()=>{setRpeVal(6);setPainVal("no");setRpeAsk({date:today,name:(dd&&dd.t)||"tu entrenamiento"});},450);}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}setDayModal(null);setWoT(null);setDoneModal(g.streak||1);};
   const markFisioDone=()=>{if(!user)return;const g={...(user.goals||{})};const t=new Date().toISOString().slice(0,10);if(g.fisioDoneToday===t){g.fisioDoneToday=null;}else{const y=new Date(Date.now()-86400000).toISOString().slice(0,10);g.fisioStreak=g.fisioLast===y?(g.fisioStreak||0)+1:1;g.fisioLast=t;g.fisioDoneToday=t;}updateUser({...user,goals:g});try{supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}};
-  const connectHealth=async()=>{
-    if(user&&user.id==="__guest__"){alert("Conecta con Apple Salud\n\nCrea tu cuenta gratis en SMT para conectar Apple Salud (HealthKit) y que la app lea tus calorías, pasos y ritmo cardiaco para personalizar tu entrenamiento.");return;}
-    const plat=(typeof window!=="undefined"&&window.Capacitor&&typeof window.Capacitor.getPlatform==="function")?window.Capacitor.getPlatform():"web";
-    if(plat!=="ios"){alert("Conecta tu Apple Watch\n\nEsta función usa Apple Salud (HealthKit), que solo está disponible en la app de SMT para iPhone. Ábrela desde tu iPhone para conectar tu Apple Watch y sincronizar tus calorías, pasos y ritmo cardiaco.");return;}
-    const H=await getHealth();
-    if(!H){alert("No se pudo cargar el módulo de Salud. Actualiza la app e inténtalo de nuevo.");return;}
-    try{
-      const av=await H.isAvailable();
-      if(!av||!av.available){alert("Apple Salud no está disponible en este dispositivo.\n\nHealthKit funciona en iPhone (no está disponible en iPad). Abre SMT desde tu iPhone.");return;}
-      await H.requestAuthorization();
-      const sum=await H.getTodaySummary();
-      if(sum&&sum.available!==false)setHealth(sum);
-      const ph={...((user&&user.physical)||{})};let ch=false;
-      if(sum&&sum.weight&&!ph.weight){ph.weight=Math.round(sum.weight);ch=true;}
-      if(sum&&sum.height&&!ph.height){ph.height=sum.height;ch=true;}
-      const g={...((user&&user.goals)||{}),healthOn:true};
-      updateUser({...user,physical:ch?ph:(user&&user.physical),goals:g});
-      try{supabase.from("profiles").update(Object.assign({goals:g},ch?{physical:ph}:{})).eq("auth_id",user.id);}catch(e){}
-      alert("¡Listo! Tu Apple Watch quedó conectado.\n\nTus calorías, pasos y ritmo cardiaco reales ya se usan para ajustar tu plan de entrenamiento.");
-    }catch(e){
-      alert("No se pudo conectar con Apple Salud.\n\nVe a Ajustes → Salud → Acceso de apps → SMT y activa los permisos de lectura.");
-    }
-  };
-  useEffect(()=>{if(!user||user.id==="__guest__")return;if(!(user.goals&&user.goals.healthOn))return;(async()=>{try{const H=await getHealth();if(!H)return;const sum=await H.getTodaySummary();if(sum&&sum.available!==false)setHealth(sum);}catch(e){}})();/* eslint-disable-next-line */},[screen,user&&user.id]);
-  useEffect(()=>{if(!user||user.id==="__guest__"||isAdmin)return;if(user.goals&&user.goals.healthOn)return;let cancel=false;(async()=>{try{const H=await getHealth();if(!H)return;const av=await H.isAvailable();if(!av||!av.available)return;await H.requestAuthorization();const sum=await H.getTodaySummary();if(!cancel&&sum&&sum.available!==false){setHealth(sum);const ph={...((user&&user.physical)||{})};let ch=false;if(sum.weight&&!ph.weight){ph.weight=Math.round(sum.weight);ch=true;}if(sum.height&&!ph.height){ph.height=sum.height;ch=true;}const g={...((user&&user.goals)||{}),healthOn:true};updateUser({...user,physical:ch?ph:(user&&user.physical),goals:g});try{supabase.from("profiles").update(Object.assign({goals:g},ch?{physical:ph}:{})).eq("auth_id",user.id);}catch(e){}}}catch(e){}})();return ()=>{cancel=true;};/* eslint-disable-next-line */},[user&&user.id]);
+  // (HealthKit removido temporalmente — se reintegrará en una versión futura con Apple Watch)
   const updateAccount=(u)=>updateEverywhere(u);
   const applyTrialState=(p)=>{if(FREE_PREMIUM_ALL)return p;try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
@@ -2991,17 +2966,6 @@ export default function App(){
         </div>
         <div style={{padding:"0 18px"}}>
           {!hasData&&<div onClick={()=>setScreen("fisio-q")} className="btn-press" style={{cursor:"pointer",background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}66`,borderRadius:13,padding:"11px 13px",marginBottom:13,display:"flex",alignItems:"center",gap:9}}><Ico n="info" s={16} c={LIME}/><div style={{flex:1,fontFamily:F.ios,fontSize:12.5,color:TX,lineHeight:1.35}}>Contesta 1 min y personalizamos tu plan a tu medida.</div><span style={{color:LIME,fontWeight:800,fontSize:12}}>Empezar</span></div>}
-          {user&&<div style={{display:"flex",alignItems:"center",gap:7,marginBottom:7}}><Ico n="heart" s={13} c={LIME}/><span style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.18em",color:LIME,fontWeight:700}}>INTEGRACIÓN CON APPLE SALUD</span></div>}
-          {user&&((health&&health.available!==false&&user.id!=="__guest__")?
-            <div style={{background:IC,border:`1px solid ${LIME}55`,borderRadius:16,padding:14,marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:11}}><div style={{display:"flex",alignItems:"center",gap:7}}><Ico n="heart" s={15} c={LIME}/><span style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:LIME,fontWeight:700}}>APPLE SALUD · HOY</span></div><span onClick={connectHealth} className="btn-press" style={{fontFamily:F.ios,fontSize:11,color:C.cyan,cursor:"pointer",fontWeight:600}}>Actualizar</span></div>
-              <div style={{display:"flex",alignItems:"flex-end",gap:8,marginBottom:12}}><Ico n="fire" s={26} c={LIME}/><div style={{fontFamily:F.bn,fontSize:38,color:LIME,lineHeight:0.85}}>{health.activeEnergy||0}</div><div style={{fontFamily:F.ios,fontSize:12,color:MU,marginBottom:5}}>kcal activas hoy</div></div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>{[["bolt",(health.steps||0).toLocaleString(),"pasos"],["clock",(health.exerciseMinutes||0),"min ejercicio"],["heart",(health.heartRateAvg||0),"FC prom"]].map((s,i)=><div key={i} style={{background:IC2,borderRadius:12,padding:"9px 8px",textAlign:"center"}}><Ico n={s[0]} s={15} c={C.cyan}/><div style={{fontFamily:F.bn,fontSize:17,color:TX,marginTop:3}}>{s[1]}</div><div style={{fontFamily:F.bc,fontSize:8,letterSpacing:"0.1em",color:MU}}>{s[2]}</div></div>)}</div>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:11,paddingTop:10,borderTop:`1px solid ${IC2}`}}><Ico n="heart" s={11} c={MU}/><span style={{fontFamily:F.ios,fontSize:10.5,color:MU}}>Datos leídos de <b style={{color:LIME}}>Apple Salud (HealthKit)</b> · solo lectura</span></div>
-            </div>
-            :
-            <div onClick={connectHealth} className="btn-press" style={{cursor:"pointer",background:IC,border:`1px dashed ${LIME}66`,borderRadius:16,padding:"14px",marginBottom:12,display:"flex",alignItems:"center",gap:12}}><div style={{width:42,height:42,borderRadius:12,background:LIME,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="heart" s={22} c={LIMED}/></div><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:800,color:TX}}>Conectar con Apple Salud</div><Sub style={{fontSize:11.5,marginTop:2,lineHeight:1.4}}>SMT usa <b style={{color:LIME}}>Apple Salud (HealthKit)</b> para <b style={{color:TX}}>leer</b> tus calorías, pasos, minutos de ejercicio y ritmo cardiaco de tu iPhone o Apple Watch, y ajustar tu plan de entrenamiento.</Sub><Sub style={{fontSize:10.5,marginTop:4,color:MU}}>Solo lectura · No escribimos datos en Salud · No los compartimos</Sub></div><span style={{color:MU,fontSize:20,flexShrink:0}}>›</span></div>
-          )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
             <div onClick={()=>setStatDetail("imc")} className="btn-press" style={{cursor:"pointer",background:IC,borderRadius:14,padding:13}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:MU,fontWeight:600}}>IMC</div><span style={{color:MU,fontSize:14}}>›</span></div><div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{fontFamily:F.bn,fontSize:26,color:LIME}}>{M.imc}</div><div style={{fontFamily:F.ios,fontSize:11,color:MU}}>{M.imcLabel}</div></div><div style={{height:7,background:IC2,borderRadius:5,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:imcPct+"%",background:LIME,borderRadius:5,animation:"growW 1.2s ease both"}}/></div></div>
             <div onClick={()=>setStatDetail("risk")} className="btn-press" style={{cursor:"pointer",background:IC,borderRadius:14,padding:13}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:MU,fontWeight:600}}>RIESGO DE LESIÓN</div><span style={{color:MU,fontSize:14}}>›</span></div><div style={{fontFamily:F.bn,fontSize:22,color:M.risk==="Bajo"?LIME:M.risk==="Medio"?C.amber:C.red,marginBottom:8}}>{M.risk}</div><div style={{display:"flex",gap:5}}>{[0,1,2].map(k=><div key={k} style={{flex:1,height:6,borderRadius:5,background:k<=M.riskN-1||(M.riskN===0&&k===0)?(M.risk==="Bajo"?LIME:M.risk==="Medio"?C.amber:C.red):IC2}}/>)}</div></div>
@@ -4433,7 +4397,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 <div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{p.name}</div>
                 <Sub style={{fontSize:11,marginTop:2}}>{p.category?`CAT ${p.category} · `:""}{p.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>} · {p.city||p.club||"—"}</Sub>
               </div>
-              <BtnG onClick={()=>{if(!user?.phone){alert("Agrega tu número de celular en tu perfil primero.");return;}setMatchReqModal({toId:p.id,toName:p.name});setNewMatchReq({club:p.club||"Club Campestre Monterrey",when:"weekend",time:"morning",msg:""});}} style={{padding:"7px 12px",fontSize:12}}>RETAR</BtnG>
+              <SpinBox r={12} bg={C.bg} c1={C.cyan} c2={LIME} spd="3.5s" style={{flexShrink:0}}><BtnG onClick={()=>{if(!user?.phone){alert("Agrega tu número de celular en tu perfil primero.");return;}setMatchReqModal({toId:p.id,toName:p.name});setNewMatchReq({club:p.club||"Club Campestre Monterrey",when:"weekend",time:"morning",msg:""});}} style={{padding:"7px 12px",fontSize:12,border:"none",background:C.bg}}>RETAR</BtnG></SpinBox>
             </div>);})()}
           </div>}
           {findMatchTab==="requests"&&<div>
@@ -4860,7 +4824,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{padding:"14px 18px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
               <div><T size={32}>MARKETPLACE</T><Sub style={{marginTop:4}}>Compra y venta entre jugadores</Sub></div>
-              {!isAdmin&&<BtnG onClick={()=>{setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[],payInfo:""});setMpScanResult(null);setMpModal(true);}}>＋ VENDER</BtnG>}
+              {!isAdmin&&<SpinBox r={12} bg={C.bg} c1={C.cyan} c2={LIME} spd="3.5s" style={{flexShrink:0}}><BtnG onClick={()=>{setMpDraft({title:"",category:"Raqueta",price:"",condition:"Nuevo",description:"",images:[],payInfo:""});setMpScanResult(null);setMpModal(true);}} style={{border:"none",background:C.bg}}>＋ VENDER</BtnG></SpinBox>}
             </div>
             {(incomingPur.length>0||myPur.length>0)&&<div style={{margin:"14px 0 6px",background:`linear-gradient(135deg,rgba(79,195,247,0.10),rgba(2,136,209,0.05))`,border:`1px solid ${C.cyanBdr}`,borderRadius:12,padding:12}}>
               {incomingPur.filter(p=>p.status==="pending").length>0&&<div style={{marginBottom:incomingPur.filter(p=>p.status!=="pending").length>0||myPur.length>0?12:0}}>

@@ -28,10 +28,6 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>SMT usa la cámara para tomar la foto de tu perfil, de tus productos y de tus publicaciones.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>SMT usa tus datos de actividad del Apple Watch y la app Salud (calorías, pasos, minutos de ejercicio y frecuencia cardiaca) para personalizar tu plan de entrenamiento y medir tu progreso. Tú decides si concedes el acceso.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>SMT no modifica tus datos de salud; solo los lee para personalizar tu entrenamiento.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>SMT usa el micrófono al grabar videos para tus publicaciones.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
