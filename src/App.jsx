@@ -62,7 +62,7 @@ button:active{transform:scale(0.96);filter:brightness(0.78)}
 .tab-btn{transition:transform 0.15s ease,filter 0.15s ease}
 .tab-btn:active{transform:scale(0.88);filter:brightness(0.78)}
 @media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
-.screen-fade{animation:scrSlide 0.5s cubic-bezier(0.22,1,0.36,1)}@keyframes scrSlide{from{transform:translateX(100%)}to{transform:translateX(0)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
+.screen-fade{animation:scrSlide 0.5s cubic-bezier(0.22,1,0.36,1)}@keyframes scrSlide{from{transform:translateX(100%)}to{transform:translateX(0)}}@keyframes welcomeBg{0%{transform:scale(1.25) translate(0,0)}100%{transform:scale(1.45) translate(-3%,-2%)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
 @keyframes scrFade{from{opacity:0}to{opacity:1}}
 @keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
 html,body{background:#040A18;margin:0;overflow-x:hidden}
@@ -2271,14 +2271,16 @@ export default function App(){
   const TabSpacer=()=><div style={{height:user?92:0}}/>;
 
   // WELCOME SCREEN
-  if(screen==="welcome")return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+  if(screen==="welcome")return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:"#0a1830",color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
     <style>{STYLE}</style>
-    <Aurora intense={1.2}/>
+    <div style={{position:"absolute",inset:0,backgroundImage:`url(${SMT_LOGO})`,backgroundSize:"cover",backgroundPosition:"center",filter:"blur(44px) saturate(1.15) brightness(0.72)",transform:"scale(1.3)",animation:"welcomeBg 22s ease-in-out infinite alternate",pointerEvents:"none"}}/>
+    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(8,20,42,0.25) 0%,rgba(8,20,42,0.15) 42%,rgba(8,20,42,0.72) 100%)",pointerEvents:"none"}}/>
+    <Aurora intense={0.45}/>
     {/* Orbes flotantes Gen-Alpha */}
     <div style={{position:"absolute",top:"15%",right:"15%",width:120,height:120,borderRadius:"50%",background:`radial-gradient(circle,${C.cyan}50,transparent 70%)`,filter:"blur(30px)",animation:"floatSlow 8s ease-in-out infinite",pointerEvents:"none"}}/>
     <div style={{position:"absolute",bottom:"20%",left:"10%",width:160,height:160,borderRadius:"50%",background:`radial-gradient(circle,#A78BFA50,transparent 70%)`,filter:"blur(35px)",animation:"floatSlow 11s ease-in-out infinite reverse",pointerEvents:"none"}}/>
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",position:"relative",zIndex:1}}>
-      <div style={{animation:"scaleInBig 0.9s"}}><img src={SMT_LOGO} alt="SMT - Sociedad Mexicana de Tennis" style={{width:"min(76vw,300px)",height:"auto",display:"block",borderRadius:26,border:`1px solid ${C.cyanBdr}`,boxShadow:"0 12px 50px rgba(0,150,220,0.35)"}}/></div>
+      <div style={{animation:"scaleInBig 0.9s",position:"relative",zIndex:2}}><img src={SMT_LOGO} alt="SMT - Sociedad Mexicana de Tennis" style={{width:"min(88vw,370px)",height:"auto",display:"block",WebkitMaskImage:"radial-gradient(ellipse 84% 88% at 50% 47%, #000 58%, transparent 97%)",maskImage:"radial-gradient(ellipse 84% 88% at 50% 47%, #000 58%, transparent 97%)"}}/></div>
       <div style={{width:"100%",maxWidth:300,marginTop:22,animation:"fadeIn 0.9s 0.7s backwards",pointerEvents:"none"}}><svg viewBox="0 0 300 44" width="100%" height="44" style={{overflow:"visible",display:"block"}}><path id="smtTraj" d="M8 38 Q 46 6 84 38 T 160 38 T 236 38 T 296 38" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeDasharray="2 6" strokeLinecap="round"/><circle r="5.5" fill="#D9FF3D" style={{filter:"drop-shadow(0 0 6px rgba(217,255,61,0.9))"}}><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#smtTraj"/></animateMotion></circle></svg></div>
       <div style={{display:"flex",flexDirection:"column",gap:12,width:"100%",maxWidth:300,marginTop:28}}>
         <button onClick={()=>{setAuthMode("player-login");setScreen("auth");}} className="btn-press" style={{position:"relative",overflow:"hidden",background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"16px",fontFamily:F.ios,fontSize:17,fontWeight:700,cursor:"pointer",borderRadius:18,animation:"slideUp 0.5s 0.9s backwards",boxShadow:"0 12px 30px rgba(2,136,209,0.4)",letterSpacing:"-0.01em"}}> INGRESAR COMO JUGADOR</button>
