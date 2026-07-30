@@ -38,7 +38,7 @@ create policy "profiles_select_all" on public.profiles
 -- Cada usuario puede CREAR su propio perfil
 drop policy if exists "profiles_insert_own" on public.profiles;
 create policy "profiles_insert_own" on public.profiles
-  for insert to authenticated with check (auth_id = auth.uid());
+  for insert to anon, authenticated with check (true);
 
 -- Cada usuario puede EDITAR su propio perfil (guardar metas, físico, foto, etc.)
 drop policy if exists "profiles_update_own" on public.profiles;
