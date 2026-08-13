@@ -957,11 +957,14 @@ export default function App(){
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(session?.user&&active){
+          if(session.user.email==="admin@smt.mx"){setIsAdmin(true);setUser({id:"admin",name:"Administrador SMT",firstName:"Admin",lastName:"SMT",avatar:"AD",photo:null,email:"smt.tennismx@gmail.com"});setScreen("home");}
+          else{
           const {data:prof}=await supabase.from("profiles").select("*").eq("auth_id",session.user.id).single();
           if(prof&&active){
             const p=applyTrialState(profileToPlayer(prof));
             if(p.isBanned){await supabase.auth.signOut();}
             else{const _mp=mergeLocalProfile(p);setUser(demoFresh(_mp));setIsAdmin(false);setScreen("metas");if(_mp&&_mp.objectivesSet&&_mp.physical&&_mp.physical.weight&&_mp.category&&!welcomeShownRef.current){welcomeShownRef.current=true;setTimeout(()=>setWelcomeSeq(1),600);}}
+          }
           }
         }
       }catch(e){console.error("Error restaurando sesión:",e);}
@@ -2282,7 +2285,6 @@ export default function App(){
       {k:"home",icon:"trophy",label:"Torneos"},
       ...(userIsMinor?[]:[{k:"find-hub",icon:"bolt",label:"Find"}]),
       ...(userIsMinor?[]:[{k:"marketplace",icon:"bag",label:"Market"}]),
-      ...(userIsMinor?[]:[{k:"social",icon:"chat",label:"Social"}]),
       {k:"rankings",icon:"chart",label:"Rank"},
       {k:"profile-tab",icon:"person",label:"Perfil"}
     ];
@@ -2306,7 +2308,7 @@ export default function App(){
       </div>
     </div>;
   }
-  const ShowTabBar=()=>{const onbNeed=user&&user.id!=="__guest__"&&!isAdmin&&!guest&&(!user.objectivesSet||!(user.physical&&user.physical.weight&&user.physical.height&&user.category));const hidden=["welcome","auth"].includes(screen)||showProfileEdit||showChangePass||showSvModal||showDeleteAccount||showPremium||trialModal||showSetCat||onbNeed||welcomeSeq||notifPrompt;return hidden?null:<TabBar/>;};
+  const ShowTabBar=()=>{const onbNeed=user&&user.id!=="__guest__"&&!isAdmin&&!guest&&(!user.objectivesSet||!(user.physical&&user.physical.weight&&user.physical.height&&user.category));const hidden=["welcome","auth"].includes(screen)||showProfileEdit||showChangePass||showSvModal||showDeleteAccount||showPremium||trialModal||showSetCat||onbNeed||welcomeSeq||notifPrompt||editObj||editFisio;return hidden?null:<TabBar/>;};
   // Spacer para que el contenido no quede bajo la tab bar
   const TabSpacer=()=><div style={{height:user?92:0}}/>;
 
@@ -3172,11 +3174,10 @@ export default function App(){
       try{setShareImg(cv.toDataURL("image/png"));}catch(e){alert("No se pudo generar la imagen.");}
     }catch(e){alert("No se pudo generar la imagen.");}};
     const recs=[];
-    if(has("mejorar")||has("fisico"))recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
-    if(has("fisico"))recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
-    if(has("jugar")||has("mejorar"))recs.push({ic:"vs",t:"Encuentra rival",s:()=>setScreen("find-match")});
-    if(has("jugar"))recs.push({ic:"people",t:"Crea un grupo",s:()=>setScreen("social")});
-    if(has("torneos"))recs.push({ic:"trophy",t:"Inscríbete a un torneo",s:()=>setScreen("home")});
+    recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
+    recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
+    recs.push({ic:"vs",t:"Encuentra rival",s:()=>setScreen("find-match")});
+    recs.push({ic:"trophy",t:"Inscríbete a un torneo",s:()=>setScreen("home")});
     if(has("equipo"))recs.push({ic:"cart",t:"Vende tu equipo",s:()=>setScreen("marketplace")});
     const Card=({children,edge,onClick})=><div onClick={onClick} className={onClick?"btn-press":""} style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderLeft:edge?`3px solid ${edge}`:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"12px 13px",marginBottom:10,cursor:onClick?"pointer":"default"}}>{children}</div>;
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
@@ -3198,7 +3199,7 @@ export default function App(){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}><span style={{fontFamily:F.ios,fontSize:12.5,fontWeight:700,color:C.text}}>Tu entrenamiento</span><span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:F.ios,fontSize:10.5,color:chartKcal?LIME:C.muted,fontWeight:chartKcal?700:400}}>{chartKcal?"kcal por día":"min por día"}<Ico n="chevronDown" s={11} c={chartKcal?LIME:C.muted}/></span></div>
             <div style={{display:"flex",alignItems:"flex-end",gap:5,height:66,marginTop:2}}>{_R.map(d=>{const val=chartKcal?d.kcal:d.min;const mx=chartKcal?_maxKcal:_maxMin;return <div key={d.d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>{chartKcal&&<span style={{fontFamily:F.bc,fontSize:7,color:d.today?C.cyan:C.muted,fontWeight:700}}>{d.kcal||""}</span>}<div style={{width:"100%",height:Math.max(4,(val/mx)*(chartKcal?46:52)),borderRadius:"4px 4px 0 0",background:d.today?C.cyan:LIME,opacity:val?1:0.28,transition:"height .5s"}}/><span style={{fontFamily:F.bc,fontSize:8,color:d.today?C.cyan:C.muted,fontWeight:600}}>{d.d[0]}</span></div>;})}</div>
           </div>
-          {(has("mejorar")||has("torneos")||!obj.length)&&<div onClick={()=>setScreen("plan")} className="btn-press" style={{position:"relative",marginBottom:11,cursor:"pointer",borderRadius:16,padding:2,overflow:"hidden"}}>
+          {<div onClick={()=>setScreen("plan")} className="btn-press" style={{position:"relative",marginBottom:11,cursor:"pointer",borderRadius:16,padding:2,overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,background:`conic-gradient(from 0deg,${LIME},${C.cyan},${LIME}22,${LIME})`,animation:"spin 4.5s linear infinite"}}/>
             <div style={{position:"relative",background:"#0c1730",borderRadius:14,padding:"13px 14px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:LIME,fontWeight:700}}>ENTRENAMIENTO DE HOY · IA</div><Ico n="ball" s={16} c={C.cyan}/></div>
@@ -3210,11 +3211,11 @@ export default function App(){
               </div>
             </div>
           </div>}
-          {(has("fisico")||(ph&&ph.injury&&ph.injury!=="ninguna"))&&<div style={{marginBottom:11,background:C.surface,border:`0.5px solid ${_fdone?LIME:C.borderS}`,borderRadius:16,padding:"12px 13px",display:"flex",alignItems:"center",gap:12,transition:"border .3s"}}>
+          {<div style={{marginBottom:11,background:C.surface,border:`0.5px solid ${_fdone?LIME:C.borderS}`,borderRadius:16,padding:"12px 13px",display:"flex",alignItems:"center",gap:12,transition:"border .3s"}}>
             <div onClick={()=>setScreen("fisioplan")} className="btn-press" style={{flex:1,minWidth:0,cursor:"pointer"}}><div style={{fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:LIME,fontWeight:700,marginBottom:3}}>RECUPERACIÓN DE HOY</div><div style={{fontFamily:F.ios,fontSize:13.5,fontWeight:700,color:C.text,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{_FP.ex[0]}</div><Sub style={{fontSize:11}}>{_fdone?"¡Completado hoy!":"Toca para ver tu rutina ›"}</Sub></div>
             <div onClick={markFisioDone} className="btn-press" style={{width:56,height:56,flexShrink:0,borderRadius:16,background:_fdone?LIME:C.surface2,border:`1.5px solid ${_fdone?LIME:C.borderS}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"background .3s"}}><Ico n="cross" s={28} c={_fdone?LIMED:LIME}/></div>
           </div>}
-          {has("torneos")&&<div onClick={()=>setScreen("ingresos")} className="btn-press" style={{cursor:"pointer",background:C.surface,border:`0.5px solid ${C.borderS}`,borderLeft:"3px solid #FFD15C",borderRadius:14,padding:"12px 13px",marginBottom:10}}>
+          {<div onClick={()=>setScreen("ingresos")} className="btn-press" style={{cursor:"pointer",background:C.surface,border:`0.5px solid ${C.borderS}`,borderLeft:"3px solid #FFD15C",borderRadius:14,padding:"12px 13px",marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:9}}><div><div style={{fontFamily:F.ios,fontSize:13,fontWeight:700,color:C.text}}>Torneos</div><Sub style={{fontSize:11,marginTop:2}}>{user?.titles||0} títulos · {user?.wins||0}W-{user?.losses||0}L</Sub></div><div style={{textAlign:"right"}}><div style={{fontFamily:F.bn,fontSize:20,color:LIME}}>${money.toLocaleString()}</div><Sub style={{fontSize:10}}>ganados</Sub></div></div>
             <div style={{height:9,background:C.surface2,borderRadius:6,overflow:"hidden",marginBottom:5}}><div style={{height:"100%",width:Math.max(4,Math.min(100,money/goalMoney*100))+"%",background:`linear-gradient(90deg,${LIME},#FFD15C)`,borderRadius:6,animation:"growW 1s ease both"}}/></div>
             <div style={{display:"flex",justifyContent:"space-between",fontFamily:F.bc,fontSize:9,color:C.muted,letterSpacing:"0.08em"}}><span>META ${goalMoney.toLocaleString()}</span><span>FALTAN ${Math.max(0,goalMoney-money).toLocaleString()}</span></div>
