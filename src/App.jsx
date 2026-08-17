@@ -867,6 +867,8 @@ export default function App(){
   const [showChangePass,setShowChangePass]=useState(false);
   const [passForm,setPassForm]=useState({old:"",new:""});
   const [addPlayerModal,setAddPlayerModal]=useState(null);
+  const [grpAction,setGrpAction]=useState(null);
+  const [matchEdit,setMatchEdit]=useState(null);
   const [addSearch,setAddSearch]=useState("");
   const [ghostModal,setGhostModal]=useState(null);
   const [linkSearch,setLinkSearch]=useState("");
@@ -1215,6 +1217,12 @@ export default function App(){
   const adminConvertGhost=(tid,gid,acct)=>{const t=tournaments.find(x=>x.id===tid);if(!t)return;let gw=0,gl=0;const scan=m=>{if(!m||m.status!=="done"||!m.winner||!m.p1||!m.p2)return;if(m.p1.id!==gid&&m.p2.id!==gid)return;if(m.winner.id===gid)gw++;else gl++;};(t.groups||[]).forEach(g=>(g.matches||[]).forEach(scan));(t.rounds||[]).forEach(r=>(r||[]).forEach(scan));const rep2=p=>(p&&p.id===gid)?acct:p;setTournaments(prev=>prev.map(tt=>{if(tt.id!==tid)return tt;return{...tt,players:tt.players.map(rep2),pendingPlayers:(tt.pendingPlayers||[]).filter(p=>p.id!==acct.id),groups:(tt.groups||[]).map(g=>({...g,players:(g.players||[]).map(rep2),matches:(g.matches||[]).map(m=>({...m,p1:rep2(m.p1),p2:rep2(m.p2),winner:rep2(m.winner)}))})),rounds:(tt.rounds||[]).map(r=>(r||[]).map(m=>({...m,p1:rep2(m.p1),p2:rep2(m.p2),winner:rep2(m.winner)})))};}));const acc=accounts.find(a=>a.id===acct.id)||acct;const PPW=100;const upd={...acc,wins:(acc.wins||0)+gw,losses:(acc.losses||0)+gl,points:(acc.points||0)+gw*PPW};updateAccount(upd);try{supabase.from("profiles").update({wins:upd.wins,losses:upd.losses,points:upd.points}).eq("auth_id",acct.id);}catch(e){}};
   const adminRemove=(tid,pid)=>setTournaments(prev=>prev.map(x=>x.id===tid?{...x,players:x.players.filter(p=>p.id!==pid)}:x));
 
+  const admAddToGroup=(tid,gi,player)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const players=t.players.find(p=>p.id===player.id)?t.players:[...t.players,player];const groups=t.groups.map((g,gix)=>{if(gix!==gi)return g;if(g.players.find(p=>p.id===player.id))return g;const nm=g.players.map(op=>({id:`gm-${gi}-${op.id}-${player.id}-${Date.now()}-${Math.random()}`,p1:op,p2:player,winner:null,score:null,status:"pending",pendingResult:null,group:gi}));return{...g,players:[...g.players,player],matches:[...g.matches,...nm]};});return{...t,players,groups};}));
+  const admAddGhostToGroup=(tid,gi,name)=>{const nm=(name||"").trim();if(!nm)return;const gp={id:"ghost-"+Date.now()+"-"+Math.floor(Math.random()*99999),name:nm,firstName:nm.split(" ")[0],lastName:nm.split(" ").slice(1).join(" "),ghost:true,sex:null,category:null,ranking:0,points:0,wins:0,losses:0,titles:0,photo:null,avatar:ini(nm),club:"",stats:{...DSTATS}};admAddToGroup(tid,gi,gp);};
+  const admRemoveFromGroup=(tid,gi,pid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,players:g.players.filter(p=>p.id!==pid),matches:g.matches.filter(m=>m.p1?.id!==pid&&m.p2?.id!==pid)});return{...t,groups};}));
+  const admMoveGroup=(tid,fromGi,toGi,player)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;let groups=t.groups.map((g,gix)=>gix!==fromGi?g:{...g,players:g.players.filter(p=>p.id!==player.id),matches:g.matches.filter(m=>m.p1?.id!==player.id&&m.p2?.id!==player.id)});groups=groups.map((g,gix)=>{if(gix!==toGi)return g;if(g.players.find(p=>p.id===player.id))return g;const nm=g.players.map(op=>({id:`gm-${toGi}-${op.id}-${player.id}-${Date.now()}-${Math.random()}`,p1:op,p2:player,winner:null,score:null,status:"pending",pendingResult:null,group:toGi}));return{...g,players:[...g.players,player],matches:[...g.matches,...nm]};});return{...t,groups};}));
+  const admSetMatchPlayer=(tid,gi,mid,slot,player)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,matches:g.matches.map(m=>m.id!==mid?m:{...m,[slot]:player,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null})});return{...t,groups};}));
+  const admClearMatch=(tid,gi,mid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,matches:g.matches.map(m=>m.id!==mid?m:{...m,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null})});return{...t,groups};}));
   const generateDraw=(tid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid||t.players.length<2)return t;if(t.format==="groups+ko")return{...t,groups:buildGroups(t.players,t.groupSize||4),rounds:[],status:"groups"};return{...t,rounds:buildKO(t.players),groups:[],status:"inprogress"};}));
   const generateKO=(tid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid||t.format!=="groups+ko")return t;if(!t.groups.every(g=>g.matches.every(m=>m.status==="done")))return t;const q=[];t.groups.forEach(g=>{const st=getStandings(g);q.push(st[0].player);if(st[1])q.push(st[1].player);});return{...t,rounds:buildKO(q),status:"inprogress"};}));
 
@@ -3710,6 +3718,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const champ=getChamp(t);
     const allGD=t.format==="groups+ko"&&t.groups.length>0&&t.groups.every(g=>g.matches.every(m=>m.status==="done"));
     const avAccts=accounts.filter(a=>!t.players.find(p=>p.id===a.id)&&!t.pendingPlayers.find(p=>p.id===a.id)&&a.name.toLowerCase().includes(addSearch.toLowerCase())&&(!t.gender||t.gender==="Mixed"||!a.sex||a.sex===t.gender));
+    const grpAssigned=new Set(t.groups.flatMap(g=>g.players.map(p=>p.id)));const grpUnassigned=t.players.filter(p=>!grpAssigned.has(p.id)&&(p.name||"").toLowerCase().includes(addSearch.toLowerCase()));const addList=(addPlayerModal&&addPlayerModal.gi!=null)?[...grpUnassigned,...avAccts]:avAccts;
     return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       {showIntro&&t.players.length>0&&<TIntro tourney={t} onDone={()=>setShowIntro(false)}/>}
@@ -3775,6 +3784,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                   <div style={{flex:1,fontFamily:F.ios,fontSize:14,fontWeight:500,color:C.text}}>{s.player.name}</div>
                   <div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>{s.wins}-{s.losses}</div>
                   {si<2&&<Chip type="cyan" style={{fontSize:8,padding:"2px 6px"}}>CLASIFICA</Chip>}
+                  {isAdmin&&<button onClick={(e)=>{e.stopPropagation();setGrpAction({tid:t.id,gi,player:s.player});}} className="btn-press" style={{width:26,height:26,borderRadius:8,background:C.surface2,border:`1px solid ${C.borderS}`,color:C.cyan,cursor:"pointer",fontSize:15,fontWeight:700,lineHeight:1,flexShrink:0,padding:0}}>⋯</button>}
                 </div>)}
               </div>
               <div style={{padding:"10px 16px"}}>
@@ -3790,8 +3800,10 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                       {match.score&&match.score!=="BYE"&&<span style={{fontFamily:F.bn,fontSize:14,color:w?C.cyan:C.muted}}>{match.score.split("-")[pi]}</span>}
                     </div>;})}
                     {match.detailedScore&&<div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,marginTop:6,paddingTop:6,borderTop:`0.5px solid ${C.borderS}`,fontWeight:600}}><Ico n="chart"/>{match.detailedScore}</div>}
+                    {isAdmin&&<div onClick={(e)=>{e.stopPropagation();setMatchEdit({tid:t.id,gi,match});}} style={{marginTop:8,textAlign:"center",fontFamily:F.bc,fontSize:9.5,letterSpacing:"0.16em",color:C.cyan,fontWeight:700,cursor:"pointer",padding:"5px 0",borderTop:`0.5px dashed ${C.borderS}`,textTransform:"uppercase"}}>Editar jugadores / borrar resultado</div>}
                   </div>;
                 })}
+                {isAdmin&&<button onClick={()=>{setAddPlayerModal({tid:t.id,gi});setAddSearch("");}} className="btn-press" style={{width:"100%",marginTop:8,padding:"11px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,color:C.cyan,fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>+ Agregar jugador a este grupo</button>}
               </div>
             </div>;
           })}
@@ -3832,20 +3844,37 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>}
 
         {addPlayerModal&&<Modal onClose={()=>setAddPlayerModal(null)}>
-          <T size={24} style={{textAlign:"center",marginBottom:8}}>AGREGAR JUGADOR</T>
+          <T size={24} style={{textAlign:"center",marginBottom:8}}>{addPlayerModal.gi!=null?("AGREGAR A "+((t.groups[addPlayerModal.gi]&&t.groups[addPlayerModal.gi].name)||"GRUPO")):"AGREGAR JUGADOR"}</T>
           <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>Sin inscripción previa requerida{t.gender!=="Mixed"&&` (solo ${t.gender==="F"?"femenino":"masculino"})`}</Sub>
           <FL>Buscar jugador</FL>
           <TI value={addSearch} onChange={e=>setAddSearch(e.target.value)} placeholder="Nombre del jugador..." autoFocus/>
           <div style={{maxHeight:340,overflowY:"auto",marginTop:14,marginBottom:8}}>
-            {avAccts.length===0?<Sub style={{textAlign:"center",padding:"24px 0"}}>{addSearch?"Sin resultados":"Sin jugadores disponibles"}</Sub>:avAccts.map(a=><div key={a.id} onClick={()=>{adminAdd(addPlayerModal.tid,a.id);setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:10,background:C.surface2,border:`0.5px solid ${C.borderS}`,borderRadius:10,marginBottom:6,cursor:"pointer"}}>
+            {addList.length===0?<Sub style={{textAlign:"center",padding:"24px 0"}}>{addSearch?"Sin resultados":"Sin jugadores disponibles"}</Sub>:addList.map(a=><div key={a.id} onClick={()=>{if(addPlayerModal.gi!=null){admAddToGroup(addPlayerModal.tid,addPlayerModal.gi,a);}else{adminAdd(addPlayerModal.tid,a.id);}setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:10,background:C.surface2,border:`0.5px solid ${C.borderS}`,borderRadius:10,marginBottom:6,cursor:"pointer"}}>
               <PA photo={a.photo} avatar={a.avatar} size={36}/>
               <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{a.name}</div><Sub style={{fontSize:11,marginTop:2}}>#{a.ranking} · {a.points} pts · {a.sex==="F"?<Ico n="female" s={12}/>:<Ico n="male" s={12}/>}</Sub></div>
               <span style={{color:C.cyan,fontSize:18}}>+</span>
             </div>)}
           </div>
-          {addSearch.trim()&&<div onClick={()=>{adminAddGhost(addPlayerModal.tid,addSearch.trim());setAddSearch("");setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:12,background:"rgba(199,249,78,0.08)",border:`1px dashed ${LIME}66`,borderRadius:10,marginBottom:12,cursor:"pointer"}}><div style={{width:36,height:36,borderRadius:"50%",background:LIME,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="person" s={18} c={LIMED}/></div><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Agregar “{addSearch.trim()}” como invitado</div><Sub style={{fontSize:11,marginTop:2}}>Jugador sin cuenta, para rellenar el cuadro. Al vencerlo, la victoria sí le cuenta a tu rival.</Sub></div><span style={{color:LIME,fontSize:20}}>+</span></div>}
+          {addSearch.trim()&&<div onClick={()=>{if(addPlayerModal.gi!=null){admAddGhostToGroup(addPlayerModal.tid,addPlayerModal.gi,addSearch.trim());}else{adminAddGhost(addPlayerModal.tid,addSearch.trim());}setAddSearch("");setAddPlayerModal(null);}} className="tap-row" style={{display:"flex",alignItems:"center",gap:12,padding:12,background:"rgba(199,249,78,0.08)",border:`1px dashed ${LIME}66`,borderRadius:10,marginBottom:12,cursor:"pointer"}}><div style={{width:36,height:36,borderRadius:"50%",background:LIME,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n="person" s={18} c={LIMED}/></div><div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:700,color:C.text}}>Agregar “{addSearch.trim()}” como invitado</div><Sub style={{fontSize:11,marginTop:2}}>Jugador sin cuenta, para rellenar el cuadro. Al vencerlo, la victoria sí le cuenta a tu rival.</Sub></div><span style={{color:LIME,fontSize:20}}>+</span></div>}
           <BtnX onClick={()=>setAddPlayerModal(null)}>CERRAR</BtnX>
         </Modal>}
+        {grpAction&&<Modal onClose={()=>setGrpAction(null)} center>
+          <T size={20} style={{textAlign:"center",marginBottom:4}}>{grpAction.player.name}</T>
+          <Sub style={{textAlign:"center",marginBottom:16,fontSize:12}}>Mover o quitar de {(t.groups[grpAction.gi]&&t.groups[grpAction.gi].name)||"grupo"}</Sub>
+          {t.groups.map((g,gx)=>gx===grpAction.gi?null:<BtnX key={g.id} onClick={()=>{admMoveGroup(grpAction.tid,grpAction.gi,gx,grpAction.player);setGrpAction(null);}} style={{marginBottom:8}}>Mover a {g.name}</BtnX>)}
+          <button onClick={()=>{admRemoveFromGroup(grpAction.tid,grpAction.gi,grpAction.player.id);setGrpAction(null);}} className="btn-press" style={{width:"100%",padding:14,background:"rgba(255,59,48,0.12)",border:"1px solid rgba(255,59,48,0.4)",color:C.red,borderRadius:12,fontFamily:F.ios,fontWeight:700,cursor:"pointer",marginTop:4,marginBottom:8}}>Quitar del grupo</button>
+          <BtnX onClick={()=>setGrpAction(null)}>CANCELAR</BtnX>
+        </Modal>}
+        {matchEdit&&(()=>{const _g=t.groups[matchEdit.gi];const _opts=_g?_g.players:[];return <Modal onClose={()=>setMatchEdit(null)} center>
+          <T size={20} style={{textAlign:"center",marginBottom:4}}>Editar partido</T>
+          <Sub style={{textAlign:"center",marginBottom:16,fontSize:12}}>Cambia quién juega o borra el resultado</Sub>
+          {["p1","p2"].map(slot=><div key={slot} style={{marginBottom:14}}>
+            <FL>{slot==="p1"?"Jugador 1":"Jugador 2"}</FL>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{_opts.map(p=><button key={p.id} onClick={()=>{admSetMatchPlayer(matchEdit.tid,matchEdit.gi,matchEdit.match.id,slot,p);setMatchEdit(null);}} className="btn-press" style={{padding:"8px 10px",borderRadius:9,border:`1px solid ${matchEdit.match[slot]&&matchEdit.match[slot].id===p.id?C.cyan:C.borderS}`,background:matchEdit.match[slot]&&matchEdit.match[slot].id===p.id?C.cyanDim:C.surface2,color:C.text,fontFamily:F.ios,fontSize:12,cursor:"pointer"}}>{p.name}</button>)}</div>
+          </div>)}
+          <button onClick={()=>{admClearMatch(matchEdit.tid,matchEdit.gi,matchEdit.match.id);setMatchEdit(null);}} className="btn-press" style={{width:"100%",padding:13,background:"rgba(255,159,10,0.12)",border:"1px solid rgba(255,159,10,0.4)",color:C.amber,borderRadius:12,fontFamily:F.ios,fontWeight:700,cursor:"pointer",marginTop:4,marginBottom:8}}>Borrar resultado</button>
+          <BtnX onClick={()=>setMatchEdit(null)}>CERRAR</BtnX>
+        </Modal>;})()}
 
         {ghostModal&&(()=>{const gt=tournaments.find(x=>x.id===ghostModal.tid)||{};const opts=accounts.filter(a=>a.id&&a.id!=="__guest__"&&(a.name||"").toLowerCase().includes(linkSearch.toLowerCase())&&!(gt.players||[]).find(p=>p.id===a.id));return <Modal onClose={()=>setGhostModal(null)}>
           <T size={22} style={{textAlign:"center",marginBottom:4}}>{ghostModal.ghost.name}</T>
