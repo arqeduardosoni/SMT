@@ -197,6 +197,7 @@ const playDF=()=>{try{if("speechSynthesis"in window){window.speechSynthesis.canc
 const ini=n=>(n||"").split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
 const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
 function buildKO(p){const sh=shuf(p),sz=Math.pow(2,Math.ceil(Math.log2(Math.max(sh.length,2))));while(sh.length<sz)sh.push(null);const r=[];for(let i=0;i<sz;i+=2){const p1=sh[i],p2=sh[i+1],bye=p2===null;r.push({id:`m-${Date.now()}-${i}-${Math.random()}`,p1,p2,winner:bye?p1:null,score:bye?"BYE":null,status:bye?"done":"pending",pendingResult:null});}return[r];}
+function buildKOSeeded(p){const sh=[...p];const sz=Math.pow(2,Math.ceil(Math.log2(Math.max(sh.length,2))));while(sh.length<sz)sh.push(null);const r=[];for(let i=0;i<sz;i+=2){const p1=sh[i],p2=sh[i+1],bye=p2===null;r.push({id:`m-${Date.now()}-${i}-${Math.random()}`,p1,p2,winner:bye?p1:null,score:bye?"BYE":null,status:bye?"done":"pending",pendingResult:null});}return[r];}
 function buildEmptyKO(size){size=Math.max(2,Math.pow(2,Math.round(Math.log2(Math.max(2,size)))));const rounds=[];let n=size/2;while(n>=1){const r=[];for(let i=0;i<n;i++)r.push({id:`m-${Date.now()}-${n}-${i}-${Math.random()}`,p1:null,p2:null,winner:null,score:null,status:"pending",pendingResult:null});rounds.push(r);n=Math.floor(n/2);}return rounds;}
 function advKO(rs){const last=rs[rs.length-1];if(last.length===1||!last.every(m=>m.status==="done"))return rs;const w=last.map(m=>m.winner),next=[];for(let i=0;i<w.length;i+=2){const p1=w[i],p2=w[i+1]||null,bye=p2===null;next.push({id:`m-${Date.now()}-${i}-${Math.random()}`,p1,p2,winner:bye?p1:null,score:bye?"BYE":null,status:bye?"done":"pending",pendingResult:null});}return[...rs,next];}
 function buildGroups(p,gs=4){const sh=shuf(p),numG=Math.ceil(sh.length/gs),groups=[];for(let g=0;g<numG;g++){const gp=sh.slice(g*gs,(g+1)*gs),matches=[];for(let i=0;i<gp.length;i++)for(let j=i+1;j<gp.length;j++)matches.push({id:`gm-${g}-${i}-${j}-${Date.now()}-${Math.random()}`,p1:gp[i],p2:gp[j],winner:null,score:null,status:"pending",pendingResult:null,group:g});groups.push({id:g,name:`GRUPO ${String.fromCharCode(65+g)}`,players:gp,matches});}return groups;}
@@ -873,6 +874,7 @@ export default function App(){
   const [matchEdit,setMatchEdit]=useState(null);
   const [showPast,setShowPast]=useState(false);
   const [koEdit,setKoEdit]=useState(null);
+  const [advanceModal,setAdvanceModal]=useState(null);
   const [addSearch,setAddSearch]=useState("");
   const [ghostModal,setGhostModal]=useState(null);
   const [linkSearch,setLinkSearch]=useState("");
@@ -1237,6 +1239,7 @@ export default function App(){
   const admDeleteGroup=(tid,gi)=>{const _t=tournaments.find(x=>x.id===tid);const _g=_t&&_t.groups[gi];if(_g){const _d={};const _add=(id,k,v)=>{if(!id)return;_d[id]=_d[id]||{dW:0,dL:0,dP:0};_d[id][k]+=v;};_g.matches.forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;_add(w.id,"dW",-1);_add(w.id,"dP",-10);_add(l&&l.id,"dL",-1);}});applyStatDeltas(_d);}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.filter((g,gix)=>gix!==gi).map((g,ix)=>({...g,id:ix,name:`GRUPO ${String.fromCharCode(65+ix)}`}));return{...t,groups};}));};
   const admAddGroup=(tid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const ix=t.groups.length;return{...t,groups:[...t.groups,{id:ix,name:`GRUPO ${String.fromCharCode(65+ix)}`,players:[],matches:[]}]};}));
   const admRebuildKO=(tid,size)=>{if(!confirm("¿Crear un cuadro manual de "+size+" jugadores? Se reemplaza el cuadro actual y luego tocas cada partido para poner jugadores o BYE."))return;setTournaments(prev=>prev.map(t=>t.id!==tid?t:{...t,rounds:buildEmptyKO(size),status:"inprogress",manualDraw:true}));};
+  const admAdvanceToKO=(tid,players)=>{if(!players||players.length<2){alert("Elige al menos 2 jugadores para la eliminatoria.");return;}setTournaments(prev=>prev.map(t=>t.id!==tid?t:{...t,rounds:buildKOSeeded(players),status:"inprogress",manualDraw:true}));};
   const admSetKOPlayer=(tid,ri,mid,slot,player)=>{const _t=tournaments.find(x=>x.id===tid);const _rr=_t&&_t.rounds[ri];const _m=_rr&&_rr.find(x=>x.id===mid);if(_m&&_m.status==="done"&&_m.winner){applyStatDeltas(matchStatDeltas(_m,null,"ko",ri,(_t.rounds||[]).length));}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const rounds=t.rounds.map((rnd,rix)=>rix!==ri?rnd:rnd.map(m=>m.id!==mid?m:{...m,[slot]:player,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null}));return{...t,rounds,manualDraw:true};}));};
   const admClearKOMatch=(tid,ri,mid)=>{const _t=tournaments.find(x=>x.id===tid);const _rr=_t&&_t.rounds[ri];const _m=_rr&&_rr.find(x=>x.id===mid);if(_m&&_m.status==="done"&&_m.winner){applyStatDeltas(matchStatDeltas(_m,null,"ko",ri,(_t.rounds||[]).length));}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const rounds=t.rounds.map((rnd,rix)=>rix!==ri?rnd:rnd.map(m=>m.id!==mid?m:{...m,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null}));return{...t,rounds,manualDraw:true};}));};
   const generateDraw=(tid)=>setTournaments(prev=>prev.map(t=>{if(t.id!==tid||t.players.length<2)return t;if(t.format==="groups+ko")return{...t,groups:buildGroups(t.players,t.groupSize||4),rounds:[],status:"groups"};return{...t,rounds:buildKO(t.players),groups:[],status:"inprogress"};}));
@@ -3782,6 +3785,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {isAdmin&&t.status!=="completed"&&<BtnG onClick={()=>{setAddPlayerModal({tid:t.id});setAddSearch("");}} style={{flex:1,padding:12,background:C.cyanDim}}>+ AGREGAR JUGADOR</BtnG>}
           {isAdmin&&t.status==="open"&&t.players.length>=2&&<BtnG onClick={()=>generateDraw(t.id)} style={{flex:1,padding:12,background:C.cyanDim}}>{t.format==="groups+ko"?"INICIAR GRUPOS":"GENERAR DRAW"}</BtnG>}
           {isAdmin&&t.status==="groups"&&allGD&&<BtnG onClick={()=>generateKO(t.id)} style={{flex:1,padding:12,background:C.cyanDim,borderColor:C.cyan}}><Ico n="bolt"/>GENERAR ELIMINATORIA</BtnG>}
+          {isAdmin&&t.status==="groups"&&<BtnG onClick={()=>{const pre=[];t.groups.forEach(g=>{const st=getStandings(g);if(st[0])pre.push(st[0].player.id);if(st[1])pre.push(st[1].player.id);});setAdvanceModal({tid:t.id,sel:pre});}} style={{flex:1,padding:12,background:`${LIME}1f`,borderColor:LIME,color:LIME}}><Ico n="trophy"/>CERRAR GRUPOS · ELEGIR AVANCE</BtnG>}
           {isFull&&!isReg&&!isPending&&!isAdmin&&<Chip type="red">TORNEO LLENO</Chip>}
         </div>
         {champ&&<div onClick={()=>setChampion({champion:champ,tourney:t})} style={{background:`linear-gradient(135deg,${C.goldDim},transparent 60%)`,border:`1px solid ${C.goldBdr}`,borderRadius:12,padding:"14px 18px",margin:"8px 18px 14px",display:"flex",alignItems:"center",gap:14,animation:"scaleIn 0.5s",cursor:"pointer"}}>
@@ -3911,6 +3915,25 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {_cur.p1&&_cur.p2&&<button onClick={()=>{const m=_cur;setKoEdit(null);setSubData({tid:koEdit.tid,kind:"ko",ri:koEdit.ri,match:m});setSubStep("pick");setPicked(null);}} className="btn-press" style={{width:"100%",padding:13,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,color:C.cyan,borderRadius:12,fontFamily:F.ios,fontWeight:700,cursor:"pointer",marginTop:4,marginBottom:8}}>Registrar / editar marcador</button>}
           <button onClick={()=>{admClearKOMatch(koEdit.tid,koEdit.ri,koEdit.match.id);setKoEdit(null);}} className="btn-press" style={{width:"100%",padding:13,background:"rgba(255,159,10,0.12)",border:"1px solid rgba(255,159,10,0.4)",color:C.amber,borderRadius:12,fontFamily:F.ios,fontWeight:700,cursor:"pointer",marginBottom:8}}>Borrar resultado</button>
           <BtnX onClick={()=>setKoEdit(null)}>CERRAR</BtnX>
+        </Modal>;})()}
+        {advanceModal&&(()=>{const _t=tournaments.find(x=>x.id===advanceModal.tid)||t;const sel=advanceModal.sel||[];const toggle=(id)=>setAdvanceModal(a=>({...a,sel:a.sel.includes(id)?a.sel.filter(x=>x!==id):[...a.sel,id]}));const chosen=[];_t.groups.forEach(g=>getStandings(g).forEach(st=>{if(sel.includes(st.player.id))chosen.push(st.player);}));return <Modal onClose={()=>setAdvanceModal(null)}>
+          <T size={22} style={{textAlign:"center",marginBottom:4}}>Pasar a eliminatoria</T>
+          <Sub style={{textAlign:"center",marginBottom:14,fontSize:12}}>Elige quién avanza. Vienen pre-marcados los 2 primeros de cada grupo. Puedes cerrar aunque falten partidos.</Sub>
+          <div style={{maxHeight:360,overflowY:"auto"}}>
+            {_t.groups.map((g)=>{const st=getStandings(g);return <div key={g.id} style={{marginBottom:12}}>
+              <SL>{g.name}</SL>
+              {st.map((sr,si)=>{const on=sel.includes(sr.player.id);return <div key={sr.player.id} onClick={()=>toggle(sr.player.id)} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"9px 8px",background:on?"rgba(199,249,78,0.10)":C.surface2,border:`1px solid ${on?LIME:C.borderS}`,borderRadius:10,marginBottom:5,cursor:"pointer"}}>
+                <div style={{width:18,textAlign:"center",fontFamily:F.bn,fontSize:13,color:si<2?C.cyan:C.muted}}>{si+1}</div>
+                <PA photo={sr.player.photo} avatar={sr.player.avatar} size={26}/>
+                <div style={{flex:1,fontFamily:F.ios,fontSize:13.5,color:C.text,fontWeight:500}}>{sr.player.name}</div>
+                <div style={{fontFamily:F.ios,fontSize:12,color:C.muted}}>{sr.wins}-{sr.losses}</div>
+                <div style={{width:22,height:22,borderRadius:7,border:`2px solid ${on?LIME:"#3a4230"}`,background:on?LIME:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>{on&&<Ico n="check" s={13} c={LIMED}/>}</div>
+              </div>;})}
+            </div>;})}
+          </div>
+          <div style={{fontFamily:F.ios,fontSize:12,color:C.muted,textAlign:"center",margin:"8px 0"}}>{sel.length} seleccionados</div>
+          <BtnP onClick={()=>{admAdvanceToKO(advanceModal.tid,chosen);setAdvanceModal(null);setTab("draw");}}>CREAR ELIMINATORIA ({sel.length})</BtnP>
+          <BtnX onClick={()=>setAdvanceModal(null)}>CANCELAR</BtnX>
         </Modal>;})()}
 
         {ghostModal&&(()=>{const gt=tournaments.find(x=>x.id===ghostModal.tid)||{};const opts=accounts.filter(a=>a.id&&a.id!=="__guest__"&&(a.name||"").toLowerCase().includes(linkSearch.toLowerCase())&&!(gt.players||[]).find(p=>p.id===a.id));return <Modal onClose={()=>setGhostModal(null)}>
