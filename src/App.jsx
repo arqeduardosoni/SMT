@@ -1512,13 +1512,37 @@ export default function App(){
     tSaveTimer.current=setTimeout(async()=>{
       try{
         savingRef.current=true;
+        setSaveError(null);
         const rows=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
-        if(rows.length)await supabase.from("tournament_data").upsert(rows);
+        if(rows.length){
+          // Validar JSON antes de guardar
+          try{JSON.stringify(rows);}catch(je){throw new Error("Datos corrupto: "+je.message);}
+          const {error}=await supabase.from("tournament_data").upsert(rows);
+          if(error){throw new Error(`Error Supabase: ${error.message}`);}
+          retryCountRef.current["tournament"]=0;
+          setSaveError(null);
+          setLastSaveTime(new Date());
+        }
         const ids=rows.map(r=>r.id);
         const removed=(tPrevIds.current||[]).filter(id=>!ids.includes(id));
-        if(removed.length)await supabase.from("tournament_data").delete().in("id",removed);
+        if(removed.length){
+          const {error:dErr}=await supabase.from("tournament_data").delete().in("id",removed);
+          if(dErr)console.warn("Delete warning:",dErr);
+        }
         tPrevIds.current=ids;
-      }catch(e){console.error("saveT",e);}
+      }catch(e){
+        console.error("saveT",e);
+        setSaveError(`⚠️ No se guardaron los cambios: ${e.message}`);
+        const retries=(retryCountRef.current["tournament"]||0)+1;
+        if(retries<5){
+          retryCountRef.current["tournament"]=retries;
+          setTimeout(()=>{
+            setTournaments(prev=>[...prev]);
+          },2000+retries*500);
+        }else{
+          setSaveError(`❌ Error al guardar. Intenta actualizar la app.`);
+        }
+      }
       setTimeout(()=>{savingRef.current=false;},900);
     },700);
     /* eslint-disable-next-line */
@@ -1532,13 +1556,37 @@ export default function App(){
     mSaveTimer.current=setTimeout(async()=>{
       try{
         savingRef.current=true;
+        setSaveError(null);
         const rows=marketplace.map(x=>({id:String(x.id),data:x}));
-        if(rows.length)await supabase.from("marketplace_data").upsert(rows);
+        if(rows.length){
+          // Validar JSON antes de guardar
+          try{JSON.stringify(rows);}catch(je){throw new Error("Datos corrupto: "+je.message);}
+          const {error}=await supabase.from("marketplace_data").upsert(rows);
+          if(error){throw new Error(`Error Supabase: ${error.message}`);}
+          retryCountRef.current["marketplace"]=0;
+          setSaveError(null);
+          setLastSaveTime(new Date());
+        }
         const ids=rows.map(r=>r.id);
         const removed=(mPrevIds.current||[]).filter(id=>!ids.includes(id));
-        if(removed.length)await supabase.from("marketplace_data").delete().in("id",removed);
+        if(removed.length){
+          const {error:dErr}=await supabase.from("marketplace_data").delete().in("id",removed);
+          if(dErr)console.warn("Delete warning:",dErr);
+        }
         mPrevIds.current=ids;
-      }catch(e){console.error("saveM",e);}
+      }catch(e){
+        console.error("saveM",e);
+        setSaveError(`⚠️ No se guardaron los cambios: ${e.message}`);
+        const retries=(retryCountRef.current["marketplace"]||0)+1;
+        if(retries<5){
+          retryCountRef.current["marketplace"]=retries;
+          setTimeout(()=>{
+            setMarketplace(prev=>[...prev]);
+          },2000+retries*500);
+        }else{
+          setSaveError(`❌ Error al guardar. Intenta actualizar la app.`);
+        }
+      }
       setTimeout(()=>{savingRef.current=false;},900);
     },700);
     /* eslint-disable-next-line */
@@ -2665,6 +2713,8 @@ export default function App(){
         </div>
         <TabSpacer/>
       </div>
+      {saveError&&<div style={{position:"fixed",top:0,left:0,right:0,background:saveError.startsWith("❌")?"rgba(255,59,48,0.95)":"rgba(255,152,0,0.95)",color:"#fff",padding:"12px 16px",textAlign:"center",fontSize:13,zIndex:9999,animation:"slideDown 0.3s ease",fontFamily:F.ios,fontWeight:600}}>{saveError}</div>}
+      {lastSaveTime&&!saveError&&<div style={{position:"fixed",bottom:110,right:16,background:"rgba(76,175,80,0.95)",color:"#fff",padding:"8px 12px",borderRadius:6,fontSize:12,zIndex:9999,fontFamily:F.ios,fontWeight:600}}>✓ Guardado</div>}
       <ShowTabBar/>
     </div>;
   }
