@@ -853,6 +853,10 @@ export default function App(){
   const [setCatVal,setSetCatVal]=useState("");
   const [objSel,setObjSel]=useState([]);
   const [editObj,setEditObj]=useState(false);
+  // Estados para rastrear errores de guardado
+  const [saveError,setSaveError]=useState(null);
+  const [lastSaveTime,setLastSaveTime]=useState(null);
+  const retryCountRef=useRef({});
   const [fqStep,setFqStep]=useState(0);
   const [fqData,setFqData]=useState({});
   const [editFisio,setEditFisio]=useState(false);
