@@ -857,6 +857,8 @@ export default function App(){
   const [saveError,setSaveError]=useState(null);
   const [lastSaveTime,setLastSaveTime]=useState(null);
   const retryCountRef=useRef({});
+  // Copia siempre actualizada de las cuentas (evita usar datos viejos al guardar puntos)
+  const accountsRef=useRef([]);
   const [fqStep,setFqStep]=useState(0);
   const [fqData,setFqData]=useState({});
   const [editFisio,setEditFisio]=useState(false);
@@ -957,7 +959,17 @@ export default function App(){
     try{
       const {data,error}=await supabase.from("profiles").select("*");
       if(error){console.error("Error cargando perfiles:",error.message);return;}
-      if(data) setAccounts(data.map(profileToPlayer));
+      if(data){
+        const lista=data.map(profileToPlayer);
+        setAccounts(lista);
+        // Refresca también MIS puntos/ranking (sin borrar mis datos locales de metas y físico)
+        setUser(u=>{
+          if(!u||u.id==="__guest__")return u;
+          const mio=lista.find(p=>p.id===u.id);
+          if(!mio)return u;
+          return {...u,points:mio.points,wins:mio.wins,losses:mio.losses,titles:mio.titles,ranking:mio.ranking,category:mio.category};
+        });
+      }
     }catch(e){console.error("Error cargando perfiles:",e);}
   };
   const loadCoachVideos=async()=>{try{const {data}=await supabase.from("coach_videos").select("*").order("created_at",{ascending:false});setCoachVideos(data||[]);}catch(e){}};
@@ -989,6 +1001,9 @@ export default function App(){
     return()=>{active=false;sub?.subscription?.unsubscribe?.();};
   },[]);
 
+  // Mantiene accountsRef sincronizado con el estado real de las cuentas
+  useEffect(()=>{accountsRef.current=accounts;},[accounts]);
+
   const updateEverywhere=(u)=>{
     setAccounts(prev=>prev.map(a=>a.id===u.id?u:a));
     setTournaments(prev=>prev.map(t=>({...t,players:t.players.map(p=>p.id===u.id?u:p),pendingPlayers:t.pendingPlayers.map(p=>p.id===u.id?u:p),groups:t.groups.map(g=>({...g,players:g.players.map(p=>p.id===u.id?u:p),matches:g.matches.map(m=>({...m,p1:m.p1?.id===u.id?u:m.p1,p2:m.p2?.id===u.id?u:m.p2,winner:m.winner?.id===u.id?u:m.winner}))})),rounds:t.rounds.map(r=>r.map(m=>({...m,p1:m.p1?.id===u.id?u:m.p1,p2:m.p2?.id===u.id?u:m.p2,winner:m.winner?.id===u.id?u:m.winner})))})));
@@ -1015,10 +1030,65 @@ export default function App(){
   // (HealthKit removido temporalmente — se reintegrará en una versión futura con Apple Watch)
   const updateAccount=(u)=>updateEverywhere(u);
   const POINTS_PER_WIN=100;
-  const applyStatDeltas=(deltas)=>{const ids=Object.keys(deltas||{}).filter(id=>id&&!String(id).startsWith("ghost-")&&!String(id).startsWith("imp-")&&id!=="admin");if(!ids.length)return;setAccounts(prev=>prev.map(a=>{const d=deltas[a.id];if(!d)return a;return{...a,wins:Math.max(0,(a.wins||0)+(d.dW||0)),losses:Math.max(0,(a.losses||0)+(d.dL||0)),points:Math.max(0,(a.points||0)+(d.dP||0))};}));ids.forEach(id=>{const a=accounts.find(x=>x.id===id);if(!a)return;const d=deltas[id];const w=Math.max(0,(a.wins||0)+(d.dW||0)),l=Math.max(0,(a.losses||0)+(d.dL||0)),pt=Math.max(0,(a.points||0)+(d.dP||0));try{supabase.from("profiles").update({wins:w,losses:l,points:pt}).eq("auth_id",id);}catch(e){}});};
+  const applyStatDeltas=async(deltas)=>{
+    const ids=Object.keys(deltas||{}).filter(id=>id&&!String(id).startsWith("ghost-")&&!String(id).startsWith("imp-")&&id!=="admin");
+    if(!ids.length)return;
+    // Calcula los valores nuevos usando SIEMPRE la lista de cuentas más reciente
+    const base=accountsRef.current&&accountsRef.current.length?accountsRef.current:accounts;
+    const nuevos={};
+    ids.forEach(id=>{
+      const a=base.find(x=>x.id===id);if(!a)return;
+      const d=deltas[id];
+      nuevos[id]={
+        wins:Math.max(0,(a.wins||0)+(d.dW||0)),
+        losses:Math.max(0,(a.losses||0)+(d.dL||0)),
+        points:Math.max(0,(a.points||0)+(d.dP||0)),
+      };
+    });
+    // Refleja el cambio en pantalla al instante
+    setAccounts(prev=>prev.map(a=>nuevos[a.id]?{...a,...nuevos[a.id]}:a));
+    // GUARDA en la base de datos y AVISA si algo falla (antes fallaba en silencio)
+    const fallos=[];
+    for(const id of Object.keys(nuevos)){
+      try{
+        const {error}=await supabase.from("profiles").update(nuevos[id]).eq("auth_id",id);
+        if(error)fallos.push(error.message);
+      }catch(e){fallos.push(e.message||"error de red");}
+    }
+    if(fallos.length){
+      console.error("applyStatDeltas",fallos);
+      setSaveError(`⚠️ Los puntos NO se guardaron para los jugadores: ${fallos[0]}`);
+    }else{
+      setSaveError(null);
+      setLastSaveTime(new Date());
+    }
+  };
   const winPoints=(kind,ri,R)=>{if(kind!=="ko")return 10;const d=(R-1)-ri;if(d<=0)return 500;if(d===1)return 200;if(d===2)return 100;if(d===3)return 50;return 50;};
   const matchStatDeltas=(oldMatch,newWinner,kind,ri,R)=>{kind=kind||"group";const d={};const add=(id,k,v)=>{if(!id)return;d[id]=d[id]||{dW:0,dL:0,dP:0};d[id][k]+=v;};const isFinal=(kind==="ko"&&((R-1)-ri)<=0);const wp=winPoints(kind,ri,R);if(oldMatch&&oldMatch.status==="done"&&oldMatch.winner&&oldMatch.p1&&oldMatch.p2){const ow=oldMatch.winner,ol=oldMatch.p1.id===ow.id?oldMatch.p2:oldMatch.p1;add(ow.id,"dW",-1);add(ow.id,"dP",-wp);add(ol&&ol.id,"dL",-1);if(isFinal)add(ol&&ol.id,"dP",-330);}if(newWinner&&oldMatch&&oldMatch.p1&&oldMatch.p2){const nl=oldMatch.p1.id===newWinner.id?oldMatch.p2:oldMatch.p1;add(newWinner.id,"dW",1);add(newWinner.id,"dP",wp);add(nl&&nl.id,"dL",1);if(isFinal)add(nl&&nl.id,"dP",330);}return d;};
-  const recomputePoints=()=>{const pts={},wins={},loss={},tit={};const add=(o,id,v)=>{if(!id)return;o[id]=(o[id]||0)+v;};tournaments.forEach(t=>{(t.groups||[]).forEach(g=>(g.matches||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,10);add(wins,w.id,1);add(loss,l&&l.id,1);}}));const R=(t.rounds||[]).length;(t.rounds||[]).forEach((rnd,ri)=>(rnd||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,winPoints("ko",ri,R));add(wins,w.id,1);add(loss,l&&l.id,1);if(((R-1)-ri)<=0)add(pts,l&&l.id,330);}}));try{const ch=getChamp(t);if(ch&&ch.id)add(tit,ch.id,1);}catch(e){}});setAccounts(prev=>prev.map(a=>({...a,points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0})));accounts.forEach(a=>{if(String(a.id).startsWith("ghost-")||String(a.id).startsWith("imp-"))return;try{supabase.from("profiles").update({points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0}).eq("auth_id",a.id);}catch(e){}});alert("Ranking recalculado desde los partidos reales: victorias, derrotas, puntos y títulos.");};
+  const recomputePoints=async()=>{const pts={},wins={},loss={},tit={};const add=(o,id,v)=>{if(!id)return;o[id]=(o[id]||0)+v;};tournaments.forEach(t=>{(t.groups||[]).forEach(g=>(g.matches||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,10);add(wins,w.id,1);add(loss,l&&l.id,1);}}));const R=(t.rounds||[]).length;(t.rounds||[]).forEach((rnd,ri)=>(rnd||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,winPoints("ko",ri,R));add(wins,w.id,1);add(loss,l&&l.id,1);if(((R-1)-ri)<=0)add(pts,l&&l.id,330);}}));try{const ch=getChamp(t);if(ch&&ch.id)add(tit,ch.id,1);}catch(e){}});setAccounts(prev=>prev.map(a=>({...a,points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0})));
+    // GUARDA en la base de datos esperando cada respuesta, para que TODOS los usuarios lo vean
+    const base=accountsRef.current&&accountsRef.current.length?accountsRef.current:accounts;
+    const reales=base.filter(a=>a&&a.id&&!String(a.id).startsWith("ghost-")&&!String(a.id).startsWith("imp-")&&a.id!=="admin");
+    let ok=0;const fallos=[];
+    for(const a of reales){
+      try{
+        const {error}=await supabase.from("profiles")
+          .update({points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0})
+          .eq("auth_id",a.id);
+        if(error)fallos.push(`${a.name||a.id}: ${error.message}`);else ok++;
+      }catch(e){fallos.push(`${a.name||a.id}: ${e.message||"error de red"}`);}
+    }
+    if(fallos.length){
+      console.error("recomputePoints",fallos);
+      setSaveError(`❌ Se guardaron ${ok} de ${reales.length}. La base de datos rechazó el resto.`);
+      alert(`ATENCIÓN: solo se guardaron ${ok} de ${reales.length} jugadores.\n\nMotivo: ${fallos[0]}\n\nLos demás usuarios NO verán los puntos hasta arreglar esto.`);
+    }else{
+      setSaveError(null);setLastSaveTime(new Date());
+      // Vuelve a leer de la base de datos para confirmar que quedó guardado
+      await loadAllAccounts();
+      alert(`Ranking recalculado y guardado para ${ok} jugadores. Ya es visible para todos los usuarios.`);
+    }
+  };
   const applyTrialState=(p)=>{if(FREE_PREMIUM_ALL)return p;try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
   const trigWelcome=()=>{setWelcomeAnim(true);setTimeout(()=>setWelcomeAnim(false),3200);};
 
@@ -1606,10 +1676,30 @@ export default function App(){
         if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id)setMarketplace(prev=>prev.filter(x=>String(x.id)!==String(id)));}
         else{const row=payload.new;if(row?.data)setMarketplace(prev=>{const i=prev.findIndex(x=>String(x.id)===String(row.id));if(i<0)return[row.data,...prev];const cp=[...prev];cp[i]=row.data;return cp;});}
       })
+      // PUNTOS Y RANKING EN VIVO: cuando el admin recalcula, todos los usuarios lo ven al instante
+      .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},(payload)=>{
+        const row=payload.new;if(!row||!row.auth_id)return;
+        try{
+          const p=profileToPlayer(row);
+          setAccounts(prev=>{const i=prev.findIndex(a=>a.id===p.id);if(i<0)return[...prev,p];const cp=[...prev];cp[i]={...cp[i],points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking,category:p.category};return cp;});
+          // Si son mis propios puntos, actualiza también mi perfil en pantalla
+          setUser(u=>(u&&u.id===p.id)?{...u,points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking}:u);
+        }catch(e){}
+      })
       .subscribe();
     return ()=>{try{supabase.removeChannel(ch);}catch(e){}};
     /* eslint-disable-next-line */
   },[dataLoaded]);
+
+  // Al volver a abrir la app (o cambiar de pestaña), refresca puntos y ranking desde la base de datos
+  useEffect(()=>{
+    if(!user)return;
+    const refrescar=()=>{if(document.visibilityState==="visible")loadAllAccounts();};
+    document.addEventListener("visibilitychange",refrescar);
+    window.addEventListener("focus",refrescar);
+    return ()=>{document.removeEventListener("visibilitychange",refrescar);window.removeEventListener("focus",refrescar);};
+    /* eslint-disable-next-line */
+  },[user?.id]);
 
   // ==================== MARCADOR EN VIVO (motor de tenis) ====================
   const sbNewMatch=(p1,p2)=>({p1:p1||"Jugador 1",p2:p2||"Jugador 2",sets:[],games:[0,0],points:[0,0],tiebreak:false,tb:[0,0],matchTiebreak:false,mtb:[0,0],winner:null});
