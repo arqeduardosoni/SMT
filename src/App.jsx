@@ -3784,7 +3784,9 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           const isPending=!isAdmin&&t.pendingPlayers.find(p=>p.id===user?.id);
           const sc=SURF_C[t.surface]||C.muted;
           const champ=getChamp(t);
-          return <div key={t.id} onClick={()=>openTourney(t)} className="tap-row" style={{background:"rgba(10,27,61,0.7)",border:`0.5px solid ${C.borderS}`,borderRadius:14,margin:"0 18px 12px",cursor:"pointer",position:"relative",overflow:"hidden",animation:`slideUp 0.4s ${ti*0.05}s backwards`,display:"flex",flexDirection:"column",backdropFilter:"blur(10px)"}}>
+          // Torneo activo (publicado, sin terminar): borde de luz girando para que llame la atención
+          const activo=!t.archived&&!champ&&t.status!=="completed";
+          const card=<div key={t.id} onClick={()=>openTourney(t)} className="tap-row" style={{background:"rgba(10,27,61,0.7)",border:activo?"none":`0.5px solid ${C.borderS}`,borderRadius:14,margin:activo?0:"0 18px 12px",cursor:"pointer",position:"relative",overflow:"hidden",animation:activo?"none":`slideUp 0.4s ${ti*0.05}s backwards`,display:"flex",flexDirection:"column",backdropFilter:"blur(10px)"}}>
             <div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,${C.cyanBright},${C.cyanDeep})`,zIndex:2}}/>
             <div style={{width:"100%",height:150,flexShrink:0,position:"relative",overflow:"hidden",background:t.image?"transparent":`linear-gradient(135deg,${C.surface2},${C.surface3})`}}>
               {t.image?<img src={t.image} style={{width:"100%",height:"100%",objectFit:"cover",animation:"breathing 6s infinite"}} alt=""/>:<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:6}}><Logo size={56}/><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(255,255,255,0.3)",fontWeight:600}}>{t.surface}</div></div>}
@@ -3837,6 +3839,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>}
             </div>
           </div>;
+          if(!activo)return card;
+          return <SpinBox key={t.id} r={16} bg="rgba(10,27,61,0.7)" c1={LIME} c2={C.cyan} spd="5s" style={{margin:"0 18px 12px",animation:`slideUp 0.4s ${ti*0.05}s backwards`,boxShadow:"0 6px 26px rgba(199,249,78,0.10)"}}>{card}</SpinBox>;
         };
         return <>{_up.map((t,ti)=>renderCard(t,ti,false))}{_pastList.length>0&&<div style={{margin:"18px 18px 0"}}><button onClick={()=>setShowPast(v=>!v)} className="btn-press" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"12px",background:C.surface2,border:`0.5px solid ${C.borderS}`,borderRadius:12,color:C.muted,fontFamily:F.bc,fontSize:12,letterSpacing:"0.16em",fontWeight:700,cursor:"pointer",textTransform:"uppercase"}}>{showPast?"▲":"▼"} Torneos pasados ({_pastList.length})</button></div>}{showPast&&_pastList.map((t,ti)=>renderCard(t,ti,true))}</>;})()}
         <div style={{height:32}}/>
