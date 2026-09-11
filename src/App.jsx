@@ -63,7 +63,7 @@ button:active{transform:scale(0.96);filter:brightness(0.78)}
 .tab-btn{transition:transform 0.15s ease,filter 0.15s ease}
 .tab-btn:active{transform:scale(0.88);filter:brightness(0.78)}
 @media(hover:hover){.tab-btn:hover{transform:scale(0.93)}.tab-btn:hover .tab-icon-box{background:linear-gradient(135deg,rgba(79,195,247,0.25),rgba(2,136,209,0.14))!important}}
-.screen-fade{animation:scrSlide 0.32s ease}@keyframes scrSlide{from{opacity:0}to{opacity:1}}@keyframes welcomeBg{0%{transform:scale(1.25) translate(0,0)}100%{transform:scale(1.45) translate(-3%,-2%)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
+.screen-fade{animation:scrSlide 0.55s cubic-bezier(0.22,0.61,0.36,1);will-change:transform,opacity}.screen-fade.nav-back{animation-name:scrSlideBack}@keyframes scrSlide{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}@keyframes scrSlideBack{from{opacity:0;transform:translateX(-100%)}to{opacity:1;transform:translateX(0)}}@keyframes welcomeBg{0%{transform:scale(1.25) translate(0,0)}100%{transform:scale(1.45) translate(-3%,-2%)}}.glow-gold{animation:goldPulse 2.4s ease-in-out infinite}@keyframes goldPulse{0%,100%{box-shadow:0 0 0 rgba(255,209,92,0);text-shadow:none}50%{box-shadow:0 0 12px rgba(255,209,92,0.5);text-shadow:0 0 8px rgba(255,209,92,0.55)}}
 @keyframes scrFade{from{opacity:0}to{opacity:1}}
 @keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
 html,body{background:#040A18;margin:0;overflow-x:hidden}
@@ -113,15 +113,102 @@ if(!last.length)return 1;const pain=last[last.length-1]&&last[last.length-1].pai
 if(pain==="fuerte")return 0.7;if(pain==="leve")return 0.8;
 const r=last.map(x=>x&&x.rpe||0);const hi=r.filter(v=>v>=9).length;
 if(hi>=2)return 0.8;if(hi===1)return 0.9;if(r[r.length-1]&&r[r.length-1]<=4)return 1.12;return 1;}catch(e){return 1;}};
+// ===== IMAGEN PARA COMPARTIR (estilo Strava: sin cajas, sin franjas, logo sin fondo) =====
+const SMT_MARK_SVG="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTkwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE5MCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNtdEwiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjN0VEREY3Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjNEZDM0Y3Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAyODhEMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic210UiIgeDE9IjEwMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM3RURERjciLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM0RkMzRjciLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDI4OEQxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJzbXRDIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM1QkNFRjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMUE2QkFFIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJzbXRUIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRkZGRkYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRDhFNEVDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cG9seWdvbiBwb2ludHM9IjU4LDMgNzgsNzYgNTAsNjggMzgsNzIiIGZpbGw9InVybCgjc210TCkiIHN0cm9rZT0iIzBGNDM3MyIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cG9seWdvbiBwb2ludHM9Ijc4LDc2IDkyLDgwIDg2LDYyIiBmaWxsPSJ1cmwoI3NtdEMpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSIxNDIsMyAxMjIsNzYgMTUwLDY4IDE2Miw3MiIgZmlsbD0idXJsKCNzbXRSKSIgc3Ryb2tlPSIjMEY0MzczIiBzdHJva2Utd2lkdGg9IjEuMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwb2x5Z29uIHBvaW50cz0iMTIyLDc2IDEwOCw4MCAxMTQsNjIiIGZpbGw9InVybCgjc210QykiIG9wYWNpdHk9IjAuODUiLz4KICA8cG9seWdvbiBwb2ludHM9Ijc4LDEzOCAxMDAsMTcwIDEwMCwxNDgiIGZpbGw9InVybCgjc210TCkiIHN0cm9rZT0iIzBGNDM3MyIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIxMjIsMTM4IDEwMCwxNzAgMTAwLDE0OCIgZmlsbD0idXJsKCNzbXRSKSIgc3Ryb2tlPSIjMEY0MzczIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cG9seWdvbiBwb2ludHM9IjkyLDE0OCAxMDgsMTQ4IDEwMCwxODUiIGZpbGw9InVybCgjc210QykiLz4KPC9zdmc+Cg==";
+const _shareMark=(typeof Image!=="undefined")?Object.assign(new Image(),{src:SMT_MARK_SVG}):null;
+const SH_FB="'Bebas Neue', 'Barlow Condensed', Impact, Arial", SH_FC="'Barlow Condensed', -apple-system, Arial";
+const shShadowOn=(x,b=18,a=0.55)=>{x.shadowColor=`rgba(0,0,0,${a})`;x.shadowBlur=b;x.shadowOffsetX=0;x.shadowOffsetY=2;};
+const shShadowOff=(x)=>{x.shadowColor="transparent";x.shadowBlur=0;x.shadowOffsetY=0;};
+// Logo SMT sin fondo: alas en vector + letras con la tipografía de la app
+const shLogo=(x,px,py,size)=>{const prevA=x.textAlign;try{if(_shareMark&&_shareMark.complete&&_shareMark.naturalWidth)x.drawImage(_shareMark,px,py,size,size*0.95);}catch(e){}x.textAlign="center";x.fillStyle="#fff";x.font=`${Math.round(size*0.42)}px ${SH_FB}`;x.fillText("SMT",px+size/2,py+size*0.66);x.textAlign=prevA;};
+// D = {t, min, int, kcal, week:[kcal...], todayIdx, musc:[{n,p}], dateStr, weekH}
+const SHARE_STYLES={
+  1:(x,W,H,D)=>{ // MÍNIMA · abajo a la izquierda, números grandes
+    shShadowOn(x,22,0.5);shLogo(x,56,50,160);
+    x.textAlign="left";x.fillStyle="rgba(255,255,255,0.92)";x.font=`600 30px ${SH_FC}`;x.fillText((D.dateStr||"").toUpperCase(),64,H-560);
+    x.fillStyle="#fff";x.font=`72px ${SH_FB}`;x.fillText((D.t||"Entrenamiento").toUpperCase(),64,H-480);
+    x.fillStyle=LIME;x.font=`230px ${SH_FB}`;x.fillText(String(D.kcal||0),56,H-270);
+    const kw=x.measureText(String(D.kcal||0)).width;
+    x.fillStyle="rgba(255,255,255,0.9)";x.font=`600 34px ${SH_FC}`;x.fillText("KCAL",64+kw+18,H-282);
+    const row=[[String(D.min||0),"MIN"],[`${D.int||0}/5`,"INTENSIDAD"],[String(D.weekH||"—"),"H SEMANA"]];
+    let cx=64;row.forEach(([v,l])=>{x.fillStyle="#fff";x.font=`92px ${SH_FB}`;x.fillText(v,cx,H-150);const w=x.measureText(v).width;x.fillStyle="rgba(255,255,255,0.75)";x.font=`600 26px ${SH_FC}`;x.fillText(l,cx,H-108);cx+=Math.max(w,150)+70;});
+    shShadowOff(x);
+  },
+  2:(x,W,H,D)=>{ // CENTRADA · un dato protagonista, semana en puntos
+    shShadowOn(x,24,0.55);shLogo(x,(W-150)/2,50,150);
+    x.textAlign="center";
+    x.fillStyle="rgba(255,255,255,0.9)";x.font=`600 30px ${SH_FC}`;x.fillText((D.t||"Entrenamiento").toUpperCase(),W/2,H-600);
+    x.fillStyle="#fff";x.font=`300px ${SH_FB}`;x.fillText(String(D.kcal||0),W/2,H-330);
+    x.fillStyle=LIME;x.font=`600 34px ${SH_FC}`;x.fillText("KCAL QUEMADAS",W/2,H-280);
+    x.fillStyle="rgba(255,255,255,0.35)";x.fillRect(W/2-160,H-235,320,2);
+    x.fillStyle="#fff";x.font=`600 36px ${SH_FC}`;x.fillText(`${D.min||0} MIN   ·   INTENSIDAD ${D.int||0}/5`,W/2,H-180);
+    const wk=D.week||[];const mx=Math.max(1,...wk);const n=wk.length||7;const gap=54;const sx=W/2-((n-1)*gap)/2;
+    wk.forEach((k,i)=>{const r=k?8+Math.round((k/mx)*14):5;x.fillStyle=i===D.todayIdx?"#4FC3F7":(k?LIME:"rgba(255,255,255,0.35)");x.beginPath();x.arc(sx+i*gap,H-110,r,0,Math.PI*2);x.fill();});
+    x.fillStyle="rgba(255,255,255,0.7)";x.font=`600 22px ${SH_FC}`;x.fillText("TU SEMANA",W/2,H-60);
+    shShadowOff(x);
+  },
+  3:(x,W,H,D)=>{ // LATERAL · columna de datos a la izquierda
+    shShadowOn(x,20,0.5);shLogo(x,W-56-150,50,150);
+    x.textAlign="left";
+    x.fillStyle="#fff";x.font=`58px ${SH_FB}`;x.fillText((D.t||"Entrenamiento").toUpperCase(),64,H-690);
+    x.fillStyle="rgba(255,255,255,0.8)";x.font=`600 28px ${SH_FC}`;x.fillText((D.dateStr||"").toUpperCase(),64,H-645);
+    const items=[[String(D.kcal||0),"KCAL"],[String(D.min||0),"MIN"],[`${D.int||0}/5`,"INTENSIDAD"]];
+    let y=H-500;items.forEach(([v,l])=>{x.fillStyle=LIME;x.font=`150px ${SH_FB}`;x.fillText(v,64,y);const w=x.measureText(v).width;x.fillStyle="rgba(255,255,255,0.85)";x.font=`600 30px ${SH_FC}`;x.fillText(l,64+w+16,y-8);y+=170;});
+    x.textAlign="right";const m=(D.musc||[]).slice(0,3);const my=H-150;
+    x.fillStyle="rgba(255,255,255,0.7)";x.font=`600 24px ${SH_FC}`;x.fillText("MÚSCULOS",W-64,my-(m.length*48));
+    m.forEach((mm,i)=>{const yy=my-(m.length-1-i)*48;x.fillStyle="#fff";x.font=`600 34px ${SH_FC}`;x.fillText(`${mm.n}  ${mm.p}%`,W-64,yy);});
+    shShadowOff(x);
+  },
+};
+const SHARE_STYLE_DEFAULT=1; // <- cambia aquí el estilo que se usa por defecto (1, 2 o 3)
+// Variantes semanales de cada sesión: la rutina cambia cada semana para que no se repitan los ejercicios.
+// Índice = posición en "base" (0 servicio, 1 derecha, 2 físico, 3 revés, 4 red, 5 táctica). Cada una tiene 3 versiones.
+const SESS_ALT=[
+  [ // 0 · Servicio
+    {t:"Drills de servicio",x:"precisión, potencia y ritmo",det:"Series de saques a objetivos (conos) en las esquinas. Trabaja primer y segundo servicio, lanzamiento y pronación.",sub:[{n:"Calentamiento y movilidad de hombro",m:8},{n:"Servicios planos a esquinas (conos)",m:18},{n:"Segundo servicio: slice y kick",m:12},{n:"Estiramiento",m:7}]},
+    {t:"Servicio + primer golpe",x:"saque y transición al punto",det:"Saca y juega el primer golpe de derecha con intención. Alterna dirección del saque (T, cuerpo, abierto) y cierra con el siguiente tiro.",sub:[{n:"Movilidad de hombro y cadera",m:8},{n:"Saque + derecha a zona abierta",m:16},{n:"Saque abierto + cruzada",m:12},{n:"Segundo servicio bajo presión (a 10 seguidos)",m:9}]},
+    {t:"Ritmo y lanzamiento de saque",x:"consistencia del segundo servicio",det:"Sesión técnica de saque enfocada en el lanzamiento de pelota, la carga de piernas y la repetición del segundo servicio con kick.",sub:[{n:"Lanzamiento sin raqueta (a la marca)",m:7},{n:"Saque de kick a caja (30 repeticiones)",m:16},{n:"Saque plano + slice alternado",m:14},{n:"Estiramiento de hombro y espalda",m:8}]},
+  ],
+  [ // 1 · Derecha
+    {t:"Drills de derecha",x:"cruzado, paralelo y footwork",det:"Canasta de derechas cruzadas y paralelas con desplazamiento. Enfócate en carga de pierna y terminación por encima del hombro.",sub:[{n:"Calentamiento dinámico",m:8},{n:"Golpe cruzado con canasta",m:16},{n:"Golpe paralelo + footwork",m:16},{n:"De defensa a ataque",m:10}]},
+    {t:"Derecha invertida y ataque",x:"inside-out e inside-in",det:"Rodea el revés para atacar con la derecha. Trabaja el desplazamiento lateral y el cambio de dirección hacia paralelo.",sub:[{n:"Calentamiento con escalera",m:8},{n:"Inside-out a la esquina del revés rival",m:15},{n:"Inside-in a la línea",m:14},{n:"Bola corta + subida a la red",m:11}]},
+    {t:"Derecha con profundidad",x:"altura, spin y control",det:"Peloteo con objetivo detrás de la línea de servicio. Cambia altura (alto con topspin / plano) según la señal del coach o compañero.",sub:[{n:"Peloteo suave y activación",m:8},{n:"Derechas profundas a zona (conos)",m:16},{n:"Alto topspin vs. plano alternado",m:14},{n:"Rally de 20 pelotas sin fallar",m:10}]},
+  ],
+  [ // 2 · Físico
+    {t:"Físico + movilidad de tenis",x:"piernas, core y agilidad",det:"Escalera de agilidad, sentadillas, planchas y desplazamientos laterales. Prepara el cuerpo para la carga de la semana.",sub:[{n:"Escalera de agilidad",m:10},{n:"Sentadillas y estocadas",m:12},{n:"Core: plancha y giros",m:10},{n:"Cardio por intervalos",m:8}]},
+    {t:"Potencia de piernas y cambios de dirección",x:"explosividad y frenado",det:"Saltos, desplazamientos en X y frenadas controladas. Es lo que te hace llegar antes a la pelota y recuperar el centro.",sub:[{n:"Movilidad de tobillo y cadera",m:8},{n:"Saltos a cajón / pliometría ligera",m:10},{n:"Desplazamientos en X con conos",m:12},{n:"Core anti-rotación con liga",m:10}]},
+    {t:"Resistencia y core",x:"aguantar el tercer set",det:"Intervalos de carrera cortos con recuperación activa y trabajo de tronco. Construye la base para los partidos largos.",sub:[{n:"Trote + movilidad",m:8},{n:"Intervalos 30s fuerte / 30s suave (x8)",m:12},{n:"Circuito de core (plancha lateral, dead bug)",m:12},{n:"Estiramiento de cadena posterior",m:8}]},
+  ],
+  [ // 3 · Revés
+    {t:"Drills de revés y slice",x:"técnica y dirección",det:"Reveses cruzados y paralelos + slice de aproximación. Controla el plano de la raqueta y la profundidad.",sub:[{n:"Calentamiento dinámico",m:8},{n:"Revés cruzado con canasta",m:16},{n:"Revés paralelo + footwork",m:16},{n:"Slice de aproximación",m:10}]},
+    {t:"Revés bajo presión",x:"defensa y contraataque",det:"Recibe pelotas rápidas y profundas al revés y aprende a neutralizar con bloqueo, slice bajo o contra cruzada.",sub:[{n:"Peloteo de activación",m:8},{n:"Bloqueo de revés ante pelota rápida",m:14},{n:"Slice bajo y profundo",m:14},{n:"Contra paralela desde defensa",m:12}]},
+    {t:"Revés alto y cambio de ritmo",x:"topspin y variación",det:"Trabaja el revés ante pelota alta (por encima del hombro) y alterna con slice para cambiar el ritmo del punto.",sub:[{n:"Movilidad de hombros y tronco",m:8},{n:"Revés a pelota alta (canasta)",m:16},{n:"Alternar topspin / slice en el mismo rally",m:14},{n:"Rally de 15 reveses sin fallar",m:10}]},
+  ],
+  [ // 4 · Red
+    {t:"Volea, remate y approach",x:"juego de red",det:"Voleas de derecha y revés, remates y subidas a la red. Trabaja reacción y punto de contacto adelante.",sub:[{n:"Calentamiento en la red",m:8},{n:"Voleas derecha y revés",m:16},{n:"Remates (smash)",m:12},{n:"Approach + volea",m:9}]},
+    {t:"Reflejos en la red",x:"volea rápida y primera volea",det:"Peloteo de voleas a corta distancia, primera volea baja desde media cancha y remate tras globo.",sub:[{n:"Voleas a corta distancia (reflejos)",m:10},{n:"Primera volea baja desde media cancha",m:14},{n:"Globo + remate en movimiento",m:12},{n:"Punto: subida obligada",m:9}]},
+    {t:"Dobles: red y cruce",x:"posicionamiento y volea de ataque",det:"Trabaja el cruce (poach), la volea de ataque al hueco y la comunicación con tu pareja. Ideal si juegas dobles.",sub:[{n:"Calentamiento de voleas",m:8},{n:"Cruce (poach) tras saque del compañero",m:14},{n:"Volea de ataque al hueco",m:12},{n:"Puntos de dobles solo desde la red",m:11}]},
+  ],
+  [ // 5 · Táctica
+    {t:"Puntos y táctica",x:"sets de práctica o tu reta/torneo",det:"Juega puntos con un plan táctico (saque+1, construir con la derecha). Aplica lo entrenado bajo presión.",sub:[{n:"Peloteo de calentamiento",m:12},{n:"Puntos saque+1",m:24},{n:"Sets con plan táctico",m:24}]},
+    {t:"Patrones de juego",x:"construir el punto",det:"Juega puntos con patrones fijos: cruzada-cruzada-paralela, o abrir con saque y cerrar al hueco. Después, sets libres aplicándolos.",sub:[{n:"Peloteo de calentamiento",m:10},{n:"Patrón: 2 cruzadas + paralela",m:18},{n:"Patrón: saque abierto + hueco",m:14},{n:"Set corto aplicando patrones",m:18}]},
+    {t:"Presión y cierre de sets",x:"puntos importantes",det:"Simula situaciones: 30-40, tie-break, servir para el set. Entrena la cabeza tanto como los golpes.",sub:[{n:"Calentamiento con puntos cortos",m:10},{n:"Juegos desde 30-40 (sacando y restando)",m:18},{n:"Tie-breaks a 7",m:16},{n:"Servir para cerrar el set (simulación)",m:16}]},
+  ],
+];
+// Número de semana estable (cambia cada lunes) para elegir la variante
+const _weekSeed=()=>{const d=new Date();const day=(d.getDay()+6)%7;const monday=new Date(d.getFullYear(),d.getMonth(),d.getDate()-day);return Math.floor(monday.getTime()/604800000);};
 const genRoutine=(ph,obj,gl)=>{ph=ph||{};const w=ph.weight||75;const exp=(ph.experience||"Intermedio");const lvl=/sin/i.test(exp)?0:/princip/i.test(exp)?1:/interm/i.test(exp)?2:/avanz/i.test(exp)?3:4;const adj=loadAdjFrom(gl);const bump=(1+lvl*0.13)*adj;const SUB={tecnica:[{n:"Calentamiento y movilidad de hombro",m:8},{n:"Servicios planos a esquinas (conos)",m:18},{n:"Segundo servicio: slice y kick",m:12},{n:"Estiramiento",m:7}],drills:[{n:"Calentamiento dinámico",m:8},{n:"Golpe cruzado con canasta",m:16},{n:"Golpe paralelo + footwork",m:16},{n:"De defensa a ataque",m:10}],cardio:[{n:"Escalera de agilidad",m:10},{n:"Sentadillas y estocadas",m:12},{n:"Core: plancha y giros",m:10},{n:"Cardio por intervalos",m:8}],volea:[{n:"Calentamiento en la red",m:8},{n:"Voleas derecha y revés",m:16},{n:"Remates (smash)",m:12},{n:"Approach + volea",m:9}],tactica:[{n:"Peloteo de calentamiento",m:12},{n:"Puntos saque+1",m:24},{n:"Sets con plan táctico",m:24}],descanso:[{n:"Movilidad ligera",m:8},{n:"Foam roller",m:7},{n:"Estiramiento completo",m:5}]};const base=[{d:"LUN",t:"Drills de servicio",x:"precisión, potencia y ritmo",min:45,kind:"tecnica",int:3,det:"Series de saques a objetivos (conos) en las esquinas. Trabaja primer y segundo servicio, lanzamiento y pronación."},{d:"MAR",t:"Drills de derecha",x:"cruzado, paralelo y footwork",min:50,kind:"drills",int:4,det:"Canasta de derechas cruzadas y paralelas con desplazamiento. Enfócate en carga de pierna y terminación por encima del hombro."},{d:"MIÉ",t:"Físico + movilidad de tenis",x:"piernas, core y agilidad",min:40,kind:"cardio",int:3,det:"Escalera de agilidad, sentadillas, planchas y desplazamientos laterales. Prepara el cuerpo para la carga de la semana."},{d:"JUE",t:"Drills de revés y slice",x:"técnica y dirección",min:50,kind:"drills",int:4,det:"Reveses cruzados y paralelos + slice de aproximación. Controla el plano de la raqueta y la profundidad."},{d:"VIE",t:"Volea, remate y approach",x:"juego de red",min:45,kind:"volea",int:4,det:"Voleas de derecha y revés, remates y subidas a la red. Trabaja reacción y punto de contacto adelante."},{d:"SÁB",t:"Puntos y táctica",x:"sets de práctica o tu reta/torneo",min:60,kind:"tactica",int:5,det:"Juega puntos con un plan táctico (saque+1, construir con la derecha). Aplica lo entrenado bajo presión."},{d:"DOM",t:"Recuperación activa",x:"estiramiento y descanso",min:20,kind:"descanso",int:1,det:"Estiramiento completo, foam roller y movilidad ligera. La recuperación es parte del progreso."}];const todayIdx=(new Date().getDay()+6)%7;
   const fq=Math.max(1,Math.min(7,parseInt(ph.freq)||3));const pick=(Array.isArray(ph.trainDays)&&ph.trainDays.length)?[...ph.trainDays].filter(x=>x>=0&&x<=6).sort((a,b)=>a-b):(FREQ_DAYS[fq]||FREQ_DAYS[3]);
-  const chosen=SESS_PRIO.slice(0,pick.length);
+  const wk=_weekSeed();
+  // Cada semana rota el orden de las sesiones y usa una versión distinta de cada una
+  const prio=SESS_PRIO.slice(0,pick.length);const rot=prio.length?wk%prio.length:0;const chosen=[...prio.slice(rot),...prio.slice(0,rot)];
   const week=base.map((dd,i)=>{
     const slot=pick.indexOf(i);
     if(slot<0)return {d:dd.d,t:"Descanso",x:"recuperación activa",min:0,kind:"descanso",int:1,det:"Día libre. Estiramiento ligero y movilidad si quieres. Descansar es parte del plan."};
-    const src=base[chosen[slot]]||dd;return {...src,d:dd.d};
+    const bi=chosen[slot];const src=base[bi]||dd;const alts=SESS_ALT[bi];const v=alts?alts[(wk+bi)%alts.length]:null;
+    return v?{...src,d:dd.d,t:v.t,x:v.x,det:v.det,_sub:v.sub}:{...src,d:dd.d};
   });
-  return week.map((dd,i)=>{const min=dd.min?Math.max(15,Math.round(dd.min*bump/5)*5):0;const sub=(SUB[dd.kind]||[]).map(s=>({...s,m:Math.max(3,Math.round(s.m*bump))}));return {...dd,i,today:i===todayIdx,min,sub,int:Math.max(1,Math.min(5,dd.int+(lvl>=3?1:0)-(adj<0.85?1:0))),kcal:min?_kcal(min,dd.kind,w):0};});};
+  return week.map((dd,i)=>{const min=dd.min?Math.max(15,Math.round(dd.min*bump/5)*5):0;const sub=(dd._sub||SUB[dd.kind]||[]).map(s=>({...s,m:Math.max(3,Math.round(s.m*bump))}));return {...dd,i,today:i===todayIdx,min,sub,int:Math.max(1,Math.min(5,dd.int+(lvl>=3?1:0)-(adj<0.85?1:0))),kcal:min?_kcal(min,dd.kind,w):0};});};
 const genFisioPlan=(ph)=>{ph=ph||{};const inj=(ph.injury&&ph.injury!=="ninguna")?ph.injury:"general";const map={codo:["Estiramiento de antebrazo (30s x3)","Excéntricos de muñeca (3x12)","Masaje/foam en antebrazo"],hombro:["Círculos de hombro (2 min)","Rotadores externos con liga (3x15)","Estabilidad escapular (3x10)"],rodilla:["Cuádriceps isométrico (3x20s)","Sentadilla a banco (3x12)","Movilidad de cadera (2 min)"],tobillo:["Movilidad de tobillo (2 min)","Equilibrio en un pie (3x30s)","Fortalecer peroneos con liga (3x15)"],espalda:["Gato-camello (2 min)","Plancha (3x30s)","Movilidad torácica (3x10)"],"muñeca":["Estiramiento de muñeca (30s x3)","Fortalecimiento con liga (3x15)","Movilidad de dedos"],general:["Movilidad general (5 min)","Core y estabilidad (3x30s)","Estiramiento completo (5 min)"]};const ex=map[inj]||map.general;const freq=inj==="general"?"3 veces por semana":"Diario, 10-15 min";return {inj,ex,freq};};
 const nextCat=c=>{const i=CATS.indexOf(c);if(i<=0)return c;return CATS[i-1];};
 const CLUBS=["Club Campestre Monterrey","Club Sonoma","Club Industrial","Club San Agustín","Club Británico","Club Bosques","Casa Club del Valle","Otro"];
@@ -140,7 +227,13 @@ let _smtHealth=null;
 const getHealth=async()=>{if(_smtHealth)return _smtHealth;try{const core=await import("@capacitor/core");if(!core||!core.registerPlugin)return null;_smtHealth=core.registerPlugin("SMTHealth");return _smtHealth;}catch(e){return null;}};
 const WK_MUSCLES={tecnica:[{n:"Hombro",p:85},{n:"Core",p:70},{n:"Antebrazo",p:60},{n:"Piernas",p:45}],drills:[{n:"Core",p:80},{n:"Piernas",p:75},{n:"Hombro",p:65},{n:"Antebrazo",p:55}],cardio:[{n:"Piernas",p:90},{n:"Cardio",p:85},{n:"Core",p:80},{n:"Glúteos",p:65}],volea:[{n:"Antebrazo",p:75},{n:"Hombro",p:70},{n:"Core",p:60},{n:"Piernas",p:50}],tactica:[{n:"Piernas",p:80},{n:"Cardio",p:80},{n:"Core",p:72},{n:"Hombro",p:58}],descanso:[{n:"Movilidad",p:60},{n:"Flexibilidad",p:55},{n:"Core",p:40}]};
 const FISIO_ZONES={codo:[{n:"Antebrazo",p:80},{n:"Muñeca",p:60},{n:"Bíceps",p:45}],hombro:[{n:"Manguito rotador",p:85},{n:"Hombro",p:70},{n:"Escápula",p:60}],rodilla:[{n:"Cuádriceps",p:80},{n:"Cadera",p:55},{n:"Isquios",p:50}],tobillo:[{n:"Tobillo",p:80},{n:"Peroneos",p:65},{n:"Equilibrio",p:60}],espalda:[{n:"Core",p:85},{n:"Lumbar",p:70},{n:"Mov. torácica",p:55}],"muñeca":[{n:"Muñeca",p:80},{n:"Antebrazo",p:65},{n:"Agarre",p:50}],general:[{n:"Core",p:70},{n:"Movilidad",p:65},{n:"Estabilidad",p:60}]};
+const NUTRI_SPECIALTIES=["Nutrición deportiva","Composición corporal","Pérdida de grasa","Ganancia muscular","Hidratación y electrolitos","Suplementación","Planes para torneos","Vegetariano / vegano","Diabetes y salud metabólica","Juniors"];
 const FISIO_SPECIALTIES=["Rehabilitación","Prevención de lesiones","Masaje deportivo","Vendaje funcional","Punción seca","Codo de tenista","Hombro","Rodilla","Espalda","Movilidad","Fuerza y acondicionamiento","Recuperación"];
+// Perfiles profesionales de la pestaña Find (además de Coach): físio y nutriólogo comparten pantalla.
+const PRO_KINDS={
+  fisio:{kind:"fisio",screen:"fisio",title:"FÍSIO",titlePl:"FÍSIOS",word:"físio",wordPl:"físios",tag:"FIND YOUR PHYSIO",icon:"cross",c1:"#2DD4BF",c2:"#0D9488",c3:"#0891B2",cl:"#5EEAD4",rgb:"45,212,191",specs:FISIO_SPECIALTIES,clients:"PACIENTES INTERESADOS",unit:"SESIÓN",bioPh:"Cuéntales a los pacientes sobre tu formación, método y experiencia con deportistas...",availPh:"Consultorio en San Pedro · Lun-Vie 9am-7pm · a domicilio",desc:"Rehabilitación, prevención y diagnóstico de lesiones"},
+  nutri:{kind:"nutri",screen:"nutri",title:"NUTRIÓLOGO",titlePl:"NUTRIÓLOGOS",word:"nutriólogo",wordPl:"nutriólogos",tag:"FIND YOUR NUTRITIONIST",icon:"leaf",c1:"#FB923C",c2:"#EA580C",c3:"#F97316",cl:"#FDBA74",rgb:"251,146,60",specs:NUTRI_SPECIALTIES,clients:"PACIENTES INTERESADOS",unit:"CONSULTA",bioPh:"Cuéntales a los jugadores sobre tu formación, enfoque y experiencia con deportistas...",availPh:"Consultorio en Monterrey · Lun-Sáb · en línea",desc:"Alimentación, hidratación y peso para rendir mejor"},
+};
 
 const playRacket=()=>{try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;const ctx=new Ctx(),now=ctx.currentTime;
   // 1. Impulso inicial fuerte de las cuerdas (frecuencia alta-media)
@@ -473,7 +566,7 @@ const T=({children,size,style})=><div style={{fontFamily:F.bn,fontSize:size||28,
 const Sub=({children,style})=><div style={{fontFamily:F.ios,fontSize:13,color:C.muted,...style}}>{children}</div>;
 
 function Ico({n,s=15,c="currentColor"}){
-  const paths={edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",chart:"M3 21h18M7 21v-7M12 21V8M17 21v-4",star:"M12 2.5l2.9 6 6.6.8-4.8 4.5 1.2 6.5L12 18.8 6.1 20.3l1.2-6.5L2.5 9.3l6.6-.8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0",cart:"M5 5h2l1.5 9h9l1.5-6H7M9 19a1 1 0 1 0 .01 0M17 19a1 1 0 1 0 .01 0",play:"M6 4l13 8-13 8z",trophy:"M7 4h10v4a5 5 0 0 1-10 0zM4 5h3M17 5h3M10 18h4M12 14v4M8 21h8",film:"M3 4h18v16H3zM3 9h18M3 15h18M8 4v16M16 4v16",upload:"M12 16V4M8 8l4-4 4 4M5 20h14",download:"M12 4v12M8 12l4 4 4-4M5 20h14",settings:"M12 9a3 3 0 1 0 .01 0M12 2v3M12 19v3M4.5 4.5l2 2M17.5 17.5l2 2M2 12h3M19 12h3M4.5 19.5l2-2M17.5 6.5l2-2",doc:"M14 3v5h5M14 3H6v18h12V8zM9 13h6M9 17h4",link:"M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1",bolt:"M13 2L4 14h7l-1 8 9-12h-7z",people:"M9 11a3.5 3.5 0 1 0 .01 0M2 20a7 7 0 0 1 14 0M17 11.5a3 3 0 1 0-1-5.8M22 20a6 6 0 0 0-5-5.9",person:"M12 12a4 4 0 1 0 .01 0M4 21a8 8 0 0 1 16 0",phone:"M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",lock:"M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5zM12 15v3",cap:"M2 9l10-4 10 4-10 4zM6 11v5c0 1.3 3 2.4 6 2.4s6-1.1 6-2.4v-5",clock:"M12 7v5l3 2M12 3a9 9 0 1 0 .01 0",trash:"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6",search:"M11 4a7 7 0 1 0 .01 0M21 21l-5-5",camera:"M4 8h3l1.5-2h7L17 8h3v11H4zM12 16a3 3 0 1 0 .01 0",mail:"M3 6h18v12H3zM3 7l9 6 9-6",clip:"M9 4h6v2H9zM7 4H6v16h12V4h-1M9 12h6M9 16h4",shield:"M12 3l7 3v6c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V6z",cross:"M9 3h6v6h6v6h-6v6H9v-6H3V9h6z",check:"M4 12l5 5L20 6",x:"M6 6l12 12M18 6L6 18",male:"M10 14a5 5 0 1 0 0-.01M14 4h6v6M20 4l-7 7",female:"M12 3a5 5 0 1 0 0 .01M12 13v8M8 17h8",mixed:"M12 9a3 3 0 1 0 0 .01M12 12v7M9 16h6M10 6l-3-3M7 3H5M7 3v2",sun:"M12 8a4 4 0 1 0 0 .01M12 2v2M12 20v2M4 4l1.5 1.5M18.5 18.5L20 20M2 12h2M20 12h2M4 20l1.5-1.5M18.5 5.5L20 4",moon:"M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z",fire:"M12 3c0 4-4 4-4 8a4 4 0 0 0 8 0c0-2-1-3-2-4 0 2-1 2-2 1s0-3 0-5z",calendar:"M4 6h16v15H4zM4 10h16M8 3v4M16 3v4",party:"M4 20l5-13 8 8zM15 4c1 1 1 2 0 3M18 8c1 0 2 1 2 2M14 3l.5 2M20 5l-2 .5",handshake:"M12 8l-3 3 2 2 3-3M2 11l5-5 4 3M22 11l-5-5-3 2",ban:"M6 6l12 12M12 3a9 9 0 1 0 0 .01",vs:"M5 4l7 7-7 7M19 4l-7 7 7 7",key:"M15 7a4 4 0 1 0-4.5 4L4 17.5V20h2.5l1-1H10v-2h2l1.5-1.5A4 4 0 0 0 15 7z",warn:"M12 3l9 17H3zM12 9v5M12 17.5v.1",stadium:"M3 8c0-1.7 4-3 9-3s9 1.3 9 3-4 3-9 3-9-1.3-9-3zM3 8v7c0 1.7 4 3 9 3s9-1.3 9-3V8",globe:"M12 3a9 9 0 1 0 0 .01M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",news:"M4 5h13v13a2 2 0 0 0 4 0V9h-2M4 5v13a2 2 0 0 0 2 2h13M7 9h7M7 12h7M7 15h4",mobile:"M7 3h10v18H7zM10.5 18h3",like:"M7 10v9H3v-9zM7 10l3-7c1.5 0 2.5 1 2 2.5L11 9h6c1.2 0 2 1 1.8 2.2l-1 6c-.2 1-1 1.8-2 1.8H7",heart:"M12 20l-7.5-7.5a4.5 4.5 0 0 1 7.5-5 4.5 4.5 0 0 1 7.5 5z",send:"M4 12l16-8-6 16-2.5-6.5z",pin:"M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11zM12 10a2 2 0 1 0 0 .01",chevronDown:"M6 9l6 6 6-6",arrowLeft:"M19 12H5M11 6l-6 6 6 6",arrowRight:"M5 12h14M13 6l6 6-6 6",arrowUp:"M12 19V5M6 11l6-6 6 6",back:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",chat:"M4 5h16v11H9l-5 4z",ball:"M12 3a9 9 0 1 0 0 .01M5 6c4 2 4 10 0 12M19 6c-4 2-4 10 0 12",medal:"M8 3l4 6 4-6M12 12a5 5 0 1 0 0 .01M10 17l-1 4 3-2 3 2-1-4",whistle:"M11 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM15 10h6M15 10V8h3M7 12H3",hand:"M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 11V6a1.5 1.5 0 0 1 3 0v6c0 4-2 7-6 7s-5-3-6-5l-1-2c-.3-1 1-2 2-1z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 .01",snow:"M12 2v20M4 6l16 12M20 6L4 18",reply:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",info:"M12 8h.01M11 11.5h1v5h1M12 3a9 9 0 1 0 0 .01"};
+  const paths={leaf:"M20 4c-7 0-13 4-15 11 2-1 5-2 8-2-3 1-6 4-7 7 4-1 8-3 10-6 3-3 4-6 4-10z",edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",chart:"M3 21h18M7 21v-7M12 21V8M17 21v-4",star:"M12 2.5l2.9 6 6.6.8-4.8 4.5 1.2 6.5L12 18.8 6.1 20.3l1.2-6.5L2.5 9.3l6.6-.8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0",cart:"M5 5h2l1.5 9h9l1.5-6H7M9 19a1 1 0 1 0 .01 0M17 19a1 1 0 1 0 .01 0",play:"M6 4l13 8-13 8z",trophy:"M7 4h10v4a5 5 0 0 1-10 0zM4 5h3M17 5h3M10 18h4M12 14v4M8 21h8",film:"M3 4h18v16H3zM3 9h18M3 15h18M8 4v16M16 4v16",upload:"M12 16V4M8 8l4-4 4 4M5 20h14",download:"M12 4v12M8 12l4 4 4-4M5 20h14",settings:"M12 9a3 3 0 1 0 .01 0M12 2v3M12 19v3M4.5 4.5l2 2M17.5 17.5l2 2M2 12h3M19 12h3M4.5 19.5l2-2M17.5 6.5l2-2",doc:"M14 3v5h5M14 3H6v18h12V8zM9 13h6M9 17h4",link:"M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 6 6l-1 1M13.5 17.5l-1 1a4 4 0 0 1-6-6l1-1",bolt:"M13 2L4 14h7l-1 8 9-12h-7z",people:"M9 11a3.5 3.5 0 1 0 .01 0M2 20a7 7 0 0 1 14 0M17 11.5a3 3 0 1 0-1-5.8M22 20a6 6 0 0 0-5-5.9",person:"M12 12a4 4 0 1 0 .01 0M4 21a8 8 0 0 1 16 0",phone:"M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",lock:"M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5zM12 15v3",cap:"M2 9l10-4 10 4-10 4zM6 11v5c0 1.3 3 2.4 6 2.4s6-1.1 6-2.4v-5",clock:"M12 7v5l3 2M12 3a9 9 0 1 0 .01 0",trash:"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6",search:"M11 4a7 7 0 1 0 .01 0M21 21l-5-5",camera:"M4 8h3l1.5-2h7L17 8h3v11H4zM12 16a3 3 0 1 0 .01 0",mail:"M3 6h18v12H3zM3 7l9 6 9-6",clip:"M9 4h6v2H9zM7 4H6v16h12V4h-1M9 12h6M9 16h4",shield:"M12 3l7 3v6c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V6z",cross:"M9 3h6v6h6v6h-6v6H9v-6H3V9h6z",check:"M4 12l5 5L20 6",x:"M6 6l12 12M18 6L6 18",male:"M10 14a5 5 0 1 0 0-.01M14 4h6v6M20 4l-7 7",female:"M12 3a5 5 0 1 0 0 .01M12 13v8M8 17h8",mixed:"M12 9a3 3 0 1 0 0 .01M12 12v7M9 16h6M10 6l-3-3M7 3H5M7 3v2",sun:"M12 8a4 4 0 1 0 0 .01M12 2v2M12 20v2M4 4l1.5 1.5M18.5 18.5L20 20M2 12h2M20 12h2M4 20l1.5-1.5M18.5 5.5L20 4",moon:"M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z",fire:"M12 3c0 4-4 4-4 8a4 4 0 0 0 8 0c0-2-1-3-2-4 0 2-1 2-2 1s0-3 0-5z",calendar:"M4 6h16v15H4zM4 10h16M8 3v4M16 3v4",party:"M4 20l5-13 8 8zM15 4c1 1 1 2 0 3M18 8c1 0 2 1 2 2M14 3l.5 2M20 5l-2 .5",handshake:"M12 8l-3 3 2 2 3-3M2 11l5-5 4 3M22 11l-5-5-3 2",ban:"M6 6l12 12M12 3a9 9 0 1 0 0 .01",vs:"M5 4l7 7-7 7M19 4l-7 7 7 7",key:"M15 7a4 4 0 1 0-4.5 4L4 17.5V20h2.5l1-1H10v-2h2l1.5-1.5A4 4 0 0 0 15 7z",warn:"M12 3l9 17H3zM12 9v5M12 17.5v.1",stadium:"M3 8c0-1.7 4-3 9-3s9 1.3 9 3-4 3-9 3-9-1.3-9-3zM3 8v7c0 1.7 4 3 9 3s9-1.3 9-3V8",globe:"M12 3a9 9 0 1 0 0 .01M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",news:"M4 5h13v13a2 2 0 0 0 4 0V9h-2M4 5v13a2 2 0 0 0 2 2h13M7 9h7M7 12h7M7 15h4",mobile:"M7 3h10v18H7zM10.5 18h3",like:"M7 10v9H3v-9zM7 10l3-7c1.5 0 2.5 1 2 2.5L11 9h6c1.2 0 2 1 1.8 2.2l-1 6c-.2 1-1 1.8-2 1.8H7",heart:"M12 20l-7.5-7.5a4.5 4.5 0 0 1 7.5-5 4.5 4.5 0 0 1 7.5 5z",send:"M4 12l16-8-6 16-2.5-6.5z",pin:"M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11zM12 10a2 2 0 1 0 0 .01",chevronDown:"M6 9l6 6 6-6",arrowLeft:"M19 12H5M11 6l-6 6 6 6",arrowRight:"M5 12h14M13 6l6 6-6 6",arrowUp:"M12 19V5M6 11l6-6 6 6",back:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",chat:"M4 5h16v11H9l-5 4z",ball:"M12 3a9 9 0 1 0 0 .01M5 6c4 2 4 10 0 12M19 6c-4 2-4 10 0 12",medal:"M8 3l4 6 4-6M12 12a5 5 0 1 0 0 .01M10 17l-1 4 3-2 3 2-1-4",whistle:"M11 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM15 10h6M15 10V8h3M7 12H3",hand:"M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 11V6a1.5 1.5 0 0 1 3 0v6c0 4-2 7-6 7s-5-3-6-5l-1-2c-.3-1 1-2 2-1z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 .01",snow:"M12 2v20M4 6l16 12M20 6L4 18",reply:"M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10",info:"M12 8h.01M11 11.5h1v5h1M12 3a9 9 0 1 0 0 .01"};
   return <svg width={s} height={s} viewBox="0 0 24 24" fill={n==="star"?c:"none"} stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:6,flexShrink:0}}><path d={paths[n]}/></svg>;
 }
 const IS_ANDROID=(typeof window!=="undefined"&&window.Capacitor&&typeof window.Capacitor.getPlatform==="function"&&window.Capacitor.getPlatform()==="android");
@@ -762,7 +855,21 @@ export default function App(){
   // PALETA: si jugadora femenina (no admin), usar rosa pastel
   const isFem=!isAdmin&&user?.sex==="F";
   C=isFem?C_FEM:C_MEN;
-  const [screen,setScreen]=useState("welcome");
+  const [screen,_setScreen]=useState("welcome");
+  // Dirección de la transición: hacia adelante entra desde la derecha, al regresar entra desde la izquierda
+  const navHistRef=useRef([]);const navDirRef=useRef("fwd");
+  const TAB_ROOTS=["metas","home","find-hub","rankings","marketplace","media","player-card"];
+  const setScreen=(next)=>{
+    _setScreen(cur=>{
+      const val=typeof next==="function"?next(cur):next;
+      if(val===cur)return cur;
+      const h=navHistRef.current;
+      const i=h.lastIndexOf(val);
+      if(i>=0&&i<h.length-1&&!TAB_ROOTS.includes(cur)){navDirRef.current="back";navHistRef.current=h.slice(0,i+1);}
+      else{navDirRef.current="fwd";navHistRef.current=[...h.slice(-24),val];}
+      return val;
+    });
+  };
   const [authMode,setAuthMode]=useState(null);
   // ===== MODO INVITADO (explorar sin cuenta — Apple Guideline 5.1.1) =====
   const [guest,setGuest]=useState(false);
@@ -789,6 +896,8 @@ export default function App(){
   const [coachDetail,setCoachDetail]=useState(null);
   const [statDetail,setStatDetail]=useState(null);
   const [shareImg,setShareImg]=useState(null);
+  const [shareStyle,setShareStyle]=useState(SHARE_STYLE_DEFAULT);
+  const shareSelfieRef=useRef(null);
   const [welcomeSeq,setWelcomeSeq]=useState(0);
   const welcomeShownRef=useRef(false);
   const [matchDetail,setMatchDetail]=useState(null);
@@ -878,6 +987,7 @@ export default function App(){
   const [addPlayerModal,setAddPlayerModal]=useState(null);
   const [grpAction,setGrpAction]=useState(null);
   const [matchEdit,setMatchEdit]=useState(null);
+  const [addMatchFor,setAddMatchFor]=useState(null); // {tid,gi} grupo donde se está re-agregando un partido
   const [showPast,setShowPast]=useState(false);
   const [koEdit,setKoEdit]=useState(null);
   const [advanceModal,setAdvanceModal]=useState(null);
@@ -987,7 +1097,7 @@ export default function App(){
           if(prof&&active){
             const p=applyTrialState(profileToPlayer(prof));
             if(p.isBanned){await supabase.auth.signOut();}
-            else{const _mp=mergeLocalProfile(p);setUser(demoFresh(_mp));setIsAdmin(false);setScreen("metas");if(_mp&&_mp.objectivesSet&&_mp.physical&&_mp.physical.weight&&_mp.category&&!welcomeShownRef.current){welcomeShownRef.current=true;setTimeout(()=>setWelcomeSeq(1),600);}}
+            else{const _mp=mergeLocalProfile(p);subirPerfilFaltante(_mp,p);setUser(demoFresh(_mp));setIsAdmin(false);setScreen("metas");if(_mp&&_mp.objectivesSet&&_mp.physical&&_mp.physical.weight&&_mp.category&&!welcomeShownRef.current){welcomeShownRef.current=true;setTimeout(()=>setWelcomeSeq(1),600);}}
           }
           }
         }
@@ -1010,9 +1120,40 @@ export default function App(){
     if(viewP?.id===u.id)setViewP(u);
   };
   const updateUser=(u)=>{setUser(u);updateEverywhere(u);cacheProf(u);};
+  // Si el teléfono tiene datos del cuestionario (categoría, físico, metas) que la nube NO tiene,
+  // los sube. Antes solo se quedaban en el teléfono y el admin/los demás veían al jugador "sin categoría".
+  const subirPerfilFaltante=async(mezclado,deNube)=>{
+    try{
+      if(!mezclado||!mezclado.id||mezclado.id==="__guest__")return;
+      const cambios={};
+      if(mezclado.category&&!deNube?.category)cambios.category=mezclado.category;
+      if(mezclado.physical&&mezclado.physical.weight&&!(deNube?.physical&&deNube.physical.weight))cambios.physical=mezclado.physical;
+      if(mezclado.objectivesSet&&!deNube?.objectivesSet){cambios.objectives=mezclado.objectives||[];cambios.objectives_set=true;}
+      if(mezclado.goals&&Object.keys(mezclado.goals).length&&!(deNube?.goals&&Object.keys(deNube.goals).length))cambios.goals=mezclado.goals;
+      if(mezclado.hand&&!deNube?.hand)cambios.hand=mezclado.hand;
+      if(!Object.keys(cambios).length)return;
+      const {error}=await supabase.from("profiles").update(cambios).eq("auth_id",mezclado.id);
+      if(error)console.warn("subirPerfilFaltante",error.message);
+      else setAccounts(prev=>prev.map(a=>a.id===mezclado.id?{...a,...(cambios.category?{category:cambios.category}:{})}:a));
+    }catch(e){}
+  };
   const saveQuickCategory=(cat)=>{if(!cat||!user)return;const u={...user,category:cat,categoryLocked:true};updateUser(u);try{supabase.from("profiles").update({category:cat,category_locked:true}).eq("auth_id",user.id);}catch(e){}setShowSetCat(false);};
   const saveObjectives=(arr)=>{if(!user)return;const u={...user,objectives:arr,objectivesSet:true};updateUser(u);try{supabase.from("profiles").update({objectives:arr,objectives_set:true}).eq("auth_id",user.id);}catch(e){}setObjSel([]);if(guest){setScreen("home");return;}const we=editObj;setEditObj(false);if(we){setFqStep(0);setFqData({age:(user.physical&&user.physical.age),weight:(user.physical&&user.physical.weight),height:(user.physical&&user.physical.height),goalPhys:(user.physical&&user.physical.goalPhys)||[],injury:capFirst(user.physical&&user.physical.injury),injuries:((user.physical&&user.physical.injuries)||[]).map(capFirst),experience:(user.physical&&user.physical.experience),freq:(user.physical&&user.physical.freq),trainDays:(user.physical&&user.physical.trainDays),category:user.category,hand:user.hand});setEditFisio(true);}setScreen("fisio-q");};
-  const saveFisioQ=()=>{const injArr=(fqData.injuries&&fqData.injuries.length)?fqData.injuries:(fqData.injury?[fqData.injury]:["Ninguna"]);const injLow=injArr.map(x=>String(x).toLowerCase());const primaryInj=(injLow.filter(x=>x!=="ninguna")[0]||"ninguna");const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:(fqData.goalPhys&&fqData.goalPhys.length?fqData.goalPhys:["rendimiento"]),injury:primaryInj,injuries:injLow,experience:fqData.experience||"Intermedio",freq:fqData.freq||3,trainDays:(Array.isArray(fqData.trainDays)&&fqData.trainDays.length)?fqData.trainDays:(FREQ_DAYS[fqData.freq||3]||FREQ_DAYS[3])};const setCat=(fqData.category&&!user?.categoryLocked)?fqData.category:null;const setHand=fqData.hand||null;const bd=fqData.age?((new Date().getFullYear()-fqData.age)+"-06-15"):null;const u={...user,physical:phys,...(setCat?{category:setCat}:{}),...(setHand?{hand:setHand}:{}),...(bd?{birthdate:bd}:{})};updateUser(u);try{supabase.from("profiles").update(Object.assign({physical:phys},setCat?{category:setCat}:{},setHand?{hand:setHand}:{},bd?{birthdate:bd}:{})).eq("auth_id",user.id);}catch(e){}setEditFisio(false);setFqStep(0);setScreen("metas");if(justReg){setJustReg(false);setTimeout(()=>setTrialModal("start"),500);}};
+  const saveFisioQ=()=>{const injArr=(fqData.injuries&&fqData.injuries.length)?fqData.injuries:(fqData.injury?[fqData.injury]:["Ninguna"]);const injLow=injArr.map(x=>String(x).toLowerCase());const primaryInj=(injLow.filter(x=>x!=="ninguna")[0]||"ninguna");const phys={age:fqData.age||ageFrom(user?.birthdate),weight:fqData.weight||75,height:fqData.height||175,goalPhys:(fqData.goalPhys&&fqData.goalPhys.length?fqData.goalPhys:["rendimiento"]),injury:primaryInj,injuries:injLow,experience:fqData.experience||"Intermedio",freq:fqData.freq||3,trainDays:(Array.isArray(fqData.trainDays)&&fqData.trainDays.length)?fqData.trainDays:(FREQ_DAYS[fqData.freq||3]||FREQ_DAYS[3])};const setCat=(fqData.category&&!user?.categoryLocked)?fqData.category:null;const setHand=fqData.hand||null;const bd=fqData.age?((new Date().getFullYear()-fqData.age)+"-06-15"):null;const u={...user,physical:phys,...(setCat?{category:setCat}:{}),...(setHand?{hand:setHand}:{}),...(bd?{birthdate:bd}:{})};updateUser(u);
+    // Guarda en la nube y VERIFICA (antes fallaba en silencio y la categoría se quedaba solo en el teléfono)
+    (async()=>{
+      const campos=Object.assign({physical:phys},setCat?{category:setCat}:{},setHand?{hand:setHand}:{},bd?{birthdate:bd}:{});
+      for(let intento=0;intento<3;intento++){
+        try{
+          const {error}=await supabase.from("profiles").update(campos).eq("auth_id",user.id);
+          if(!error){setSaveError(null);if(setCat)setAccounts(prev=>prev.map(a=>a.id===user.id?{...a,category:setCat}:a));return;}
+          console.warn("saveFisioQ",error.message);
+        }catch(e){}
+        await new Promise(r=>setTimeout(r,1500*(intento+1)));
+      }
+      setSaveError("⚠️ Tus datos se guardaron en este teléfono, pero no en la nube. Se reintentará al abrir la app.");
+    })();
+    setEditFisio(false);setFqStep(0);setScreen("metas");if(justReg){setJustReg(false);setTimeout(()=>setTrialModal("start"),500);}};
   useEffect(()=>{if(!user||user.id==="__guest__"||isAdmin||guest)return;if(editFisio||editObj)return;if(["welcome","auth","fisio-q"].includes(screen))return;const physDone=!!(user.physical&&user.physical.weight&&user.physical.height&&user.category);if(user.objectivesSet&&!physDone){setFqStep(0);setScreen("fisio-q");}/* eslint-disable-next-line */},[screen,user,isAdmin,guest,editFisio,editObj]);
   useEffect(()=>{if(!woT||woT.paused||woT.done)return;const id=setInterval(()=>{setWoT(w=>{if(!w||w.paused||w.done)return w;if(w.left>1)return {...w,left:w.left-1};beep(audioRef.current,3);if(w.idx+1>=w.subs.length)return {...w,done:true,left:0};return {...w,idx:w.idx+1,left:(w.subs[w.idx+1].m||1)*60};});},1000);return ()=>clearInterval(id);/* eslint-disable-next-line */},[Boolean(woT),woT&&woT.paused,woT&&woT.done]);
   useEffect(()=>{if(screen!=="ingresos"){return;}const dur=5000,step=40;let t=0;const id=setInterval(()=>{t=(t+step)%dur;setEarnLoop(t/dur);},step);return()=>clearInterval(id);},[screen]);
@@ -1051,7 +1192,7 @@ export default function App(){
     const fallos=[];
     for(const id of Object.keys(nuevos)){
       try{
-        const {error}=await supabase.from("profiles").update(nuevos[id]).eq("auth_id",id);
+        const {error}=await supabase.from("profiles").update(nuevos[id]).or(`auth_id.eq.${id},id.eq.${id}`);
         if(error)fallos.push(error.message);
       }catch(e){fallos.push(e.message||"error de red");}
     }
@@ -1065,16 +1206,61 @@ export default function App(){
   };
   const winPoints=(kind,ri,R)=>{if(kind!=="ko")return 10;const d=(R-1)-ri;if(d<=0)return 500;if(d===1)return 200;if(d===2)return 100;if(d===3)return 50;return 50;};
   const matchStatDeltas=(oldMatch,newWinner,kind,ri,R)=>{kind=kind||"group";const d={};const add=(id,k,v)=>{if(!id)return;d[id]=d[id]||{dW:0,dL:0,dP:0};d[id][k]+=v;};const isFinal=(kind==="ko"&&((R-1)-ri)<=0);const wp=winPoints(kind,ri,R);if(oldMatch&&oldMatch.status==="done"&&oldMatch.winner&&oldMatch.p1&&oldMatch.p2){const ow=oldMatch.winner,ol=oldMatch.p1.id===ow.id?oldMatch.p2:oldMatch.p1;add(ow.id,"dW",-1);add(ow.id,"dP",-wp);add(ol&&ol.id,"dL",-1);if(isFinal)add(ol&&ol.id,"dP",-330);}if(newWinner&&oldMatch&&oldMatch.p1&&oldMatch.p2){const nl=oldMatch.p1.id===newWinner.id?oldMatch.p2:oldMatch.p1;add(newWinner.id,"dW",1);add(newWinner.id,"dP",wp);add(nl&&nl.id,"dL",1);if(isFinal)add(nl&&nl.id,"dP",330);}return d;};
-  const recomputePoints=async()=>{const pts={},wins={},loss={},tit={};const add=(o,id,v)=>{if(!id)return;o[id]=(o[id]||0)+v;};tournaments.forEach(t=>{(t.groups||[]).forEach(g=>(g.matches||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,10);add(wins,w.id,1);add(loss,l&&l.id,1);}}));const R=(t.rounds||[]).length;(t.rounds||[]).forEach((rnd,ri)=>(rnd||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,winPoints("ko",ri,R));add(wins,w.id,1);add(loss,l&&l.id,1);if(((R-1)-ri)<=0)add(pts,l&&l.id,330);}}));try{const ch=getChamp(t);if(ch&&ch.id)add(tit,ch.id,1);}catch(e){}});setAccounts(prev=>prev.map(a=>({...a,points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0})));
+  // Lee un marcador tipo "6-3, 6-4" (siempre escrito desde el lado del GANADOR)
+  // y devuelve cuántos juegos y sets perdió el jugador indicado.
+  const leerMarcador=(m,playerId)=>{
+    const ds=m&&m.detailedScore;
+    if(!ds||typeof ds!=="string")return null;
+    const gano=m.winner&&m.winner.id===playerId;
+    let games=0,sets=0,valido=false;
+    ds.split(",").forEach(par=>{
+      const n=String(par).trim().split("-");
+      if(n.length!==2)return;
+      const a=parseInt(n[0],10),b=parseInt(n[1],10);
+      if(isNaN(a)||isNaN(b))return;
+      valido=true;
+      const mios=gano?a:b, delRival=gano?b:a;
+      games+=delRival;              // juegos que le hicieron
+      if(delRival>mios)sets++;      // set que se le fue
+    });
+    return valido?{games,sets}:null;
+  };
+  // Sets caídos y juegos perdidos REALES de un jugador, sumados de sus partidos
+  const statsRealesDe=(playerId)=>{
+    let gamesLost=0,setsDropped=0,conMarcador=0;
+    const scan=(m)=>{
+      if(!m||m.status!=="done"||!m.p1||!m.p2||!m.winner)return;
+      if(m.p1.id!==playerId&&m.p2.id!==playerId)return;
+      const r=leerMarcador(m,playerId);
+      if(!r)return;
+      gamesLost+=r.games;setsDropped+=r.sets;conMarcador++;
+    };
+    tournaments.forEach(t=>{
+      (t.groups||[]).forEach(g=>(g.matches||[]).forEach(scan));
+      (t.rounds||[]).forEach(r=>(r||[]).forEach(scan));
+    });
+    return {gamesLost,setsDropped,conMarcador};
+  };
+  const recomputePoints=async()=>{const pts={},wins={},loss={},tit={},gLost={},sDrop={},nMarc={};const add=(o,id,v)=>{if(!id)return;o[id]=(o[id]||0)+v;};
+    // Acumula sets caídos y juegos perdidos leyendo el marcador real del partido
+    const marc=(m,w,l)=>{[w,l].forEach(pl=>{if(!pl||!pl.id)return;const r=leerMarcador(m,pl.id);if(!r)return;add(gLost,pl.id,r.games);add(sDrop,pl.id,r.sets);add(nMarc,pl.id,1);});};
+    tournaments.forEach(t=>{(t.groups||[]).forEach(g=>(g.matches||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,10);add(wins,w.id,1);add(loss,l&&l.id,1);marc(m,w,l);}}));const R=(t.rounds||[]).length;(t.rounds||[]).forEach((rnd,ri)=>(rnd||[]).forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;add(pts,w.id,winPoints("ko",ri,R));add(wins,w.id,1);add(loss,l&&l.id,1);marc(m,w,l);if(((R-1)-ri)<=0)add(pts,l&&l.id,330);}}));try{const ch=getChamp(t);if(ch&&ch.id)add(tit,ch.id,1);}catch(e){}});setAccounts(prev=>prev.map(a=>{
+      const nv={...a,points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0};
+      // Solo reescribe sets/juegos si el jugador tiene partidos con marcador capturado
+      if(nMarc[a.id])nv.stats={...(a.stats||{}),gamesLost:gLost[a.id]||0,setsDropped:sDrop[a.id]||0};
+      return nv;
+    }));
     // GUARDA en la base de datos esperando cada respuesta, para que TODOS los usuarios lo vean
     const base=accountsRef.current&&accountsRef.current.length?accountsRef.current:accounts;
     const reales=base.filter(a=>a&&a.id&&!String(a.id).startsWith("ghost-")&&!String(a.id).startsWith("imp-")&&a.id!=="admin");
     let ok=0;const fallos=[];
     for(const a of reales){
       try{
+        const campos={points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0};
+        if(nMarc[a.id])campos.stats={...(a.stats||{}),gamesLost:gLost[a.id]||0,setsDropped:sDrop[a.id]||0};
         const {error}=await supabase.from("profiles")
-          .update({points:pts[a.id]||0,wins:wins[a.id]||0,losses:loss[a.id]||0,titles:tit[a.id]||0})
-          .eq("auth_id",a.id);
+          .update(campos)
+          .or(`auth_id.eq.${a.id},id.eq.${a.id}`);
         if(error)fallos.push(`${a.name||a.id}: ${error.message}`);else ok++;
       }catch(e){fallos.push(`${a.name||a.id}: ${e.message||"error de red"}`);}
     }
@@ -1086,7 +1272,12 @@ export default function App(){
       setSaveError(null);setLastSaveTime(new Date());
       // Vuelve a leer de la base de datos para confirmar que quedó guardado
       await loadAllAccounts();
-      alert(`Ranking recalculado y guardado para ${ok} jugadores. Ya es visible para todos los usuarios.`);
+      // Jugadores con resultados pero SIN cuenta (agregados solo por nombre): sus puntos no pueden verse en un perfil
+      const conCuenta=new Set(base.map(a=>a.id));
+      const fantasmas=Object.keys(wins).filter(id=>!conCuenta.has(id)&&(String(id).startsWith("ghost-")||String(id).startsWith("imp-")||!base.find(a=>a.id===id)));
+      let msg=`Ranking recalculado y guardado para ${ok} jugadores. Ya es visible para todos los usuarios.`;
+      if(fantasmas.length)msg+=`\n\nOJO: ${fantasmas.length} jugador(es) con partidos NO tienen cuenta en la app (se agregaron solo por nombre). Sus puntos no aparecen en ningún perfil hasta que los vincules desde el torneo (toca al jugador → "Vincular a un usuario registrado").`;
+      alert(msg);
     }
   };
   const applyTrialState=(p)=>{if(FREE_PREMIUM_ALL)return p;try{if(p&&p.premiumUntil&&Date.now()>new Date(p.premiumUntil).getTime()){const np={...p,premium:false,premiumUntil:null,trialEndedSeen:true};if(!p.trialEndedSeen)setTimeout(()=>setTrialModal("end"),700);try{supabase.from("profiles").update({premium:false,premium_until:null,trial_ended_seen:true}).eq("auth_id",p.id);}catch(e){}return np;}}catch(e){}return p;};
@@ -1112,7 +1303,7 @@ export default function App(){
         }
         const p=applyTrialState(profileToPlayer(prof));
         if(p.isBanned){await supabase.auth.signOut();setAuthErr("Tu cuenta ha sido suspendida por subir contenido inapropiado.");return;}
-        setAuthErr("");const _mp=mergeLocalProfile(p);setUser(demoFresh(_mp));setIsAdmin(false);const _showSeq=!!(_mp&&_mp.objectivesSet&&_mp.physical&&_mp.physical.weight&&_mp.category&&!welcomeShownRef.current);if(_showSeq){welcomeShownRef.current=true;setTimeout(()=>setWelcomeSeq(1),120);}
+        setAuthErr("");const _mp=mergeLocalProfile(p);subirPerfilFaltante(_mp,p);setUser(demoFresh(_mp));setIsAdmin(false);const _showSeq=!!(_mp&&_mp.objectivesSet&&_mp.physical&&_mp.physical.weight&&_mp.category&&!welcomeShownRef.current);if(_showSeq){welcomeShownRef.current=true;setTimeout(()=>setWelcomeSeq(1),120);}
         if(p.requirePasswordChange){setTimeout(()=>{setShowChangePass(true);alert("Por seguridad, debes cambiar la contraseña temporal por una nueva.");},800);}
         setScreen("metas");setAuthForm({email:"",password:"",name:""});if(!_showSeq)trigWelcome();
       }catch(e){setAuthErr("Error de conexión. Revisa tu internet.");}
@@ -1308,6 +1499,8 @@ export default function App(){
   const admMoveGroup=(tid,fromGi,toGi,player)=>{admRemoveFromGroup(tid,fromGi,player.id);admAddToGroup(tid,toGi,player);};
   const admSetMatchPlayer=(tid,gi,mid,slot,player)=>{const _t=tournaments.find(x=>x.id===tid);const _g=_t&&_t.groups[gi];const _m=_g&&_g.matches.find(x=>x.id===mid);if(_m&&_m.status==="done"&&_m.winner){applyStatDeltas(matchStatDeltas(_m,null,"group"));}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,matches:g.matches.map(m=>m.id!==mid?m:{...m,[slot]:player,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null})});return{...t,groups};}));};
   const admClearMatch=(tid,gi,mid)=>{const _t=tournaments.find(x=>x.id===tid);const _g=_t&&_t.groups[gi];const _m=_g&&_g.matches.find(x=>x.id===mid);if(_m&&_m.status==="done"&&_m.winner){applyStatDeltas(matchStatDeltas(_m,null,"group"));}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,matches:g.matches.map(m=>m.id!==mid?m:{...m,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null})});return{...t,groups};}));};
+  // Vuelve a crear un partido entre dos jugadores del grupo (para cuando se borró por error)
+  const admAddMatch=(tid,gi,p1,p2)=>{if(!p1||!p2||p1.id===p2.id)return;setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>{if(gix!==gi)return g;const ya=(g.matches||[]).some(m=>m.p1&&m.p2&&((m.p1.id===p1.id&&m.p2.id===p2.id)||(m.p1.id===p2.id&&m.p2.id===p1.id)));if(ya)return g;return{...g,matches:[...g.matches,{id:`gm-${gi}-${p1.id}-${p2.id}-${Date.now()}-${Math.random()}`,p1,p2,winner:null,score:null,detailedScore:null,status:"pending",pendingResult:null,group:gi}]};});return{...t,groups};}));};
   const admDeleteMatch=(tid,gi,mid)=>{const _t=tournaments.find(x=>x.id===tid);const _g=_t&&_t.groups[gi];const _m=_g&&_g.matches.find(x=>x.id===mid);if(_m&&_m.status==="done"&&_m.winner){applyStatDeltas(matchStatDeltas(_m,null,"group"));}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.map((g,gix)=>gix!==gi?g:{...g,matches:g.matches.filter(m=>m.id!==mid)});return{...t,groups};}));};
   const admArchiveTourney=(tid,val)=>setTournaments(prev=>prev.map(t=>t.id===tid?{...t,archived:val}:t));
   const admDeleteGroup=(tid,gi)=>{const _t=tournaments.find(x=>x.id===tid);const _g=_t&&_t.groups[gi];if(_g){const _d={};const _add=(id,k,v)=>{if(!id)return;_d[id]=_d[id]||{dW:0,dL:0,dP:0};_d[id][k]+=v;};_g.matches.forEach(m=>{if(m.status==="done"&&m.winner&&m.p1&&m.p2){const w=m.winner,l=m.p1.id===w.id?m.p2:m.p1;_add(w.id,"dW",-1);_add(w.id,"dP",-10);_add(l&&l.id,"dL",-1);}});applyStatDeltas(_d);}setTournaments(prev=>prev.map(t=>{if(t.id!==tid)return t;const groups=t.groups.filter((g,gix)=>gix!==gi).map((g,ix)=>({...g,id:ix,name:`GRUPO ${String.fromCharCode(65+ix)}`}));return{...t,groups};}));};
@@ -1473,7 +1666,7 @@ export default function App(){
   const [dataLoaded,setDataLoaded]=useState(false);
   const tSaveTimer=useRef(null),tPrevIds=useRef(null);
   const [reqLoaded,setReqLoaded]=useState(false);
-  const reqSaveTimer=useRef(null),reqInit=useRef(false);
+  const reqSaveTimer=useRef(null),reqInit=useRef(false),reqPrevIds=useRef([]);
   const mSaveTimer=useRef(null),mPrevIds=useRef(null);
   const savingRef=useRef(false);
 
@@ -1494,9 +1687,16 @@ export default function App(){
     if(!reqLoaded)return;
     const map={coach_app:coachApplications,match_req:matchRequests,purchase_req:purchaseRequests,media_req:mediaRequests,category_req:categoryRequests,stat_req:statRequests,sv_req:svRequests,coach_req:coachRequests,reset_req:passwordResetRequests,tournament_req:tournamentRequests};
     const rows=[];Object.entries(map).forEach(([kind,arr])=>(arr||[]).forEach(r=>{if(r&&r.id)rows.push({id:String(r.id),kind,data:r});}));
-    if(!reqInit.current){reqInit.current=true;return;}
+    const ids=rows.map(r=>r.id);
+    if(!reqInit.current){reqInit.current=true;reqPrevIds.current=ids;return;}
     clearTimeout(reqSaveTimer.current);
-    reqSaveTimer.current=setTimeout(async()=>{try{if(rows.length)await supabase.from("app_requests").upsert(rows);}catch(e){console.error("saveReq",e);}},700);
+    reqSaveTimer.current=setTimeout(async()=>{try{
+      if(rows.length){const {error}=await supabase.from("app_requests").upsert(rows);if(error)throw error;}
+      // Lo que se eliminó en la app (p. ej. un físio borrado por el admin) también se borra de la nube
+      const quitados=(reqPrevIds.current||[]).filter(id=>!ids.includes(id));
+      if(quitados.length){await supabase.from("app_requests").delete().in("id",quitados);}
+      reqPrevIds.current=ids;
+    }catch(e){console.error("saveReq",e);setSaveError("⚠️ No se guardó una solicitud: "+(e.message||e));}},700);
     /* eslint-disable-next-line */
   },[coachApplications,matchRequests,purchaseRequests,mediaRequests,categoryRequests,statRequests,svRequests,coachRequests,passwordResetRequests,tournamentRequests,reqLoaded]);
   useEffect(()=>{
@@ -1552,6 +1752,38 @@ export default function App(){
     /* eslint-disable-next-line */
   },[user?.id]);
 
+  // Huella de lo último que se guardó/recibió por torneo y producto.
+  // Sirve para subir SOLO lo que cambió en ESTE dispositivo (evita que un teléfono
+  // con datos viejos sobreescriba lo que otro admin ya aprobó o capturó).
+  const tSnap=useRef({});
+  const mSnap=useRef({});
+  // Texto estable (llaves ordenadas) para comparar sin que importe el orden en que la nube guarda el JSON
+  const canon=(o)=>{if(Array.isArray(o))return "["+o.map(canon).join(",")+"]";if(o&&typeof o==="object"){return "{"+Object.keys(o).sort().map(k=>JSON.stringify(k)+":"+canon(o[k])).join(",")+"}";}return JSON.stringify(o===undefined?null:o);};
+  const huellaT=(t)=>{try{return canon(slimT(t));}catch(e){return "";}};
+  const huellaM=(x)=>{try{return canon(x);}catch(e){return "";}};
+
+  // Trae torneos de la base y los mezcla: lo que NO cambió aquí se reemplaza por la versión de la nube;
+  // lo que sí cambió aquí (y aún no se sube) se respeta.
+  const refrescarTorneos=async()=>{
+    try{
+      const {data:rows,error}=await supabase.from("tournament_data").select("id,data");
+      if(error||!rows)return;
+      const nube={};rows.forEach(r=>{if(r&&r.data)nube[String(r.id)]=r.data;});
+      setTournaments(prev=>{
+        const out=[];const vistos=new Set();
+        prev.forEach(t=>{
+          const id=String(t.id);vistos.add(id);
+          const local=huellaT(t);const sucio=local!==tSnap.current[id];
+          if(nube[id]&&!sucio){tSnap.current[id]=huellaT(nube[id]);out.push(nube[id]);}
+          else if(nube[id]||sucio){out.push(t);}
+          // si no está en la nube y no cambió localmente, se considera borrado por otro dispositivo
+        });
+        Object.keys(nube).forEach(id=>{if(!vistos.has(id)){tSnap.current[id]=huellaT(nube[id]);out.push(nube[id]);}});
+        return out;
+      });
+    }catch(e){console.error("refrescarTorneos",e);}
+  };
+
   // CARGA: al iniciar sesión (jugador o admin), trae torneos y marketplace de Supabase
   useEffect(()=>{
     if(!user||dataLoaded)return;
@@ -1559,15 +1791,21 @@ export default function App(){
       try{
         const {data:tRows,error:tErr}=await supabase.from("tournament_data").select("id,data");
         if(!tErr){
-          if(tRows&&tRows.length)setTournaments(tRows.map(r=>r.data));
+          if(tRows&&tRows.length){
+            tRows.forEach(r=>{tSnap.current[String(r.id)]=huellaT(r.data);});
+            setTournaments(tRows.map(r=>r.data));
+          }
           else if(!guest){
             // Primera vez: siembra los torneos actuales para que persistan desde ya
             const seed=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
-            if(seed.length)await supabase.from("tournament_data").upsert(seed);
+            if(seed.length){await supabase.from("tournament_data").upsert(seed);seed.forEach(r=>{tSnap.current[r.id]=canon(r.data);});}
           }
         }
         const {data:mRows,error:mErr}=await supabase.from("marketplace_data").select("id,data");
-        if(!mErr&&mRows&&mRows.length)setMarketplace(mRows.map(r=>r.data));
+        if(!mErr&&mRows&&mRows.length){
+          mRows.forEach(r=>{mSnap.current[String(r.id)]=huellaM(r.data);});
+          setMarketplace(mRows.map(r=>r.data));
+        }
       }catch(e){console.error("loadData",e);}
       setDataLoaded(true);
     })();
@@ -1575,6 +1813,7 @@ export default function App(){
   },[user]);
 
   // GUARDADO automático de torneos (con pausa de 0.7s para agrupar cambios)
+  // Solo sube los torneos que cambiaron en ESTE dispositivo.
   useEffect(()=>{
     if(!dataLoaded||guest)return;
     if(tPrevIds.current===null){tPrevIds.current=tournaments.map(t=>String(t.id));return;}
@@ -1582,22 +1821,23 @@ export default function App(){
     tSaveTimer.current=setTimeout(async()=>{
       try{
         savingRef.current=true;
-        setSaveError(null);
-        const rows=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
-        if(rows.length){
-          // Validar JSON antes de guardar
-          try{JSON.stringify(rows);}catch(je){throw new Error("Datos corrupto: "+je.message);}
-          const {error}=await supabase.from("tournament_data").upsert(rows);
+        const todos=tournaments.map(t=>({id:String(t.id),data:slimT(t)}));
+        const cambiados=todos.filter(r=>{let h="";try{h=canon(r.data);JSON.stringify(r.data);}catch(e){throw new Error("Datos corruptos");}return h!==tSnap.current[r.id];});
+        if(cambiados.length){
+          setSaveError(null);
+          const {error}=await supabase.from("tournament_data").upsert(cambiados);
           if(error){throw new Error(`Error Supabase: ${error.message}`);}
+          cambiados.forEach(r=>{tSnap.current[r.id]=canon(r.data);});
           retryCountRef.current["tournament"]=0;
           setSaveError(null);
           setLastSaveTime(new Date());
         }
-        const ids=rows.map(r=>r.id);
+        const ids=todos.map(r=>r.id);
         const removed=(tPrevIds.current||[]).filter(id=>!ids.includes(id));
         if(removed.length){
           const {error:dErr}=await supabase.from("tournament_data").delete().in("id",removed);
           if(dErr)console.warn("Delete warning:",dErr);
+          removed.forEach(id=>{delete tSnap.current[id];});
         }
         tPrevIds.current=ids;
       }catch(e){
@@ -1606,9 +1846,7 @@ export default function App(){
         const retries=(retryCountRef.current["tournament"]||0)+1;
         if(retries<5){
           retryCountRef.current["tournament"]=retries;
-          setTimeout(()=>{
-            setTournaments(prev=>[...prev]);
-          },2000+retries*500);
+          setTimeout(()=>{setTournaments(prev=>[...prev]);},2000+retries*500);
         }else{
           setSaveError(`❌ Error al guardar. Intenta actualizar la app.`);
         }
@@ -1618,7 +1856,7 @@ export default function App(){
     /* eslint-disable-next-line */
   },[tournaments,dataLoaded]);
 
-  // GUARDADO automático del marketplace
+  // GUARDADO automático del marketplace (solo lo que cambió aquí)
   useEffect(()=>{
     if(!dataLoaded||guest)return;
     if(mPrevIds.current===null){mPrevIds.current=marketplace.map(x=>String(x.id));return;}
@@ -1626,22 +1864,23 @@ export default function App(){
     mSaveTimer.current=setTimeout(async()=>{
       try{
         savingRef.current=true;
-        setSaveError(null);
-        const rows=marketplace.map(x=>({id:String(x.id),data:x}));
-        if(rows.length){
-          // Validar JSON antes de guardar
-          try{JSON.stringify(rows);}catch(je){throw new Error("Datos corrupto: "+je.message);}
-          const {error}=await supabase.from("marketplace_data").upsert(rows);
+        const todos=marketplace.map(x=>({id:String(x.id),data:x}));
+        const cambiados=todos.filter(r=>{let h="";try{h=canon(r.data);JSON.stringify(r.data);}catch(e){throw new Error("Datos corruptos");}return h!==mSnap.current[r.id];});
+        if(cambiados.length){
+          setSaveError(null);
+          const {error}=await supabase.from("marketplace_data").upsert(cambiados);
           if(error){throw new Error(`Error Supabase: ${error.message}`);}
+          cambiados.forEach(r=>{mSnap.current[r.id]=canon(r.data);});
           retryCountRef.current["marketplace"]=0;
           setSaveError(null);
           setLastSaveTime(new Date());
         }
-        const ids=rows.map(r=>r.id);
+        const ids=todos.map(r=>r.id);
         const removed=(mPrevIds.current||[]).filter(id=>!ids.includes(id));
         if(removed.length){
           const {error:dErr}=await supabase.from("marketplace_data").delete().in("id",removed);
           if(dErr)console.warn("Delete warning:",dErr);
+          removed.forEach(id=>{delete mSnap.current[id];});
         }
         mPrevIds.current=ids;
       }catch(e){
@@ -1650,9 +1889,7 @@ export default function App(){
         const retries=(retryCountRef.current["marketplace"]||0)+1;
         if(retries<5){
           retryCountRef.current["marketplace"]=retries;
-          setTimeout(()=>{
-            setMarketplace(prev=>[...prev]);
-          },2000+retries*500);
+          setTimeout(()=>{setMarketplace(prev=>[...prev]);},2000+retries*500);
         }else{
           setSaveError(`❌ Error al guardar. Intenta actualizar la app.`);
         }
@@ -1667,23 +1904,40 @@ export default function App(){
     if(!dataLoaded||guest)return;
     const ch=supabase.channel("data-sync")
       .on("postgres_changes",{event:"*",schema:"public",table:"tournament_data"},(payload)=>{
-        if(savingRef.current)return;
-        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id)setTournaments(prev=>prev.filter(t=>String(t.id)!==String(id)));}
-        else{const row=payload.new;if(row?.data)setTournaments(prev=>{const i=prev.findIndex(t=>String(t.id)===String(row.id));if(i<0)return[...prev,row.data];const cp=[...prev];cp[i]=row.data;return cp;});}
+        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id){delete tSnap.current[String(id)];setTournaments(prev=>prev.filter(t=>String(t.id)!==String(id)));}return;}
+        const row=payload.new;if(!row||!row.data)return;
+        const id=String(row.id);const hNube=huellaT(row.data);
+        if(hNube===tSnap.current[id])return; // es el eco de lo que este dispositivo acaba de subir
+        setTournaments(prev=>{
+          const i=prev.findIndex(t=>String(t.id)===id);
+          // Si aquí hay cambios sin subir en ese torneo, no los pisamos; se subirán y ganarán.
+          if(i>=0&&huellaT(prev[i])!==tSnap.current[id])return prev;
+          tSnap.current[id]=hNube;
+          if(i<0)return[...prev,row.data];
+          const cp=[...prev];cp[i]=row.data;return cp;
+        });
       })
       .on("postgres_changes",{event:"*",schema:"public",table:"marketplace_data"},(payload)=>{
-        if(savingRef.current)return;
-        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id)setMarketplace(prev=>prev.filter(x=>String(x.id)!==String(id)));}
-        else{const row=payload.new;if(row?.data)setMarketplace(prev=>{const i=prev.findIndex(x=>String(x.id)===String(row.id));if(i<0)return[row.data,...prev];const cp=[...prev];cp[i]=row.data;return cp;});}
+        if(payload.eventType==="DELETE"){const id=payload.old?.id;if(id){delete mSnap.current[String(id)];setMarketplace(prev=>prev.filter(x=>String(x.id)!==String(id)));}return;}
+        const row=payload.new;if(!row||!row.data)return;
+        const id=String(row.id);const hNube=huellaM(row.data);
+        if(hNube===mSnap.current[id])return;
+        setMarketplace(prev=>{
+          const i=prev.findIndex(x=>String(x.id)===id);
+          if(i>=0&&huellaM(prev[i])!==mSnap.current[id])return prev;
+          mSnap.current[id]=hNube;
+          if(i<0)return[row.data,...prev];
+          const cp=[...prev];cp[i]=row.data;return cp;
+        });
       })
       // PUNTOS Y RANKING EN VIVO: cuando el admin recalcula, todos los usuarios lo ven al instante
       .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},(payload)=>{
         const row=payload.new;if(!row||!row.auth_id)return;
         try{
           const p=profileToPlayer(row);
-          setAccounts(prev=>{const i=prev.findIndex(a=>a.id===p.id);if(i<0)return[...prev,p];const cp=[...prev];cp[i]={...cp[i],points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking,category:p.category};return cp;});
+          setAccounts(prev=>{const i=prev.findIndex(a=>a.id===p.id);if(i<0)return[...prev,p];const cp=[...prev];cp[i]={...cp[i],points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking,category:p.category,stats:p.stats};return cp;});
           // Si son mis propios puntos, actualiza también mi perfil en pantalla
-          setUser(u=>(u&&u.id===p.id)?{...u,points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking}:u);
+          setUser(u=>(u&&u.id===p.id)?{...u,points:p.points,wins:p.wins,losses:p.losses,titles:p.titles,ranking:p.ranking,category:p.category}:u);
         }catch(e){}
       })
       .subscribe();
@@ -1691,15 +1945,15 @@ export default function App(){
     /* eslint-disable-next-line */
   },[dataLoaded]);
 
-  // Al volver a abrir la app (o cambiar de pestaña), refresca puntos y ranking desde la base de datos
+  // Al volver a abrir la app (o cambiar de pestaña), refresca torneos, puntos y ranking desde la base de datos
   useEffect(()=>{
     if(!user)return;
-    const refrescar=()=>{if(document.visibilityState==="visible")loadAllAccounts();};
+    const refrescar=()=>{if(document.visibilityState==="visible"){loadAllAccounts();if(dataLoaded&&!guest)refrescarTorneos();}};
     document.addEventListener("visibilitychange",refrescar);
     window.addEventListener("focus",refrescar);
     return ()=>{document.removeEventListener("visibilitychange",refrescar);window.removeEventListener("focus",refrescar);};
     /* eslint-disable-next-line */
-  },[user?.id]);
+  },[user?.id,dataLoaded]);
 
   // ==================== MARCADOR EN VIVO (motor de tenis) ====================
   const sbNewMatch=(p1,p2)=>({p1:p1||"Jugador 1",p2:p2||"Jugador 2",sets:[],games:[0,0],points:[0,0],tiebreak:false,tb:[0,0],matchTiebreak:false,mtb:[0,0],winner:null});
@@ -1771,10 +2025,12 @@ export default function App(){
   const submitReport=()=>{if(!reportTarget)return;const rt=reportTarget;notifyAdmins({type:"admin",title:"Reporte de contenido",body:((user&&user.name)||"Un usuario")+" reportó "+(rt.kind==="player"?"al jugador":"la publicación")+" \""+rt.name+"\""+(reportReason?": "+reportReason:"")+".",link:"admin-inbox"});try{supabase.from("reports").insert({reporter_id:user&&user.id,reporter_name:user&&user.name,kind:rt.kind,target_id:rt.id,target_name:rt.name,reason:reportReason||null});}catch(e){}setReportTarget(null);setReportReason("");alert("Gracias. Recibimos tu reporte y lo revisaremos en un máximo de 24 horas.");};
   const enableNotifs=async()=>{try{const mod=await import("@capacitor/push-notifications");const PN=mod.PushNotifications;const perm=await PN.requestPermissions();if(perm.receive==="granted"){await PN.register();PN.addListener("registration",(t)=>{try{supabase.from("device_tokens").upsert({user_id:user.id,token:t.value,platform:(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||"ios"},{onConflict:"user_id,token"});}catch(e){}});}else{alert("Puedes activar las notificaciones cuando quieras desde Ajustes → SMT → Notificaciones.");}}catch(e){alert("Las notificaciones solo están disponibles en la app de iPhone/Android.");}setNotifPrompt(false);try{localStorage.setItem("smt_notif_dismiss","1");}catch(e){}};
   const notifyAllPlayers=(payload,exceptId)=>{try{(accounts||[]).forEach(a=>{if(a&&a.id&&a.id!=="__guest__"&&a.id!==exceptId&&!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").toLowerCase()!=="apple")createNotif(a.id,payload);});}catch(e){}};
-  const notifyAdmins=(payload)=>{try{(accounts||[]).forEach(a=>{const em=(a.email||"").toLowerCase(),nm=(a.name||"").toLowerCase();if(em==="arqeduardosoni@gmail.com"||(/alan/.test(nm)&&/l[oó]pez/.test(nm)))createNotif(a.id,payload);});}catch(e){}};
+  // Avisos de administración (solicitudes, contraseñas, reportes): SOLO a la cuenta admin.
+  // El push llega al teléfono que tenga abierta la sesión de admin.
+  const notifyAdmins=(payload)=>{try{createNotif("admin",payload);}catch(e){}};
 
   const loadNotifications=async()=>{
-    if(!user||isAdmin)return;
+    if(!user||user.id==="__guest__")return;
     try{
       const {data}=await supabase.from("notifications").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
       setNotifications(data||[]);
@@ -1797,7 +2053,7 @@ export default function App(){
 
   // Carga notificaciones al iniciar sesión + tiempo real
   useEffect(()=>{
-    if(!user||isAdmin)return;
+    if(!user||user.id==="__guest__")return;
     loadNotifications();
     const ch=supabase.channel(`notif-${user.id}`)
       .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:`user_id=eq.${user.id}`},(payload)=>{
@@ -2172,16 +2428,25 @@ export default function App(){
   };
 
   // COACH HANDLERS
+  // Abre el formulario de coach/físio/nutriólogo con los datos actuales para editarlos
+  const abrirEdicionFicha=(app)=>{if(!app)return;setCoachDraft({editId:app.id,kind:app.kind||"coach",playerName:app.playerName||user?.name||"",playerPhone:app.playerPhone||user?.phone||"",experience:app.experience||"",specialties:[...(app.specialties||[])],bio:app.bio||"",hourlyRate:String(app.hourlyRate||""),availability:app.availability||"",languages:[...(app.languages||["Español"])]});if((app.kind||"coach")==="coach")setShowCoachApply(true);else setShowFisioApply(true);};
   const submitCoachApplication=()=>{if(gate("Crea tu cuenta gratis para ofrecerte como coach."))return;
     if(!coachDraft.experience||!coachDraft.bio.trim()){alert("Completa tu experiencia y biografía.");return;}
     if(coachDraft.specialties.length===0){alert("Selecciona al menos una especialidad.");return;}
     if(!coachDraft.hourlyRate||parseFloat(coachDraft.hourlyRate)<=0){alert("Ingresa tarifa por hora válida.");return;}
     if(!user.phone){alert("Agrega tu número de celular en tu perfil para ser coach.");return;}
     const K=coachDraft.kind||"coach";
+    if(coachDraft.editId){
+      // Edición de una ficha ya publicada: se guarda al instante, sin volver a pasar por el admin
+      const nm=(coachDraft.playerName||user.name||"").trim();const tel=(coachDraft.playerPhone||user.phone||"").trim();
+      setCoachApplications(prev=>prev.map(c=>c.id!==coachDraft.editId?c:{...c,playerName:nm||c.playerName,playerPhone:tel||c.playerPhone,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:(coachDraft.availability||"").trim(),languages:[...(coachDraft.languages||["Español"])],editedAt:Date.now()}));
+      setShowCoachApply(false);setShowFisioApply(false);setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
+      alert("Tu ficha se actualizó.");return;
+    }
     const existing=coachApplications.find(c=>c.playerId===user.id&&(c.kind||"coach")===K&&(c.status==="pending"||c.status==="approved"));
-    if(existing){alert(existing.status==="approved"?("Ya eres "+(K==="fisio"?"físio":"coach")+" aprobado. Edita tu perfil desde EDITAR PERFIL."):"Ya tienes una solicitud pendiente.");return;}
+    if(existing){alert(existing.status==="approved"?("Ya estás publicado. Usa EDITAR MI FICHA en tu tarjeta para cambiar tu información."):"Ya tienes una solicitud pendiente.");return;}
     setCoachApplications(prev=>[...prev,{id:`${K}-${Date.now()}`,kind:K,playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,playerCity:user.city||"—",playerCategory:user.category,playerSex:user.sex,experience:coachDraft.experience,specialties:[...coachDraft.specialties],bio:coachDraft.bio.trim(),hourlyRate:parseFloat(coachDraft.hourlyRate),availability:coachDraft.availability.trim(),languages:[...coachDraft.languages],status:"pending",time:Date.now()}]);
-    notifyAdmins({type:"admin",title:"Nueva solicitud "+(K==="fisio"?"de físio":"de coach"),body:(user.name||"Un jugador")+" quiere publicarse. Revisa la bandeja.",link:"admin-inbox"});
+    notifyAdmins({type:"admin",title:"Nueva solicitud "+(K==="fisio"?"de físio":K==="nutri"?"de nutriólogo":"de coach"),body:(user.name||"Un jugador")+" quiere publicarse. Revisa la bandeja.",link:"admin-inbox"});
     setShowCoachApply(false);setShowFisioApply(false);
     setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"]});
     alert("Solicitud enviada al administrador. Te notificaremos cuando seas aprobado como "+(K==="fisio"?"físio":"coach")+".");
@@ -2194,10 +2459,10 @@ export default function App(){
     const exists=coachRequests.find(r=>r.coachAppId===coachAppId&&r.playerId===user.id&&r.status==="pending");
     if(exists){alert("Ya enviaste una solicitud a este coach.");return;}
     setCoachRequests(prev=>[...prev,{id:`creq-${Date.now()}`,coachAppId,coachPlayerId:coach.playerId,coachName:coach.playerName,coachPhone:coach.playerPhone,coachHourlyRate:coach.hourlyRate,kind:coach.kind||"coach",playerId:user.id,playerName:user.name,playerPhoto:user.photo,playerAvatar:user.avatar,playerPhone:user.phone,frequency:coachRequestForm.frequency,when:coachRequestForm.when,time:coachRequestForm.time,msg:coachRequestForm.msg.trim(),status:"pending",createdAt:Date.now()}]);
-    try{createNotif(coach.playerId,{type:"coach",title:coach.kind==="fisio"?"Nueva solicitud de alumno":"Nuevo alumno quiere entrenar",body:(user.name||"Un jugador")+" quiere "+(coach.kind==="fisio"?"tu atención como físio.":"entrenar contigo."),link:"find-hub"});}catch(e){}
+    try{createNotif(coach.playerId,{type:"coach",title:coach.kind&&coach.kind!=="coach"?"Nueva solicitud de paciente":"Nuevo alumno quiere entrenar",body:(user.name||"Un jugador")+" quiere "+(coach.kind==="fisio"?"tu atención como físio.":coach.kind==="nutri"?"tu atención como nutriólogo.":"entrenar contigo."),link:"find-hub"});}catch(e){}
     setShowCoachRequest(null);
     setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});
-    alert("Solicitud enviada al "+(coach.kind==="fisio"?"físio":"coach")+".");
+    alert("Solicitud enviada al "+(coach.kind==="fisio"?"físio":coach.kind==="nutri"?"nutriólogo":"coach")+".");
   };
   const respondCoachRequest=(rid,accept)=>{
     const r=coachRequests.find(x=>x.id===rid);if(!r)return;
@@ -2262,6 +2527,17 @@ export default function App(){
     return isPlayer1||isPlayer2;
   };
   const pendRegs=()=>tournaments.reduce((a,t)=>a+t.pendingPlayers.length,0);
+  // Contacto del jugador (para cobrar/avisar): teléfono con WhatsApp y correo. Solo lo ve el admin.
+  const ContactoAdmin=({pid,fallback})=>{
+    const a=accounts.find(x=>x.id===pid)||fallback||{};
+    const tel=String(a.phone||"").trim();const dig=tel.replace(/\D/g,"");const wa=dig?("https://wa.me/"+(dig.length===10?"52"+dig:dig)):null;
+    const em=String(a.email||"").trim();
+    if(!tel&&!em)return <Sub style={{fontSize:11,marginTop:2,color:C.amber}}>Sin teléfono ni correo en su perfil</Sub>;
+    return <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:5}}>
+      {tel&&<a href={wa||("tel:"+tel)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 9px",borderRadius:8,background:"rgba(37,211,102,0.14)",border:"1px solid rgba(37,211,102,0.45)",color:"#4ade80",fontFamily:F.ios,fontSize:11.5,fontWeight:600,textDecoration:"none"}}>WhatsApp {tel}</a>}
+      {em&&<a href={"mailto:"+em} onClick={e=>e.stopPropagation()} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 9px",borderRadius:8,background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,color:C.cyan,fontFamily:F.ios,fontSize:11.5,fontWeight:600,textDecoration:"none",maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{em}</a>}
+    </div>;
+  };
   const pendRes=()=>tournaments.reduce((a,t)=>{let c=0;t.groups.forEach(g=>g.matches.forEach(m=>{if(m.pendingResult)c++;}));t.rounds.forEach(r=>r.forEach(m=>{if(m.pendingResult)c++;}));return a+c;},0);
 
   const openTourney=(t)=>{playRacket();setSelT(t);setTab(t.format==="groups+ko"&&t.groups.length>0?"groups":"draw");setShowIntro(true);setScreen("tournament");};
@@ -2276,7 +2552,7 @@ export default function App(){
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         {isAdmin&&<Chip type="cyan">ADMIN</Chip>}
         {isAdmin&&(pendRegs()+pendRes())>0&&<button onClick={()=>setScreen("admin-inbox")} className="btn-press" style={{background:"rgba(255,159,10,0.12)",border:`1px solid ${C.amber}`,padding:"6px 10px",borderRadius:10,cursor:"pointer",fontFamily:F.ios,fontSize:12,color:C.amber,fontWeight:600}}><Ico n="bell"/>{pendRegs()+pendRes()}</button>}
-        {user&&!isAdmin&&!guest&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,lineHeight:0}}><Ico n="bell" s={20}/>
+        {user&&!guest&&<button onClick={()=>{setShowNotifs(true);markNotifsRead();}} className="btn-press" style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,lineHeight:0}}><Ico n="bell" s={20}/>
           {notifications.filter(n=>!n.read).length>0&&<span style={{position:"absolute",top:-2,right:-2,minWidth:17,height:17,padding:"0 4px",background:C.red||"#FF453A",color:"#fff",fontSize:10,fontWeight:700,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.ios}}>{notifications.filter(n=>!n.read).length}</span>}
         </button>}
         {guest?<button onClick={()=>guestToAuth("player-login")} className="btn-press" style={{background:`linear-gradient(135deg,${C.cyanBright},${C.cyanDeep})`,border:"none",color:"#fff",padding:"8px 14px",borderRadius:12,cursor:"pointer",fontFamily:F.ios,fontSize:13,fontWeight:700}}>Entrar</button>:<PA photo={user?.photo} avatar={user?.avatar} size={36} onClick={()=>{if(!isAdmin){setViewP(user);setScreen("player-card");}else setScreen("admin-settings");}}/>}
@@ -2377,14 +2653,18 @@ export default function App(){
         <button onClick={()=>setPlayVideo(null)} className="btn-press" style={{width:"100%",marginTop:14,background:"rgba(255,255,255,0.12)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:15,fontWeight:600,padding:"13px",borderRadius:14,cursor:"pointer"}}>Cerrar</button>
       </div>
     </div>}
-    {coachDetail&&<Modal onClose={()=>setCoachDetail(null)} large center>
-      <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14}}><PA photo={coachDetail.playerPhoto} avatar={coachDetail.playerAvatar} size={72} border={`2px solid rgba(167,139,250,0.6)`} animated/><div style={{flex:1,minWidth:0}}><T size={24} style={{lineHeight:1}}>{coachDetail.playerName}</T><Sub style={{fontSize:12,marginTop:4}}>{coachDetail.playerCity} · {coachDetail.experience}</Sub><div style={{fontFamily:F.bn,fontSize:26,color:"#C4B5FD",marginTop:4}}>${coachDetail.hourlyRate}<span style={{fontFamily:F.ios,fontSize:12,color:C.muted}}> MXN / hr</span></div></div></div>
-      <div style={{background:C.surface2,borderRadius:16,padding:"14px",marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:"#C4B5FD",fontWeight:700,marginBottom:12}}>FORTALEZAS</div>{coachStr(coachDetail).map((a,ai)=><div key={a.n} style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}><div style={{width:78,fontFamily:F.ios,fontSize:12,color:C.text,fontWeight:600}}>{a.n}</div><div style={{flex:1,height:10,background:C.surface3,borderRadius:5,overflow:"hidden"}}><div style={{height:"100%",width:a.v+"%",background:`linear-gradient(90deg,#C4B5FD,#7C3AED)`,borderRadius:5,animation:`growW 0.9s ${0.1+ai*0.08}s ease both`}}/></div><div style={{width:34,textAlign:"right",fontFamily:F.bn,fontSize:16,color:"#C4B5FD"}}>{a.v}</div></div>)}</div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>{(coachDetail.specialties||[]).map(sp=><span key={sp} style={{fontFamily:F.ios,fontSize:11,padding:"4px 9px",borderRadius:8,background:"rgba(167,139,250,0.12)",color:"#C4B5FD",border:"1px solid rgba(167,139,250,0.25)",fontWeight:500}}>{sp}</span>)}</div>
+    {coachDetail&&(()=>{const dk=coachDetail.kind||"coach";const pk=PRO_KINDS[dk];const AC=pk?pk.c1:"#A78BFA";const ACL=pk?pk.cl:"#C4B5FD";const ACD=pk?pk.c2:"#7C3AED";const RGB=pk?pk.rgb:"167,139,250";const unit=pk?("/ "+pk.unit.toLowerCase()):"/ hr";const lbl=pk?pk.title:"COACH";
+      return <Modal onClose={()=>setCoachDetail(null)} large center>
+      <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14}}><PA photo={coachDetail.playerPhoto} avatar={coachDetail.playerAvatar} size={72} border={`2px solid rgba(${RGB},0.6)`} animated/><div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><T size={24} style={{lineHeight:1}}>{coachDetail.playerName}</T><span style={{background:`rgba(${RGB},0.18)`,border:`1px solid rgba(${RGB},0.4)`,padding:"2px 7px",borderRadius:6,fontFamily:F.bc,fontSize:8,letterSpacing:"0.18em",color:ACL,fontWeight:700}}>{lbl}</span></div><Sub style={{fontSize:12,marginTop:4}}>{coachDetail.playerCity} · {coachDetail.experience}</Sub><div style={{fontFamily:F.bn,fontSize:26,color:ACL,marginTop:4}}>${coachDetail.hourlyRate}<span style={{fontFamily:F.ios,fontSize:12,color:C.muted}}> MXN {unit}</span></div></div></div>
+      {dk==="coach"&&<div style={{background:C.surface2,borderRadius:16,padding:"14px",marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:ACL,fontWeight:700,marginBottom:12}}>FORTALEZAS</div>{coachStr(coachDetail).map((a,ai)=><div key={a.n} style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}><div style={{width:78,fontFamily:F.ios,fontSize:12,color:C.text,fontWeight:600}}>{a.n}</div><div style={{flex:1,height:10,background:C.surface3,borderRadius:5,overflow:"hidden"}}><div style={{height:"100%",width:a.v+"%",background:`linear-gradient(90deg,${ACL},${ACD})`,borderRadius:5,animation:`growW 0.9s ${0.1+ai*0.08}s ease both`}}/></div><div style={{width:34,textAlign:"right",fontFamily:F.bn,fontSize:16,color:ACL}}>{a.v}</div></div>)}</div>}
+      <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:ACL,fontWeight:700,marginBottom:8}}>ESPECIALIDADES</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>{(coachDetail.specialties||[]).map(sp=><span key={sp} style={{fontFamily:F.ios,fontSize:11,padding:"4px 9px",borderRadius:8,background:`rgba(${RGB},0.12)`,color:ACL,border:`1px solid rgba(${RGB},0.25)`,fontWeight:500}}>{sp}</span>)}</div>
       <Sub style={{fontSize:13.5,lineHeight:1.55,color:C.text,marginBottom:6}}>"{coachDetail.bio}"</Sub>
       {coachDetail.availability&&<Sub style={{fontSize:12,marginTop:8}}><b style={{color:C.text}}>Disponibilidad:</b> {coachDetail.availability}</Sub>}
-      <button onClick={()=>setCoachDetail(null)} className="btn-press" style={{width:"100%",marginTop:16,background:"transparent",border:`1px solid ${C.borderS}`,color:C.text,padding:"13px",fontFamily:F.ios,fontSize:14.5,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cerrar</button>
-    </Modal>}
+      {(coachDetail.languages||[]).length>0&&<Sub style={{fontSize:12,marginTop:4}}><b style={{color:C.text}}>Idiomas:</b> {(coachDetail.languages||[]).join(", ")}</Sub>}
+      {coachDetail.playerId!==user?.id&&!isAdmin&&dk!=="coach"&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coachDetail.id&&r.playerId===user?.id);if(myReq)return null;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...coachDetail,kind:dk});setCoachDetail(null);}} className="btn-press" style={{width:"100%",marginTop:14,padding:"12px",borderRadius:12,background:`linear-gradient(135deg,${AC},${ACD})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13.5,cursor:"pointer",fontWeight:700}}>SOLICITAR {lbl}</button>;})()}
+      <button onClick={()=>setCoachDetail(null)} className="btn-press" style={{width:"100%",marginTop:12,background:"transparent",border:`1px solid ${C.borderS}`,color:C.text,padding:"13px",fontFamily:F.ios,fontSize:14.5,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cerrar</button>
+    </Modal>;})()}
     {rpeAsk&&<Modal onClose={()=>setRpeAsk(null)} center>
       <div style={{textAlign:"center",marginBottom:14}}><div style={{marginBottom:6,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="check" s={38} c={LIME}/></div><T size={22}>{rpeAsk.weekly?"¿CÓMO SIGUES?":"¿CÓMO TE FUE?"}</T><Sub style={{fontSize:12.5,marginTop:4}}>{rpeAsk.name}</Sub></div>
       <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,fontWeight:700,marginBottom:8}}>{rpeAsk.weekly?"¿TRAES ALGÚN DOLOR O LESIÓN?":"¿SENTISTE DOLOR O MOLESTIA?"}</div>
@@ -2398,7 +2678,8 @@ export default function App(){
     {shareImg&&<Modal onClose={()=>setShareImg(null)} center>
       <div style={{textAlign:"center"}}>
         <T size={20} style={{marginBottom:6}}>TU PROGRESO</T>
-        <Sub style={{fontSize:12.5,marginBottom:12,lineHeight:1.5}}>Mantén presionada la imagen para <b style={{color:C.text}}>guardarla en Fotos</b>, o usa el botón para compartirla en tu historia.</Sub>
+        <Sub style={{fontSize:12.5,marginBottom:10,lineHeight:1.5}}>Mantén presionada la imagen para <b style={{color:C.text}}>guardarla en Fotos</b>, o usa el botón para compartirla en tu historia.</Sub>
+        <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:12}}>{[[1,"Mínima"],[2,"Centrada"],[3,"Lateral"]].map(([k,l])=><button key={k} onClick={()=>{setShareStyle(k);if(typeof window.__smtRedrawShare==="function")window.__smtRedrawShare(k);}} className="btn-press" style={{padding:"6px 12px",borderRadius:10,border:`1px solid ${shareStyle===k?LIME:C.borderS}`,background:shareStyle===k?"rgba(199,249,78,0.14)":"transparent",color:shareStyle===k?LIME:C.muted,fontFamily:F.ios,fontSize:12,fontWeight:700,cursor:"pointer"}}>{l}</button>)}</div>
         <img src={shareImg} alt="Mi progreso SMT" style={{width:"100%",maxWidth:280,borderRadius:16,display:"block",margin:"0 auto 14px",border:`1px solid ${C.borderS}`}}/>
         <button onClick={async()=>{try{const r=await fetch(shareImg);const b=await r.blob();const f=new File([b],"smt-progreso.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Mi progreso en SMT"});return;}}catch(e){}try{const a=document.createElement("a");a.href=shareImg;a.download="smt-progreso.png";document.body.appendChild(a);a.click();a.remove();}catch(e){alert("Mantén presionada la imagen para guardarla.");}}} className="btn-press" style={{width:"100%",background:LIME,border:"none",color:LIMED,padding:"14px",fontFamily:F.ios,fontSize:15,fontWeight:800,cursor:"pointer",borderRadius:14}}>Compartir / Guardar</button>
         <button onClick={()=>setShareImg(null)} className="btn-press" style={{width:"100%",marginTop:9,background:"transparent",border:`1px solid ${C.borderS}`,color:C.text,padding:"12px",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cerrar</button>
@@ -2466,7 +2747,7 @@ export default function App(){
       else if(k==="profile-tab"){setViewP(user);setScreen("player-card");}
       else setScreen(k);
     };
-    const currentTab=screen==="metas"?"metas":screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio"||screen==="coach-videos")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
+    const currentTab=screen==="metas"?"metas":screen==="home"?"home":(screen==="find-hub"||screen==="find-match"||screen==="coach"||screen==="fisio"||screen==="nutri"||screen==="coach-videos")?"find-hub":screen==="rankings"?"rankings":screen==="marketplace"?"marketplace":screen==="media"?"media":screen==="player-card"&&viewP?.id===user?.id?"profile-tab":null;
     return <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:200,maxWidth:720,margin:"0 auto",background:"linear-gradient(180deg,rgba(4,10,24,0.55) 0%,rgba(4,10,24,0.92) 100%)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid rgba(255,255,255,0.10)`,paddingBottom:"env(safe-area-inset-bottom,8px)"}}>
       <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start",padding:"8px 2px 4px",maxWidth:640,margin:"0 auto"}}>
         {tabs.map(t=>{const active=currentTab===t.k;return <button key={t.k} onClick={()=>handleTab(t.k)} className="tab-btn" style={{flex:1,background:"transparent",border:"none",padding:"6px 1px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",fontFamily:F.ios,minHeight:60,minWidth:0}}>
@@ -2484,7 +2765,7 @@ export default function App(){
   const TabSpacer=()=><div style={{height:user?92:0}}/>;
 
   // WELCOME SCREEN
-  if(screen==="welcome")return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:"#0a1830",color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+  if(screen==="welcome")return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:"#0a1830",color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
     <style>{STYLE}</style>
     <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,#0a1830 0%,#0d2748 55%,#0a2036 100%)",pointerEvents:"none"}}/>
     <div style={{position:"absolute",top:"12%",left:"50%",width:340,height:340,transform:"translateX(-50%)",borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,0.22),transparent 70%)",filter:"blur(50px)",pointerEvents:"none"}}/>
@@ -2506,7 +2787,7 @@ export default function App(){
 
   // AUTH SCREEN
   if(screen==="auth"){
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style>
       <Aurora intense={1.0}/>
       <button onClick={()=>{setScreen("welcome");setAuthForm({email:"",password:"",name:""});setAuthErr("");setAuthMode(null);}} className="btn-press" style={{position:"absolute",top:18,left:18,background:"none",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:15,fontWeight:500,cursor:"pointer",zIndex:5}}><Ico n="arrowLeft" s={15}/> Inicio</button>
@@ -2642,7 +2923,7 @@ export default function App(){
   }
 
   // INSIGHTS
-  if(screen==="insights"&&insights){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios}}><style>{STYLE}</style><MIns data={insights} onClose={()=>{setInsights(null);setScreen("tournament");}}/>{champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}</div>;}
+  if(screen==="insights"&&insights){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios}}><style>{STYLE}</style><MIns data={insights} onClose={()=>{setInsights(null);setScreen("tournament");}}/>{champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}</div>;}
 
   // PLAYER CARD
   if(screen==="stats"){
@@ -2676,7 +2957,7 @@ export default function App(){
     const hasSkills=skills.some(s=>s.v>0);
     const ring=2*Math.PI*50;
     const recent=myMatches.slice(-14);
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="player-card" label="Perfil"/>
@@ -2813,7 +3094,7 @@ export default function App(){
     const p=viewP||user;if(!p)return null;
     // PROTECCIÓN DE MENORES: un mayor NO puede ver el perfil de un menor
     if(!isAdmin&&user&&p.id!==user.id&&isMinor(p.birthdate)&&!isMinor(user.birthdate)){
-      return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -2826,7 +3107,7 @@ export default function App(){
     }
     // Si un menor intenta ver perfil de mayor, también bloqueado
     if(!isAdmin&&user&&p.id!==user.id&&isMinor(user.birthdate)&&!isMinor(p.birthdate)){
-      return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+      return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
         <style>{STYLE}</style><Aurora intense={0.4}/>
         <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
           <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -2839,12 +3120,17 @@ export default function App(){
     }
     const pIsMinor=isMinor(p.birthdate);
     const wr=p.wins+p.losses>0?Math.round(p.wins/(p.wins+p.losses)*100):0;
+    // Sets caídos y juegos perdidos: se leen de los marcadores reales de sus partidos.
+    // Si aún no tiene partidos con marcador capturado, se muestra lo que haya guardado.
+    const _sr=statsRealesDe(p.id);
+    const vSetsDropped=_sr.conMarcador?_sr.setsDropped:(p.stats?.setsDropped||0);
+    const vGamesLost=_sr.conMarcador?_sr.gamesLost:(p.stats?.gamesLost||0);
     const bp=p.stats?.bpTotal>0?Math.round(p.stats.bpWon/p.stats.bpTotal*100):0;
     const isMe=p.id===user?.id&&!isAdmin;
     const canEditPhoto=isMe||(isAdmin&&p.id!==user?.id);
     const hasSk=p.stats?.serve>0||p.stats?.return>0||p.stats?.forehand>0||p.stats?.backhand>0;
     const photoId=`photoUp-${p.id}`;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -2901,7 +3187,7 @@ export default function App(){
         <div style={{background:C.surface,padding:"18px 20px",margin:"10px 16px 0",borderRadius:14,border:`0.5px solid ${C.borderS}`}}>
           <SL>Resumen de temporada</SL>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px 24px"}}>
-            {[[p.stats?.setsDropped||0,"SETS CAÍDOS"],[p.stats?.gamesLost||0,"JUEGOS PERDIDOS"],[p.stats?.aces||0,"ACES"],[p.stats?.doubleFaults||0,"DOBLES FALTAS"]].map(([v,l],i)=><div key={l} style={{animation:`statPop 0.4s ${i*0.07}s backwards`}}>
+            {[[vSetsDropped,"SETS CAÍDOS"],[vGamesLost,"JUEGOS PERDIDOS"],[p.stats?.aces||0,"ACES"],[p.stats?.doubleFaults||0,"DOBLES FALTAS"]].map(([v,l],i)=><div key={l} style={{animation:`statPop 0.4s ${i*0.07}s backwards`}}>
               <div style={{fontFamily:F.bn,fontSize:42,color:C.text,lineHeight:1}}><CountUp target={v} duration={1300} delay={150+i*100}/></div>
               <div style={{fontFamily:F.bc,textTransform:"uppercase",letterSpacing:"0.18em",marginTop:3,fontSize:10,color:C.muted,fontWeight:600}}>{l}</div>
             </div>)}
@@ -2996,6 +3282,7 @@ export default function App(){
               <div style={{fontFamily:F.ios,fontSize:14,color:C.text,flex:1,fontWeight:500}}>{l}</div>
               <input type="number" min="0" style={{width:"100%",background:C.iosField,border:"none",borderRadius:10,padding:"9px 10px",color:C.text,fontFamily:F.bn,fontSize:18,textAlign:"center",outline:"none"}} value={editProfile.stats?.[k]||""} onChange={e=>setEditProfile({...editProfile,stats:{...editProfile.stats,[k]:parseInt(e.target.value)||0}})}/>
             </div>)}
+            <div style={{fontFamily:F.ios,fontSize:11.5,color:C.muted,lineHeight:1.45,marginTop:-2,marginBottom:8}}>Sets perdidos y Juegos perdidos se calculan solos con los marcadores de sus partidos. Lo que escribas aquí solo se usa si el jugador todavía no tiene partidos capturados.</div>
             <div style={{marginTop:6,display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderTop:`0.5px solid ${C.borderS}`}}>
               <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>Cuenta Premium</div><Sub style={{fontSize:11,marginTop:1}}>Elegible al premio anual del ranking</Sub></div>
               <button onClick={()=>setEditProfile({...editProfile,premium:!editProfile.premium})} className="btn-press" style={{width:52,height:30,borderRadius:15,border:"none",cursor:"pointer",background:editProfile.premium?C.gold:C.iosField,position:"relative",transition:"all .2s"}}><span style={{position:"absolute",top:3,left:editProfile.premium?25:3,width:24,height:24,borderRadius:"50%",background:"#fff",transition:"all .2s"}}/></button>
@@ -3138,7 +3425,6 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 18px 8px"}}>
           <button onClick={()=>setScreen("metas")} className="btn-press" style={{width:34,height:34,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={16}/></button>
           <div style={{flex:1,fontFamily:F.bn,fontSize:24,letterSpacing:"0.02em"}}>PLAN FÍSIO</div>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(199,249,78,0.12)",border:`1px solid ${LIME}66`,color:LIME,fontSize:10,fontWeight:700,padding:"5px 9px",borderRadius:14,fontFamily:F.ios}}><Ico n="star" s={12} c={LIME}/>IA</span>
         </div>
         <div style={{padding:"0 18px"}}>
           {!hasData&&<div onClick={()=>setScreen("fisio-q")} className="btn-press" style={{cursor:"pointer",background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}66`,borderRadius:13,padding:"11px 13px",marginBottom:13,display:"flex",alignItems:"center",gap:9}}><Ico n="info" s={16} c={LIME}/><div style={{flex:1,fontFamily:F.ios,fontSize:12.5,color:TX,lineHeight:1.35}}>Contesta 1 min y personalizamos tu recuperación.</div><span style={{color:LIME,fontWeight:800,fontSize:12}}>Empezar</span></div>}
@@ -3191,7 +3477,6 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 18px 10px"}}>
           <button onClick={()=>setScreen("metas")} className="btn-press" style={{width:34,height:34,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={16}/></button>
           <div style={{flex:1,fontFamily:F.bn,fontSize:24,letterSpacing:"0.02em"}}>ENTRENAMIENTO</div>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#0c1a2a",border:"1px solid #23507d",color:C.cyan,fontSize:10,fontWeight:700,padding:"5px 9px",borderRadius:14,fontFamily:F.ios}}><Ico n="star" s={12} c={C.cyan}/>IA</span>
         </div>
         <div style={{padding:"0 18px"}}>
           {!hasData&&<div onClick={()=>setScreen("fisio-q")} className="btn-press" style={{cursor:"pointer",background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}66`,borderRadius:13,padding:"11px 13px",marginBottom:13,display:"flex",alignItems:"center",gap:9}}><Ico n="info" s={16} c={LIME}/><div style={{flex:1,fontFamily:F.ios,fontSize:12.5,color:TX,lineHeight:1.35}}>Contesta 1 min y personalizamos tu plan a tu medida.</div><span style={{color:LIME,fontWeight:800,fontSize:12}}>Empezar</span></div>}
@@ -3291,7 +3576,7 @@ export default function App(){
     const cells=[];for(let i=0;i<startDow;i++)cells.push(null);for(let d=1;d<=ndays;d++)cells.push(d);
     const mp=`${yy}-${String(mm+1).padStart(2,"0")}`;const monthDone=[...done].filter(s=>s.startsWith(mp)).length;
     const todStr=now.toISOString().slice(0,10);
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:IB,color:TX,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style>
       <div style={{padding:"0 0 90px"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"max(46px,calc(env(safe-area-inset-top) + 12px)) 18px 8px"}}>
@@ -3323,30 +3608,19 @@ export default function App(){
     const ph=user?.physical||{};const imc=(ph.weight&&ph.height)?(ph.weight/Math.pow(ph.height/100,2)):null;const _R=genRoutine(ph,obj);const _today=_R.find(d=>d.today)||_R[0];const _maxMin=Math.max(1,..._R.map(d=>d.min||0));const _maxKcal=Math.max(1,..._R.map(d=>d.kcal||0));const _FP=genFisioPlan(ph);const _fdone=(user?.goals?.fisioDoneToday)===new Date().toISOString().slice(0,10);const goalMoney=Math.max(2000,Math.ceil((money+1)/1000)*1000);const openT=(tournaments||[]).find(t=>(t.status==="open"||!t.status)&&!(t.players||[]).some(p=>p.id===user?.id));const nextPrize=openT?(parseInt(String(openT.prize||"").replace(/[^0-9]/g,""))||0):0;
     const _rr=(c,px,py,w,h,rad)=>{c.beginPath();c.moveTo(px+rad,py);c.arcTo(px+w,py,px+w,py+h,rad);c.arcTo(px+w,py+h,px,py+h,rad);c.arcTo(px,py+h,px,py,rad);c.arcTo(px,py,px+w,py,rad);c.closePath();};
     const shareMetas=()=>{try{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.setAttribute("capture","user");inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>drawShareCard(im);im.onerror=()=>drawShareCard(null);im.src=rd.result;};rd.readAsDataURL(f);};inp.click();}catch(e){alert("No se pudo abrir la camara.");}};
-    const drawShareCard=(selfie)=>{try{const W=1080,H=1920;const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
-      if(selfie){const s=Math.max(W/selfie.width,H/selfie.height);const dw=selfie.width*s,dh=selfie.height*s;x.drawImage(selfie,(W-dw)/2,(H-dh)/2,dw,dh);}else{x.fillStyle="#12181f";x.fillRect(0,0,W,H);}
-      x.fillStyle="rgba(6,10,14,0.4)";x.fillRect(0,0,W,150);x.fillStyle="rgba(6,10,14,0.42)";x.fillRect(0,H-760,W,760);
-      x.textAlign="left";try{if(_shareLogo&&_shareLogo.complete&&_shareLogo.naturalWidth){x.drawImage(_shareLogo,48,44,168,168);}else{x.fillStyle="#C7F94E";x.font="800 62px Arial";x.fillText("SMT",56,120);}}catch(e){x.fillStyle="#C7F94E";x.font="800 62px Arial";x.fillText("SMT",56,120);}
+    const drawShareCard=(selfie,styleOverride)=>{try{const W=1080,H=1920;const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+      if(selfie!==undefined)shareSelfieRef.current=selfie;const foto=shareSelfieRef.current;
+      if(foto){const s=Math.max(W/foto.width,H/foto.height);const dw=foto.width*s,dh=foto.height*s;x.drawImage(foto,(W-dw)/2,(H-dh)/2,dw,dh);}else{const gr=x.createLinearGradient(0,0,0,H);gr.addColorStop(0,"#0f1a2e");gr.addColorStop(1,"#040a18");x.fillStyle=gr;x.fillRect(0,0,W,H);}
       const md=_today||_R[0];
-      const tx=56,ty=1250,tw=470,th=360;
-      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,tx,ty,tw,th,26);x.fill();x.strokeStyle="rgba(199,249,78,0.4)";x.lineWidth=2;_rr(x,tx,ty,tw,th,26);x.stroke();
-      x.textAlign="left";x.fillStyle="#7fd0ff";x.font="700 22px Arial";x.fillText("HOY · "+(md?md.min:0)+" MIN",tx+30,ty+52);
-      x.fillStyle="#fff";x.font="800 36px Arial";x.fillText(md?md.t:"Entrenamiento",tx+30,ty+100);
-      x.fillStyle="#95a08f";x.font="700 19px Arial";x.fillText("DIFICULTAD",tx+30,ty+148);
-      for(let k=0;k<5;k++){const on=md&&k<md.int;x.fillStyle=on?(md.int<=2?"#C7F94E":md.int===3?"#EF9F27":"#F0997B"):"#2a3320";_rr(x,tx+30+k*54,ty+166,44,14,4);x.fill();}
-      x.fillStyle="#95a08f";x.font="700 18px Arial";x.fillText("TIEMPO",tx+30,ty+250);x.fillStyle="#C7F94E";x.font="800 46px Arial";x.fillText((md?md.min:0)+" MIN",tx+30,ty+300);
-      const kx=560,kw=460,kh=360,ky=1250;
-      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,kx,ky,kw,kh,26);x.fill();x.strokeStyle="rgba(79,195,247,0.4)";x.lineWidth=2;_rr(x,kx,ky,kw,kh,26);x.stroke();
-      x.textAlign="right";x.fillStyle="#95a08f";x.font="700 20px Arial";x.fillText("KCAL QUEMADAS",kx+kw-28,ky+52);
-      x.fillStyle="#C7F94E";x.font="800 100px Arial";x.fillText(String(md?md.kcal:0),kx+kw-28,ky+160);
-      const maxK2=Math.max(1,..._R.map(d=>d.kcal||0));_R.forEach((d,i)=>{const hh=Math.max(8,(d.kcal||0)/maxK2*95);const bwi=34,g2=8;const bx2=kx+30+i*(bwi+g2);x.fillStyle=d.today?"#4FC3F7":"#C7F94E";_rr(x,bx2,ky+kh-38-hh,bwi,hh,6);x.fill();});
       const musc=(md&&WK_MUSCLES[md.kind])?WK_MUSCLES[md.kind].slice(0,3):[];
-      const mx=56,my=1650,mw=W-112,mh=210;
-      x.fillStyle="rgba(8,14,12,0.6)";_rr(x,mx,my,mw,mh,26);x.fill();x.strokeStyle="rgba(255,255,255,0.14)";x.lineWidth=2;_rr(x,mx,my,mw,mh,26);x.stroke();
-      x.textAlign="left";x.fillStyle="#95a08f";x.font="700 20px Arial";x.fillText("MUSCULOS QUE TRABAJE",mx+30,my+45);
-      musc.forEach((m,i)=>{const ry=my+78+i*42;const col=m.p>=65?"#C7F94E":m.p>=40?"#EF9F27":"#F0997B";x.textAlign="left";x.fillStyle="#e8eef5";x.font="600 26px Arial";x.fillText(m.n,mx+30,ry+22);x.fillStyle="#222c22";_rr(x,mx+240,ry+5,mw-390,20,10);x.fill();x.fillStyle=col;_rr(x,mx+240,ry+5,(mw-390)*m.p/100,20,10);x.fill();x.textAlign="right";x.fillStyle=col;x.font="700 28px Arial";x.fillText(m.p+"%",mx+mw-30,ry+24);});
+      const hoy=new Date();const dateStr=hoy.toLocaleDateString("es-MX",{weekday:"short",day:"numeric",month:"short"}).replace(/\./g,"");
+      const weekMin=_R.reduce((a,d)=>a+(d.min||0),0);
+      const D={t:md?md.t:"Entrenamiento",min:md?md.min:0,int:md?md.int:0,kcal:md?md.kcal:0,week:_R.map(d=>d.kcal||0),todayIdx:_R.findIndex(d=>d.today),musc,dateStr,weekH:(weekMin/60).toFixed(1)};
+      const st=SHARE_STYLES[styleOverride||shareStyle]||SHARE_STYLES[1];
+      st(x,W,H,D);
       try{setShareImg(cv.toDataURL("image/png"));}catch(e){alert("No se pudo generar la imagen.");}
     }catch(e){alert("No se pudo generar la imagen.");}};
+    window.__smtRedrawShare=(k)=>drawShareCard(undefined,k);
     const recs=[];
     recs.push({ic:"cap",t:"Busca un coach",s:()=>setScreen("coach")});
     recs.push({ic:"cross",t:"Encuentra un físio",s:()=>setScreen("fisio")});
@@ -3354,7 +3628,7 @@ export default function App(){
     recs.push({ic:"trophy",t:"Inscríbete a un torneo",s:()=>setScreen("home")});
     if(has("equipo"))recs.push({ic:"cart",t:"Vende tu equipo",s:()=>setScreen("marketplace")});
     const Card=({children,edge,onClick})=><div onClick={onClick} className={onClick?"btn-press":""} style={{background:C.surface,border:`0.5px solid ${C.borderS}`,borderLeft:edge?`3px solid ${edge}`:`0.5px solid ${C.borderS}`,borderRadius:14,padding:"12px 13px",marginBottom:10,cursor:onClick?"pointer":"default"}}>{children}</div>;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.45}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -3376,7 +3650,7 @@ export default function App(){
           {<div onClick={()=>setScreen("plan")} className="btn-press" style={{position:"relative",marginBottom:11,cursor:"pointer",borderRadius:16,padding:2,overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,background:`conic-gradient(from 0deg,${LIME},${C.cyan},${LIME}22,${LIME})`,animation:"spin 4.5s linear infinite"}}/>
             <div style={{position:"relative",background:"#0c1730",borderRadius:14,padding:"13px 14px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:LIME,fontWeight:700}}>ENTRENAMIENTO DE HOY · IA</div><Ico n="ball" s={16} c={C.cyan}/></div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:LIME,fontWeight:700}}>ENTRENAMIENTO DE HOY</div><Ico n="ball" s={16} c={C.cyan}/></div>
               <div style={{fontFamily:F.ios,fontSize:15,fontWeight:800,color:"#fff",marginBottom:9}}>{_today?_today.t:"Genera tu rutina"}</div>
               <div style={{display:"flex",alignItems:"flex-end",gap:16}}>
                 <div><div style={{fontFamily:F.bc,fontSize:8,letterSpacing:"0.14em",color:C.muted,marginBottom:4}}>INTENSIDAD</div><div style={{display:"flex",gap:3}}>{[0,1,2,3,4].map(k=><div key={k} style={{width:14,height:6,borderRadius:2,background:_today&&k<_today.int?(_today.int<=2?LIME:_today.int===3?C.amber:"#F0997B"):C.surface2}}/>)}</div></div>
@@ -3406,7 +3680,7 @@ export default function App(){
     </div>;
   }
   if(screen==="home"){
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",overflow:"hidden"}}>
       <style>{STYLE}</style><Aurora intense={0.5}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -3652,7 +3926,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="admin-inbox"&&isAdmin){
     const apr=[],areg=[];
     tournaments.forEach(t=>{t.groups.forEach((g,gi)=>g.matches.forEach(m=>{if(m.pendingResult)apr.push({tid:t.id,kind:"group",gi,ri:null,match:m,tName:t.name,gName:g.name});}));t.rounds.forEach((rnd,ri)=>rnd.forEach(m=>{if(m.pendingResult)apr.push({tid:t.id,kind:"ko",gi:null,ri,match:m,tName:t.name,gName:rLabel(ri,t.rounds.length)});}));t.pendingPlayers.forEach(p=>areg.push({tid:t.id,tName:t.name,player:p}));});
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -3661,7 +3935,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <SL>Inscripciones pendientes ({areg.length})</SL>
           {areg.length===0?<Sub style={{padding:"14px 0"}}>Sin pendientes.</Sub>:areg.map(({tid,tName,player},i)=><div key={`${tid}-${player.id}`} style={{display:"flex",alignItems:"center",gap:12,padding:12,background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:12,marginBottom:8,animation:`slideLeft 0.35s ${i*0.05}s backwards`}}>
             <PA photo={player.photo} avatar={player.avatar} size={42}/>
-            <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{player.name}</div><Sub style={{fontSize:12,marginTop:2}}>quiere inscribirse a <span style={{color:C.cyan}}>{tName}</span></Sub></div>
+            <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{player.name}</div><Sub style={{fontSize:12,marginTop:2}}>quiere inscribirse a <span style={{color:C.cyan}}>{tName}</span></Sub><ContactoAdmin pid={player.id} fallback={player}/></div>
             <button onClick={()=>adminApprove(tid,player.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"8px 14px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
             <button onClick={()=>adminReject(tid,player.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"7px 11px",borderRadius:10,fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
           </div>)}
@@ -3786,7 +4060,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           {coachApplications.filter(r=>r.status==="pending").length===0?<Sub style={{padding:"14px 0"}}>Sin pendientes.</Sub>:coachApplications.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{padding:14,background:`linear-gradient(135deg,rgba(167,139,250,0.10),${C.surface})`,border:`1px solid rgba(167,139,250,0.35)`,borderRadius:14,marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
               <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={44}/>
-              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.playerName}</div><Sub style={{fontSize:11}}>quiere publicarse como {r.kind==="fisio"?"FÍSIO":"COACH"} · {r.playerCity}</Sub></div>
+              <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,fontWeight:600,color:C.text}}>{r.playerName}</div><Sub style={{fontSize:11}}>quiere publicarse como {r.kind==="fisio"?"FÍSIO":r.kind==="nutri"?"NUTRIÓLOGO":"COACH"} · {r.playerCity}</Sub></div>
               <div style={{background:"rgba(167,139,250,0.18)",border:"1px solid rgba(167,139,250,0.4)",padding:"4px 10px",borderRadius:8,fontFamily:F.bc,fontSize:10,letterSpacing:"0.16em",color:"#A78BFA",fontWeight:700}}>${r.hourlyRate}/HR</div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
@@ -3852,7 +4126,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
 
   // ADMIN SETTINGS
   if(screen==="admin-settings"&&isAdmin){
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -3887,7 +4161,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const allGD=t.format==="groups+ko"&&t.groups.length>0&&t.groups.every(g=>g.matches.every(m=>m.status==="done"));
     const avAccts=accounts.filter(a=>!t.players.find(p=>p.id===a.id)&&!t.pendingPlayers.find(p=>p.id===a.id)&&a.name.toLowerCase().includes(addSearch.toLowerCase())&&(!t.gender||t.gender==="Mixed"||!a.sex||a.sex===t.gender));
     const grpAssigned=new Set(t.groups.flatMap(g=>g.players.map(p=>p.id)));const grpUnassigned=t.players.filter(p=>!grpAssigned.has(p.id)&&(p.name||"").toLowerCase().includes(addSearch.toLowerCase()));const addList=(addPlayerModal&&addPlayerModal.gi!=null)?[...grpUnassigned,...avAccts]:avAccts;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       {showIntro&&t.players.length>0&&<TIntro tourney={t} onDone={()=>setShowIntro(false)}/>}
       {champion&&<ChampScreen champion={champion.champion} tourney={champion.tourney} onClose={()=>setChampion(null)}/>}
@@ -3973,6 +4247,19 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                   </div>;
                 })}
                 {isAdmin&&<button onClick={()=>{setAddPlayerModal({tid:t.id,gi});setAddSearch("");}} className="btn-press" style={{width:"100%",marginTop:8,padding:"11px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,color:C.cyan,fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>+ Agregar jugador a este grupo</button>}
+                {isAdmin&&(()=>{
+                  // Parejas del grupo que NO tienen partido (por ejemplo, uno que se borró)
+                  const gp=g.players||[];const faltan=[];
+                  for(let a=0;a<gp.length;a++)for(let b=a+1;b<gp.length;b++){const A=gp[a],B=gp[b];const hay=(g.matches||[]).some(m=>m.p1&&m.p2&&((m.p1.id===A.id&&m.p2.id===B.id)||(m.p1.id===B.id&&m.p2.id===A.id)));if(!hay)faltan.push([A,B]);}
+                  if(!faltan.length)return null;
+                  const abierto=addMatchFor&&addMatchFor.tid===t.id&&addMatchFor.gi===gi;
+                  return <div style={{marginTop:8}}>
+                    <button onClick={()=>setAddMatchFor(abierto?null:{tid:t.id,gi})} className="btn-press" style={{width:"100%",padding:"11px",background:"rgba(255,159,10,0.10)",border:`1px solid ${C.amber}66`,borderRadius:10,color:C.amber,fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer"}}>{abierto?"Cerrar":`+ Agregar partido faltante (${faltan.length})`}</button>
+                    {abierto&&<div style={{marginTop:6,display:"flex",flexDirection:"column",gap:6}}>
+                      {faltan.map(([A,B])=><button key={A.id+"-"+B.id} onClick={()=>{admAddMatch(t.id,gi,A,B);}} className="btn-press" style={{padding:"10px 12px",background:C.surface,border:`0.5px solid ${C.borderS}`,borderRadius:10,color:C.text,fontFamily:F.ios,fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left"}}>{A.name} <span style={{color:C.muted}}>vs</span> {B.name}</button>)}
+                    </div>}
+                  </div>;
+                })()}
               </div>
             </div>;
           })}
@@ -3987,7 +4274,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <SL color={C.amber}>Pendientes ({t.pendingPlayers.length})</SL>
               {t.pendingPlayers.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:12,background:C.surface,border:`1px solid rgba(255,159,10,0.2)`,borderRadius:10,marginBottom:8}}>
                 <PA photo={p.photo} avatar={p.avatar} size={36}/>
-                <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.text}}>{p.name}</div><Sub style={{fontSize:11}}>{p.email}</Sub></div>
+                <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,fontWeight:600,color:C.text}}>{p.name}</div><ContactoAdmin pid={p.id} fallback={p}/></div>
                 <button onClick={()=>adminApprove(t.id,p.id)} className="btn-press" style={{background:C.green,color:"#fff",border:"none",padding:"6px 11px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="check" s={16}/></button>
                 <button onClick={()=>adminReject(t.id,p.id)} className="btn-press" style={{background:"transparent",color:C.red,border:`1px solid ${C.red}`,padding:"5px 9px",borderRadius:8,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600}}><Ico n="x" s={16}/></button>
               </div>)}
@@ -4144,7 +4431,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     // PROTECCIÓN DE MENORES: cada grupo solo ve a los suyos
     const userIsMinor=!isAdmin&&isMinor(user?.birthdate);
     const inCat=accounts.filter(a=>!isBlockedId(a.id)&&(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&(rankingTab==="Sin cat"?!a.category:a.category===rankingTab)&&(rankingGender==="All"||a.sex===rankingGender)&&(isAdmin?true:(userIsMinor?isMinor(a.birthdate):!isMinor(a.birthdate)))).sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,100);
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -4207,7 +4494,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </div>
         {!joined&&<div style={{flexShrink:0,fontSize:13,fontWeight:700,color:C.green}}>Unirme</div>}
       </div>;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -4262,7 +4549,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const g=activeGroup;
     const isCreator=g.created_by===user?.id;
     const memName=(uid)=>accounts.find(a=>a.id===uid)?.name||"Miembro";
-    return <div key={"gc-"+g.id} className="screen-fade" style={{minHeight:"100vh",height:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",display:"flex",flexDirection:"column"}}>
+    return <div key={"gc-"+g.id} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",height:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative",display:"flex",flexDirection:"column"}}>
       <style>{STYLE}</style>
       <div style={{flexShrink:0,display:"flex",alignItems:"center",gap:10,padding:"14px 14px",background:C.surface,borderBottom:`1px solid ${C.borderS}`,position:"relative",zIndex:2}}>
         <button onClick={()=>{setActiveGroup(null);setScreen("social");}} className="btn-press" style={{background:"none",border:"none",color:C.cyan,fontSize:24,cursor:"pointer",padding:"0 2px",lineHeight:1}}>‹</button>
@@ -4367,7 +4654,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const cleanTitle=(t)=>String(t||"").replace(/\s*-\s*[^-]*$/,"").trim();
     const sourceOf=(t)=>{const m=String(t||"").match(/-\s*([^-]+)\s*$/);return m?m[1].trim():"";};
     const timeAgo=(d)=>{try{const t=new Date(String(d).replace(" ","T")+"Z").getTime();if(!t)return"";const s=(Date.now()-t)/1000;if(s<3600)return Math.max(1,Math.round(s/60))+" min";if(s<86400)return Math.round(s/3600)+" h";const dd=Math.round(s/86400);if(dd<30)return dd+" d";return Math.round(dd/30)+" mes";}catch(e){return"";}};
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -4397,7 +4684,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   }
   if(screen==="media"){
     // PROTECCIÓN DE MENORES: los menores no pueden ver Media
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -4418,7 +4705,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       <button onClick={onClick} className="btn-press" style={{width:48,height:48,borderRadius:"50%",border:`1px solid rgba(255,255,255,${active?0.0:0.25})`,background:active?"rgba(255,59,48,0.22)":"rgba(255,255,255,0.13)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",padding:0}}>{children}</button>
       {label!==undefined&&<div style={{fontFamily:F.ios,fontSize:11.5,fontWeight:700,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,0.7)"}}>{label}</div>}
     </div>;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:"#000",color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:"#000",color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style>
       <Nav/>
       <button onClick={()=>setScreen("noticias")} className="btn-press" style={{position:"fixed",top:70,right:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"8px 13px",borderRadius:20,border:"1px solid rgba(255,255,255,0.28)",background:"rgba(255,255,255,0.14)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",color:"#fff",fontFamily:F.ios,fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 2px 12px rgba(0,0,0,0.45)"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Noticias</button>
@@ -4552,7 +4839,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   if(screen==="scoreboard"){
     const w=sb&&sb.winner!=null;
     const phase=sb?(sb.matchTiebreak?"MATCH TIE-BREAK":sb.tiebreak?"TIE-BREAK":null):null;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -4607,7 +4894,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   }
 
   if(screen==="find-hub"){
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>Esta sección no está disponible para menores de edad por seguridad.</Sub></div>
@@ -4622,7 +4909,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
       </div>
       {!soon&&<div style={{color:ac,fontSize:26,flexShrink:0,fontWeight:700}}>›</div>}
     </div>;};
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="home" label="Home"/>
@@ -4631,6 +4918,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <HubCard icon="ball" title="Buscar Partido" desc="Encuentra rival de tu nivel para jugar" accent={LIME} onClick={()=>setScreen("find-match")}/>
           <HubCard icon="cap" title="Buscar Coach" desc="Reserva clases con entrenadores certificados" accent="#A78BFA" onClick={()=>setScreen("coach")}/>
           <HubCard icon="cross" title="Buscar Físio" desc="Rehabilitación, prevención y diagnóstico de lesiones" accent={C.cyan} onClick={()=>setScreen("fisio")}/>
+          <HubCard icon="leaf" title="Buscar Nutriólogo" desc={PRO_KINDS.nutri.desc} accent={PRO_KINDS.nutri.c1} onClick={()=>setScreen("nutri")}/>
         </div>
         <TabSpacer/>
       </div>
@@ -4640,7 +4928,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
 
   if(screen==="find-match"){
     // PROTECCIÓN DE MENORES: los menores no pueden acceder a Find a Match
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -4654,7 +4942,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const others=accounts.filter(a=>!isBlockedId(a.id)&&(!HIDDEN_EMAILS.includes(a.email)&&(a.name||"").trim().toLowerCase()!=="apple")&&a.id!==user?.id&&!isMinor(a.birthdate));
     const myReqs=matchRequests.filter(r=>r.fromId===user?.id);
     const incoming=matchRequests.filter(r=>r.toId===user?.id);
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/><Back to="find-hub" label="Find A"/>
@@ -4780,40 +5068,41 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   }
 
   // COACH
-  if(screen==="fisio"){
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+  if(screen==="fisio"||screen==="nutri"){
+    const PK=PRO_KINDS[screen]||PRO_KINDS.fisio;
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
       </div>
       <ShowTabBar/>
     </div>;}
-    const approvedFisios=coachApplications.filter(c=>c.status==="approved"&&c.kind==="fisio");
-    const myFisioApp=coachApplications.find(c=>c.playerId===user?.id&&c.kind==="fisio");
-    const incomingFisioReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id&&r.kind==="fisio");
-    const myFisioReqs=coachRequests.filter(r=>r.playerId===user?.id&&r.kind==="fisio");
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    const approvedFisios=coachApplications.filter(c=>c.status==="approved"&&c.kind===PK.kind);
+    const myFisioApp=coachApplications.find(c=>c.playerId===user?.id&&c.kind===PK.kind);
+    const incomingFisioReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id&&r.kind===PK.kind);
+    const myFisioReqs=coachRequests.filter(r=>r.playerId===user?.id&&r.kind===PK.kind);
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
         <Back to="find-hub" label="Find A"/>
         <div style={{padding:"14px 18px"}}>
-          <div style={{position:"relative",overflow:"hidden",borderRadius:20,background:"linear-gradient(135deg,#2DD4BF 0%,#0D9488 50%,#0891B2 100%)",backgroundSize:"200% 200%",animation:"gradientShift 8s ease infinite",padding:"22px 20px",marginBottom:18}}>
+          <div style={{position:"relative",overflow:"hidden",borderRadius:20,background:`linear-gradient(135deg,${PK.c1} 0%,${PK.c2} 50%,${PK.c3} 100%)`,backgroundSize:"200% 200%",animation:"gradientShift 8s ease infinite",padding:"22px 20px",marginBottom:18}}>
             <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:"rgba(255,255,255,0.10)",filter:"blur(20px)",animation:"floatSlow 7s ease-in-out infinite"}}/>
             <div style={{position:"relative",zIndex:1}}>
-              <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.3em",color:"rgba(255,255,255,0.85)",fontWeight:700,marginBottom:6}}>FIND YOUR PHYSIO</div>
-              <div style={{fontFamily:F.bn,fontSize:34,color:"#fff",lineHeight:1,letterSpacing:"-0.02em",marginBottom:6,textShadow:"0 2px 12px rgba(0,0,0,0.2)"}}>FÍSIO</div>
-              <Sub style={{fontSize:13,color:"rgba(255,255,255,0.88)",marginTop:4}}>{approvedFisios.length} físio{approvedFisios.length!==1?"s":""} disponibles</Sub>
+              <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.3em",color:"rgba(255,255,255,0.85)",fontWeight:700,marginBottom:6}}>{PK.tag}</div>
+              <div style={{fontFamily:F.bn,fontSize:34,color:"#fff",lineHeight:1,letterSpacing:"-0.02em",marginBottom:6,textShadow:"0 2px 12px rgba(0,0,0,0.2)"}}>{PK.title}</div>
+              <Sub style={{fontSize:13,color:"rgba(255,255,255,0.88)",marginTop:4}}>{approvedFisios.length} {approvedFisios.length!==1?PK.wordPl:PK.word} disponibles</Sub>
             </div>
           </div>
           {!isAdmin&&<>
-            {!myFisioApp&&<SpinBox r={16} bg="#0D9488" c1="#2DD4BF" c2={LIME} style={{marginBottom:14,boxShadow:"0 8px 24px rgba(13,148,136,0.35)"}}><button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"],kind:"fisio"});setShowFisioApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:14,background:"linear-gradient(135deg,#0D9488,#2DD4BF)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n="cross" s={15} c="#fff"/>SOLICITAR SER FÍSIO</button></SpinBox>}
-            {myFisioApp&&myFisioApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:"1px solid rgba(255,159,10,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD FÍSIO</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
-            {myFisioApp&&myFisioApp.status==="approved"&&<div style={{padding:"12px 16px",background:"rgba(45,212,191,0.10)",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}><Ico n="check" s={16}/></div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700}}>ERES FÍSIO SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myFisioApp.hourlyRate}/sesión</Sub></div></div>}
+            {!myFisioApp&&<SpinBox r={16} bg={`${PK.c2}`} c1={`${PK.c1}`} c2={LIME} style={{marginBottom:14,boxShadow:"0 8px 24px rgba(13,148,136,0.35)"}}><button onClick={()=>{setCoachDraft({experience:"",specialties:[],bio:"",hourlyRate:"",availability:"",languages:["Español"],kind:PK.kind});setShowFisioApply(true);}} className="btn-press" style={{width:"100%",padding:"14px 18px",borderRadius:14,background:`linear-gradient(135deg,${PK.c2},${PK.c1})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Ico n={PK.icon} s={15} c="#fff"/>SOLICITAR SER {PK.title}</button></SpinBox>}
+            {myFisioApp&&myFisioApp.status==="pending"&&<div style={{padding:"12px 16px",background:"rgba(255,159,10,0.10)",border:"1px solid rgba(255,159,10,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.amber,fontWeight:700,marginBottom:2}}><Ico n="clock"/>TU SOLICITUD {PK.title}</div><Sub style={{fontSize:12}}>Pendiente de aprobación por el administrador.</Sub></div>}
+            {myFisioApp&&myFisioApp.status==="approved"&&<div style={{padding:"12px 16px",background:`rgba(${PK.rgb},0.10)`,border:`1px solid rgba(${PK.rgb},0.35)`,borderRadius:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}><div style={{fontSize:22}}><Ico n="check" s={16}/></div><div><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:`${PK.c1}`,fontWeight:700}}>ERES {PK.title} SMT</div><Sub style={{fontSize:11,marginTop:2}}>Estás publicado · ${myFisioApp.hourlyRate}/sesión</Sub></div></div>}
             {myFisioApp&&myFisioApp.status==="rejected"&&<div style={{padding:"12px 16px",background:"rgba(255,59,48,0.10)",border:"1px solid rgba(255,59,48,0.35)",borderRadius:14,marginBottom:14}}><div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.red,fontWeight:700,marginBottom:2}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div><button onClick={()=>{setCoachApplications(prev=>prev.filter(x=>x.id!==myFisioApp.id));}} className="btn-press" style={{background:"transparent",border:"none",color:C.cyan,fontFamily:F.ios,fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:6}}>Solicitar nuevamente →</button></div>}
-            {(incomingFisioReqs.filter(r=>r.status==="pending").length>0||myFisioReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:"linear-gradient(135deg,rgba(45,212,191,0.10),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.30)",borderRadius:14,marginBottom:14}}>
+            {(incomingFisioReqs.filter(r=>r.status==="pending").length>0||myFisioReqs.filter(r=>r.status==="accepted").length>0)&&<div style={{padding:14,background:`linear-gradient(135deg,rgba(${PK.rgb},0.10),rgba(8,145,178,0.10))`,border:`1px solid rgba(${PK.rgb},0.30)`,borderRadius:14,marginBottom:14}}>
               {incomingFisioReqs.filter(r=>r.status==="pending").length>0&&<div style={{marginBottom:myFisioReqs.length>0?12:0}}>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#2DD4BF",fontWeight:700,marginBottom:8}}><Ico n="download"/>PACIENTES INTERESADOS</div>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:`${PK.c1}`,fontWeight:700,marginBottom:8}}><Ico n="download"/>{PK.clients}</div>
                 {incomingFisioReqs.filter(r=>r.status==="pending").map(r=><div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`0.5px solid ${C.borderS}`}}>
                   <PA photo={r.playerPhoto} avatar={r.playerAvatar} size={32}/>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.playerName}</div><Sub style={{fontSize:11}}>{r.when==="weekend"?"Fines de semana":r.when==="weekday"?"Entre semana":"Flexible"}{r.msg?" · "+r.msg.slice(0,40):""}</Sub></div>
@@ -4822,8 +5111,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
                 </div>)}
               </div>}
               {myFisioReqs.filter(r=>r.status==="accepted").length>0&&<div>
-                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}><Ico n="check" s={14}/>FÍSIOS ACEPTARON</div>
-                {myFisioReqs.filter(r=>r.status==="accepted").map(r=><div key={r.id} onClick={()=>setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone||"—",playerName:user.name,playerPhone:user.phone||"—",hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:"fisio"})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
+                <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,fontWeight:700,marginBottom:8}}><Ico n="check" s={14}/>{PK.titlePl} ACEPTARON</div>
+                {myFisioReqs.filter(r=>r.status==="accepted").map(r=><div key={r.id} onClick={()=>setCoachContactShare({coachName:r.coachName,coachPhone:r.coachPhone||"—",playerName:user.name,playerPhone:user.phone||"—",hourlyRate:r.coachHourlyRate,frequency:r.frequency,kind:PK.kind})} className="tap-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer"}}>
                   <div style={{lineHeight:0}}><Ico n="phone" s={18} c={C.green}/></div>
                   <div style={{flex:1,minWidth:0}}><div style={{fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{r.coachName}</div><Sub style={{fontSize:11}}>Toca para ver contacto</Sub></div>
                   <span style={{color:C.muted,fontSize:18}}>›</span>
@@ -4831,55 +5120,57 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               </div>}
             </div>}
           </>}
-          {approvedFisios.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="cross" s={48} c={C.muted}/></div><Sub style={{fontSize:14}}>Aún no hay físios disponibles.</Sub>{!myFisioApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:"#2DD4BF"}}>¡Sé el primer físio SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {approvedFisios.map((f,i)=><div key={f.id} style={{position:"relative",background:"linear-gradient(135deg,rgba(45,212,191,0.06),"+C.surface+")",border:"1px solid rgba(45,212,191,0.20)",borderRadius:18,padding:14,overflow:"hidden",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
-              <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"radial-gradient(circle,rgba(45,212,191,0.18),transparent 70%)",pointerEvents:"none"}}/>
+          {approvedFisios.length===0?<div style={{padding:"60px 0",textAlign:"center"}}><div style={{marginBottom:14,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n={PK.icon} s={48} c={C.muted}/></div><Sub style={{fontSize:14}}>Aún no hay {PK.wordPl} disponibles.</Sub>{!myFisioApp&&!isAdmin&&<Sub style={{fontSize:13,marginTop:8,color:`${PK.c1}`}}>¡Sé el primer {PK.word} SMT!</Sub>}</div>:<div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {approvedFisios.map((f,i)=><div key={f.id} onClick={()=>setCoachDetail({...f,kind:PK.kind})} className="btn-press" style={{cursor:"pointer",position:"relative",background:`linear-gradient(135deg,rgba(${PK.rgb},0.06),`+C.surface+")",border:`1px solid rgba(${PK.rgb},0.20)`,borderRadius:18,padding:14,overflow:"hidden",animation:`scaleIn 0.4s ${i*0.05}s backwards`}}>
+              <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle,rgba(${PK.rgb},0.18),transparent 70%)`,pointerEvents:"none"}}/>
               <div style={{display:"flex",gap:12,marginBottom:10,position:"relative"}}>
-                <PA photo={f.playerPhoto} avatar={f.playerAvatar} size={64} border="2px solid rgba(45,212,191,0.5)"/>
+                <PA photo={f.playerPhoto} avatar={f.playerAvatar} size={64} border={`2px solid rgba(${PK.rgb},0.5)`}/>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
                     <div style={{fontFamily:F.ios,fontSize:16,color:C.text,fontWeight:700}}>{f.playerName}</div>
-                    <div style={{background:"rgba(45,212,191,0.18)",border:"1px solid rgba(45,212,191,0.4)",padding:"2px 7px",borderRadius:6,fontFamily:F.bc,fontSize:8,letterSpacing:"0.18em",color:"#5EEAD4",fontWeight:700}}>FÍSIO</div>
+                    <div style={{background:`rgba(${PK.rgb},0.18)`,border:`1px solid rgba(${PK.rgb},0.4)`,padding:"2px 7px",borderRadius:6,fontFamily:F.bc,fontSize:8,letterSpacing:"0.18em",color:`${PK.cl}`,fontWeight:700}}>{PK.title}</div>
                   </div>
                   <Sub style={{fontSize:11}}>{f.playerCity} · {f.experience}</Sub>
                   <div style={{display:"flex",alignItems:"baseline",gap:4,marginTop:4}}>
-                    <div style={{fontFamily:F.bn,fontSize:22,color:"#5EEAD4",letterSpacing:"-0.01em"}}>${f.hourlyRate}</div>
-                    <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,fontWeight:600}}>MXN / SESIÓN</div>
+                    <div style={{fontFamily:F.bn,fontSize:22,color:`${PK.cl}`,letterSpacing:"-0.01em"}}>${f.hourlyRate}</div>
+                    <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.muted,fontWeight:600}}>MXN / {PK.unit}</div>
                   </div>
                 </div>
               </div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{f.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:"rgba(45,212,191,0.12)",color:"#5EEAD4",border:"1px solid rgba(45,212,191,0.25)",fontWeight:500}}>{s}</span>)}{f.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{f.specialties.length-4}</span>}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>{f.specialties.slice(0,4).map(s=><span key={s} style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,background:`rgba(${PK.rgb},0.12)`,color:`${PK.cl}`,border:`1px solid rgba(${PK.rgb},0.25)`,fontWeight:500}}>{s}</span>)}{f.specialties.length>4&&<span style={{fontFamily:F.ios,fontSize:10,padding:"3px 8px",borderRadius:8,color:C.muted}}>+{f.specialties.length-4}</span>}</div>
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{f.bio.length>140?f.bio.slice(0,140)+"…":f.bio}"</Sub>
-              {f.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===f.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:f.playerName,coachPhone:f.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:f.hourlyRate,frequency:myReq.frequency,kind:"fisio"})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...f,kind:"fisio"});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:"linear-gradient(135deg,#2DD4BF,#0D9488)",border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(13,148,136,0.35)"}}><Ico n="cross" s={15} c="#fff"/>SOLICITAR FÍSIO</button>;})()}
-              {f.playerId===user?.id&&<div style={{padding:"8px 14px",background:"rgba(45,212,191,0.12)",border:"1px solid rgba(45,212,191,0.3)",borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:"#2DD4BF",fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
-              {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este físio?")){setCoachApplications(prev=>prev.filter(x=>x.id!==f.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
+              {f.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===f.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={(e)=>{e.stopPropagation();setCoachContactShare({coachName:f.playerName,coachPhone:f.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:f.hourlyRate,frequency:myReq.frequency,kind:PK.kind});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={(e)=>{e.stopPropagation();setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest({...f,kind:PK.kind});}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${PK.c1},${PK.c2})`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(13,148,136,0.35)"}}><Ico n={PK.icon} s={15} c="#fff"/>SOLICITAR {PK.title}</button>;})()}
+              {f.playerId===user?.id&&<div style={{padding:"8px 14px",background:`rgba(${PK.rgb},0.12)`,border:`1px solid rgba(${PK.rgb},0.3)`,borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:`${PK.c1}`,fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
+              {f.playerId===user?.id&&<button onClick={(e)=>{e.stopPropagation();abrirEdicionFicha(f);}} className="btn-press" style={{width:"100%",marginTop:8,padding:"10px",borderRadius:10,background:"transparent",border:`1px solid ${PK.c1}66`,color:PK.c1,fontFamily:F.ios,fontSize:12.5,fontWeight:700,cursor:"pointer"}}><Ico n="edit" s={13}/>EDITAR MI FICHA</button>}
+              {isAdmin&&<button onClick={(e)=>{e.stopPropagation();if(confirm("¿Eliminar este "+PK.word+"?")){setCoachApplications(prev=>prev.filter(x=>x.id!==f.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
             </div>)}
           </div>}
           <div style={{height:32}}/>
           <TabSpacer/>
         </div>
         {showFisioApply&&<Modal onClose={()=>setShowFisioApply(false)} large center>
-          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR SER FÍSIO</T>
-          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>El admin revisará tu solicitud</Sub>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>{coachDraft.editId?"EDITAR MI FICHA":"SOLICITAR SER "+PK.title}</T>
+          <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>{coachDraft.editId?"Los cambios se publican de inmediato":"El admin revisará tu solicitud"}</Sub>
+          {coachDraft.editId&&<><FL>Nombre que se muestra</FL><TI value={coachDraft.playerName||""} onChange={e=>setCoachDraft({...coachDraft,playerName:e.target.value})} placeholder="Tu nombre"/><div style={{height:12}}/><FL>Teléfono de contacto</FL><TI value={coachDraft.playerPhone||""} onChange={e=>setCoachDraft({...coachDraft,playerPhone:e.target.value})} placeholder="+52 81..."/><div style={{height:12}}/></>}
           <FL>Años de experiencia *</FL>
           <Seg options={["< 1 año","1-3 años","3-5 años","5-10 años","10+ años"]} value={coachDraft.experience} onChange={v=>setCoachDraft({...coachDraft,experience:v})} style={{marginBottom:14}}/>
           <FL>Especialidades * (selecciona al menos una)</FL>
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>{FISIO_SPECIALTIES.map(s=>{const sel=coachDraft.specialties.includes(s);return <button key={s} onClick={()=>setCoachDraft({...coachDraft,specialties:sel?coachDraft.specialties.filter(x=>x!==s):[...coachDraft.specialties,s]})} className="btn-press" style={{padding:"6px 12px",borderRadius:18,border:sel?"2px solid #2DD4BF":`1px solid ${C.borderS}`,background:sel?"rgba(45,212,191,0.18)":"transparent",color:sel?"#5EEAD4":C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>{s}</button>;})}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>{PK.specs.map(s=>{const sel=coachDraft.specialties.includes(s);return <button key={s} onClick={()=>setCoachDraft({...coachDraft,specialties:sel?coachDraft.specialties.filter(x=>x!==s):[...coachDraft.specialties,s]})} className="btn-press" style={{padding:"6px 12px",borderRadius:18,border:sel?`2px solid ${PK.c1}`:`1px solid ${C.borderS}`,background:sel?`rgba(${PK.rgb},0.18)`:"transparent",color:sel?`${PK.cl}`:C.muted,fontFamily:F.ios,fontSize:12,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>{s}</button>;})}</div>
           <FL>Biografía corta *</FL>
-          <textarea value={coachDraft.bio} onChange={e=>setCoachDraft({...coachDraft,bio:e.target.value})} placeholder="Cuéntales a los pacientes sobre tu formación, método y experiencia con deportistas..." rows={3} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical",marginBottom:14}}/>
+          <textarea value={coachDraft.bio} onChange={e=>setCoachDraft({...coachDraft,bio:e.target.value})} placeholder={PK.bioPh} rows={3} style={{width:"100%",background:C.iosField,border:"none",borderRadius:12,padding:"13px 16px",color:C.text,fontFamily:F.ios,fontSize:15,outline:"none",resize:"vertical",marginBottom:14}}/>
           <FL>Precio por sesión (MXN) *</FL>
           <TI type="number" value={coachDraft.hourlyRate} onChange={e=>setCoachDraft({...coachDraft,hourlyRate:e.target.value})} placeholder="600"/>
           <div style={{height:12}}/>
           <FL>Disponibilidad / consultorio (opcional)</FL>
-          <TI value={coachDraft.availability} onChange={e=>setCoachDraft({...coachDraft,availability:e.target.value})} placeholder="Consultorio en San Pedro · Lun-Vie 9am-7pm · a domicilio"/>
-          <BtnP onClick={submitCoachApplication}>ENVIAR SOLICITUD</BtnP>
+          <TI value={coachDraft.availability} onChange={e=>setCoachDraft({...coachDraft,availability:e.target.value})} placeholder={PK.availPh}/>
+          <BtnP onClick={submitCoachApplication}>{coachDraft.editId?"GUARDAR CAMBIOS":"ENVIAR SOLICITUD"}</BtnP>
           <BtnX onClick={()=>setShowFisioApply(false)}>CANCELAR</BtnX>
         </Modal>}
-        {showCoachRequest&&showCoachRequest.kind==="fisio"&&<Modal onClose={()=>setShowCoachRequest(null)} center>
-          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR FÍSIO</T>
-          <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"linear-gradient(135deg,rgba(45,212,191,0.10),"+C.surface2+")",border:"1px solid rgba(45,212,191,0.30)",borderRadius:12,marginBottom:16}}>
+        {showCoachRequest&&showCoachRequest.kind===PK.kind&&<Modal onClose={()=>setShowCoachRequest(null)} center>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR {PK.title}</T>
+          <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:`linear-gradient(135deg,rgba(${PK.rgb},0.10),`+C.surface2+")",border:`1px solid rgba(${PK.rgb},0.30)`,borderRadius:12,marginBottom:16}}>
             <PA photo={showCoachRequest.playerPhoto} avatar={showCoachRequest.playerAvatar} size={42}/>
-            <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>{showCoachRequest.playerName}</div><div style={{fontFamily:F.bn,fontSize:18,color:"#5EEAD4",marginTop:2}}>${showCoachRequest.hourlyRate} <span style={{fontSize:11,color:C.muted}}>/ sesión</span></div></div>
+            <div style={{flex:1}}><div style={{fontFamily:F.ios,fontSize:14,color:C.text,fontWeight:600}}>{showCoachRequest.playerName}</div><div style={{fontFamily:F.bn,fontSize:18,color:`${PK.cl}`,marginTop:2}}>${showCoachRequest.hourlyRate} <span style={{fontSize:11,color:C.muted}}>/ sesión</span></div></div>
           </div>
           <FL>¿Cuándo?</FL>
           <Seg options={[{v:"weekday",l:"Entre semana"},{v:"weekend",l:"Fin de semana"},{v:"flexible",l:"Flexible"}]} value={coachRequestForm.when} onChange={v=>setCoachRequestForm({...coachRequestForm,when:v})} style={{marginBottom:14}}/>
@@ -4892,17 +5183,17 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
         </Modal>}
         {coachContactShare&&coachContactShare.kind==="fisio"&&<Modal onClose={()=>setCoachContactShare(null)} center>
           <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="cross" s={48} c="#5EEAD4"/></div>
+            <div style={{marginBottom:10,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="cross" s={48} c={`${PK.cl}`}/></div>
             <T size={24}>¡FÍSIO CONFIRMADO!</T>
             <Sub style={{marginTop:8}}>Contáctense para agendar la sesión</Sub>
           </div>
-          <div style={{background:"rgba(45,212,191,0.12)",border:"1px solid rgba(45,212,191,0.30)",borderRadius:10,padding:12,marginBottom:14,textAlign:"center"}}>
+          <div style={{background:`rgba(${PK.rgb},0.12)`,border:`1px solid rgba(${PK.rgb},0.30)`,borderRadius:10,padding:12,marginBottom:14,textAlign:"center"}}>
             <Sub style={{fontSize:11,letterSpacing:"0.18em",fontWeight:600}}>${coachContactShare.hourlyRate} / SESIÓN</Sub>
           </div>
-          <div style={{background:"linear-gradient(135deg,rgba(45,212,191,0.15),rgba(8,145,178,0.10))",border:"1px solid rgba(45,212,191,0.35)",borderRadius:14,padding:14,marginBottom:10}}>
-            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:"#5EEAD4",marginBottom:4,fontWeight:600}}><span style={{display:"inline-flex",verticalAlign:"middle"}}><Ico n="cross" s={13} c="#5EEAD4"/></span>FÍSIO</div>
+          <div style={{background:`linear-gradient(135deg,rgba(${PK.rgb},0.15),rgba(8,145,178,0.10))`,border:`1px solid rgba(${PK.rgb},0.35)`,borderRadius:14,padding:14,marginBottom:10}}>
+            <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:`${PK.cl}`,marginBottom:4,fontWeight:600}}><span style={{display:"inline-flex",verticalAlign:"middle"}}><Ico n="cross" s={13} c={`${PK.cl}`}/></span>FÍSIO</div>
             <div style={{fontFamily:F.ios,fontSize:15,color:C.text,fontWeight:600,marginBottom:6}}>{coachContactShare.coachName}</div>
-            <div style={{fontFamily:F.bn,fontSize:22,color:"#5EEAD4",letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
+            <div style={{fontFamily:F.bn,fontSize:22,color:`${PK.cl}`,letterSpacing:"0.04em"}}><Ico n="phone"/>{coachContactShare.coachPhone}</div>
           </div>
           <div style={{background:"rgba(52,199,89,0.12)",border:"1px solid rgba(52,199,89,0.35)",borderRadius:14,padding:14}}>
             <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.22em",color:C.green,marginBottom:4,fontWeight:600}}><Ico n="person"/>PACIENTE</div>
@@ -4921,7 +5212,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const canWatch=(v)=>!v.premium||!!user?.premium||isAdmin||v.coach_id===user?.id;
     const byTopic={};vids.forEach(v=>{(byTopic[v.topic]=byTopic[v.topic]||[]).push(v);});
     const isMine=vc.playerId===user?.id;
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -4952,7 +5243,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     </div>;
   }
   if(screen==="coach"){
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="find-hub" label="Find A"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}><div style={{marginBottom:12,lineHeight:0,display:"flex",justifyContent:"center"}}><Ico n="shield" s={48} c={C.muted}/></div><T size={28}>NO DISPONIBLE</T><Sub style={{marginTop:10,fontSize:14,lineHeight:1.5}}>No disponible para menores por seguridad.</Sub></div>
@@ -4963,7 +5254,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const myCoachApp=coachApplications.find(c=>c.playerId===user?.id&&(c.kind||"coach")==="coach");
     const incomingCoachReqs=coachRequests.filter(r=>r.coachPlayerId===user?.id&&(r.kind||"coach")==="coach");
     const myCoachReqs=coachRequests.filter(r=>r.playerId===user?.id&&(r.kind||"coach")==="coach");
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
@@ -5028,6 +5319,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
               <Sub style={{fontSize:12,lineHeight:1.5,marginBottom:12,color:C.text,opacity:0.85}}>"{coach.bio.length>140?coach.bio.slice(0,140)+"…":coach.bio}"</Sub>
               {coach.playerId!==user?.id&&!isAdmin&&(()=>{const myReq=coachRequests.find(r=>r.coachAppId===coach.id&&r.playerId===user?.id);if(myReq?.status==="pending")return <div style={{padding:"10px 14px",background:"rgba(255,159,10,0.10)",border:`1px solid rgba(255,159,10,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.amber,fontWeight:700}}><Ico n="clock"/>SOLICITUD ENVIADA</div>;if(myReq?.status==="accepted")return <button onClick={()=>setCoachContactShare({coachName:coach.playerName,coachPhone:coach.playerPhone,playerName:user.name,playerPhone:user.phone||"—",hourlyRate:coach.hourlyRate,frequency:myReq.frequency})} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,${C.green},#2EA84C)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600}}><Ico n="check" s={14}/>VER CONTACTO</button>;if(myReq?.status==="rejected")return <div style={{padding:"10px 14px",background:"rgba(255,59,48,0.10)",border:`1px solid rgba(255,59,48,0.30)`,borderRadius:10,textAlign:"center",fontFamily:F.bc,fontSize:10,letterSpacing:"0.2em",color:C.red,fontWeight:700}}><Ico n="x" s={14}/>SOLICITUD RECHAZADA</div>;return <button onClick={()=>{setCoachRequestForm({frequency:"weekly",when:"weekend",time:"morning",msg:""});setShowCoachRequest(coach);}} className="btn-press" style={{width:"100%",padding:"11px",borderRadius:12,background:`linear-gradient(135deg,#A78BFA,#7C3AED)`,border:"none",color:"#fff",fontFamily:F.ios,fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 14px rgba(124,58,237,0.35)"}}><Ico n="ball" s={15} c="#fff"/>SOLICITAR ENTRENAR</button>;})()}
               {coach.playerId===user?.id&&<div style={{padding:"8px 14px",background:C.cyanDim,border:`1px solid ${C.cyanBdr}`,borderRadius:10,fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:C.cyan,fontWeight:600,textAlign:"center"}}>ESTE ERES TÚ</div>}
+              {coach.playerId===user?.id&&<button onClick={(e)=>{e.stopPropagation();abrirEdicionFicha(coach);}} className="btn-press" style={{width:"100%",marginTop:8,padding:"10px",borderRadius:10,background:"transparent",border:"1px solid rgba(167,139,250,0.45)",color:"#C4B5FD",fontFamily:F.ios,fontSize:12.5,fontWeight:700,cursor:"pointer"}}><Ico n="edit" s={13}/>EDITAR MI FICHA</button>}
               {(()=>{const vids=coachVideos.filter(v=>v.coach_id===coach.playerId);const isMine=coach.playerId===user?.id;if(!vids.length&&!isMine)return null;return <div style={{display:"flex",gap:8,marginTop:8}}>{vids.length>0&&<button onClick={()=>{setVideosCoach(coach);setScreen("coach-videos");}} className="btn-press" style={{flex:1,background:"rgba(167,139,250,0.14)",border:"1px solid rgba(167,139,250,0.4)",color:"#C4B5FD",fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"10px",borderRadius:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="play" s={14} c="#C4B5FD"/>Ver videos ({vids.length})</button>}{isMine&&<button onClick={()=>{setVideoDraft({topic:"",title:"",premium:false,file:null,preview:null});setShowVideoUpload(true);}} className="btn-press" style={{flex:1,background:"rgba(52,199,89,0.12)",border:`1px solid rgba(52,199,89,0.4)`,color:C.green,fontFamily:F.ios,fontSize:13,fontWeight:600,padding:"10px",borderRadius:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="upload" s={14} c={C.green}/>Subir video</button>}</div>;})()}
               {isAdmin&&<button onClick={()=>{if(confirm("¿Eliminar este coach?")){setCoachApplications(prev=>prev.filter(x=>x.id!==coach.id));}}} className="btn-press" style={{position:"absolute",top:10,right:10,background:"rgba(255,59,48,0.85)",color:"#fff",border:"none",width:26,height:26,borderRadius:13,cursor:"pointer",fontSize:13,fontWeight:700}}><Ico n="x" s={16}/></button>}
             </div>)}
@@ -5036,7 +5328,8 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <TabSpacer/>
         </div>
         {showCoachApply&&<Modal onClose={()=>setShowCoachApply(false)} large center>
-          <T size={22} style={{textAlign:"center",marginBottom:6}}>SOLICITAR SER COACH</T>
+          <T size={22} style={{textAlign:"center",marginBottom:6}}>{coachDraft.editId?"EDITAR MI FICHA":"SOLICITAR SER COACH"}</T>
+          {coachDraft.editId&&<><FL>Nombre que se muestra</FL><TI value={coachDraft.playerName||""} onChange={e=>setCoachDraft({...coachDraft,playerName:e.target.value})} placeholder="Tu nombre"/><div style={{height:12}}/><FL>Teléfono de contacto</FL><TI value={coachDraft.playerPhone||""} onChange={e=>setCoachDraft({...coachDraft,playerPhone:e.target.value})} placeholder="+52 81..."/><div style={{height:12}}/></>}
           <Sub style={{textAlign:"center",marginBottom:18,fontSize:13}}>El admin revisará tu solicitud</Sub>
           <FL>Años de experiencia *</FL>
           <Seg options={["< 1 año","1-3 años","3-5 años","5-10 años","10+ años"]} value={coachDraft.experience} onChange={v=>setCoachDraft({...coachDraft,experience:v})} style={{marginBottom:14}}/>
@@ -5049,7 +5342,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
           <div style={{height:12}}/>
           <FL>Disponibilidad (opcional)</FL>
           <TI value={coachDraft.availability} onChange={e=>setCoachDraft({...coachDraft,availability:e.target.value})} placeholder="Lunes a viernes 6am-10am y fines de semana"/>
-          <BtnP onClick={submitCoachApplication}>ENVIAR SOLICITUD</BtnP>
+          <BtnP onClick={submitCoachApplication}>{coachDraft.editId?"GUARDAR CAMBIOS":"ENVIAR SOLICITUD"}</BtnP>
           <BtnX onClick={()=>setShowCoachApply(false)}>CANCELAR</BtnX>
         </Modal>}
         {showCoachRequest&&<Modal onClose={()=>setShowCoachRequest(null)} center>
@@ -5098,7 +5391,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
   // MARKETPLACE
   if(screen==="marketplace"){
     // PROTECCIÓN DE MENORES
-    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    if(!isAdmin&&isMinor(user?.birthdate)){return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}><Nav/><Back to="home" label="Home"/>
         <div style={{padding:"40px 24px",textAlign:"center"}}>
@@ -5111,7 +5404,7 @@ if(t.category&&userCatIdx<0)return false;return true;}).filter(t=>(!tFilters.cat
     const _demoId=accounts.find(a=>a.email==="demo@smt.mx")?.id;const _mp=marketplace.filter(l=>l.sellerId!==_demoId&&l.sellerName!=="Demo"&&!isBlockedId(l.sellerId));const filtered=mpFilter==="Todos"?_mp:_mp.filter(l=>l.category===mpFilter);
     const incomingPur=purchaseRequests.filter(p=>p.sellerId===user?.id);
     const myPur=purchaseRequests.filter(p=>p.buyerId===user?.id);
-    return <div key={screen} className="screen-fade" style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
+    return <div key={screen} className={"screen-fade"+(navDirRef.current==="back"?" nav-back":"")} style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:F.ios,position:"relative"}}>
       <style>{STYLE}</style><Aurora intense={0.4}/>
       <div style={{position:"relative",zIndex:1}}>
         <Nav/>
