@@ -168,47 +168,75 @@ const SESS_ALT=[
     {t:"Drills de servicio",x:"precisión, potencia y ritmo",det:"Series de saques a objetivos (conos) en las esquinas. Trabaja primer y segundo servicio, lanzamiento y pronación.",sub:[{n:"Calentamiento y movilidad de hombro",m:8},{n:"Servicios planos a esquinas (conos)",m:18},{n:"Segundo servicio: slice y kick",m:12},{n:"Estiramiento",m:7}]},
     {t:"Servicio + primer golpe",x:"saque y transición al punto",det:"Saca y juega el primer golpe de derecha con intención. Alterna dirección del saque (T, cuerpo, abierto) y cierra con el siguiente tiro.",sub:[{n:"Movilidad de hombro y cadera",m:8},{n:"Saque + derecha a zona abierta",m:16},{n:"Saque abierto + cruzada",m:12},{n:"Segundo servicio bajo presión (a 10 seguidos)",m:9}]},
     {t:"Ritmo y lanzamiento de saque",x:"consistencia del segundo servicio",det:"Sesión técnica de saque enfocada en el lanzamiento de pelota, la carga de piernas y la repetición del segundo servicio con kick.",sub:[{n:"Lanzamiento sin raqueta (a la marca)",m:7},{n:"Saque de kick a caja (30 repeticiones)",m:16},{n:"Saque plano + slice alternado",m:14},{n:"Estiramiento de hombro y espalda",m:8}]},
+    {t:"Saque bajo presión",x:"puntos que empiezan en tu saque",det:"Juega puntos cortos donde solo cuenta lo que pasa después de tu saque. Entrena decidir rápido: a dónde sacar y qué hacer con la devolución.",sub:[{n:"Movilidad de hombro y tronco",m:8},{n:"Saque a objetivo con 'castigo' si fallas (10 series)",m:14},{n:"Saque + 2 golpes (puntos a 7)",m:18},{n:"Segundo servicio desde 30-40 (simulado)",m:9}]},
+    {t:"Servicio: potencia y pronación",x:"velocidad sin perder control",det:"Sesión técnica de saque plano: lanzamiento más adelante, carga de piernas y pronación completa. Mide cuántos entran de cada 10.",sub:[{n:"Lanzamiento y carga sin pelota",m:7},{n:"Saque plano a la T (3 series de 10)",m:16},{n:"Saque plano abierto (3 series de 10)",m:14},{n:"Estiramiento de hombro y pectoral",m:8}]},
   ],
   [ // 1 · Derecha
     {t:"Drills de derecha",x:"cruzado, paralelo y footwork",det:"Canasta de derechas cruzadas y paralelas con desplazamiento. Enfócate en carga de pierna y terminación por encima del hombro.",sub:[{n:"Calentamiento dinámico",m:8},{n:"Golpe cruzado con canasta",m:16},{n:"Golpe paralelo + footwork",m:16},{n:"De defensa a ataque",m:10}]},
     {t:"Derecha invertida y ataque",x:"inside-out e inside-in",det:"Rodea el revés para atacar con la derecha. Trabaja el desplazamiento lateral y el cambio de dirección hacia paralelo.",sub:[{n:"Calentamiento con escalera",m:8},{n:"Inside-out a la esquina del revés rival",m:15},{n:"Inside-in a la línea",m:14},{n:"Bola corta + subida a la red",m:11}]},
     {t:"Derecha con profundidad",x:"altura, spin y control",det:"Peloteo con objetivo detrás de la línea de servicio. Cambia altura (alto con topspin / plano) según la señal del coach o compañero.",sub:[{n:"Peloteo suave y activación",m:8},{n:"Derechas profundas a zona (conos)",m:16},{n:"Alto topspin vs. plano alternado",m:14},{n:"Rally de 20 pelotas sin fallar",m:10}]},
+    {t:"Derecha en carrera",x:"llegar y pegar sin frenar",det:"Pelotas lanzadas al lado abierto para que pegues la derecha en movimiento y recuperes el centro. Trabaja la última zancada y el equilibrio.",sub:[{n:"Desplazamientos laterales con conos",m:8},{n:"Derecha en carrera cruzada (canasta)",m:16},{n:"Derecha en carrera a la línea",m:14},{n:"Recuperación al centro + segunda pelota",m:11}]},
+    {t:"Derecha de aproximación y bola corta",x:"atacar la pelota que cae corta",det:"Reconoce la pelota corta, sube con derecha de aproximación y define en la red. Entrena leer la bola y no quedarte en el fondo.",sub:[{n:"Peloteo de activación",m:8},{n:"Bola corta + derecha de aproximación (canasta)",m:16},{n:"Aproximación + volea de definición",m:14},{n:"Puntos: solo se gana en la red",m:10}]},
   ],
   [ // 2 · Físico
     {t:"Físico + movilidad de tenis",x:"piernas, core y agilidad",det:"Escalera de agilidad, sentadillas, planchas y desplazamientos laterales. Prepara el cuerpo para la carga de la semana.",sub:[{n:"Escalera de agilidad",m:10},{n:"Sentadillas y estocadas",m:12},{n:"Core: plancha y giros",m:10},{n:"Cardio por intervalos",m:8}]},
     {t:"Potencia de piernas y cambios de dirección",x:"explosividad y frenado",det:"Saltos, desplazamientos en X y frenadas controladas. Es lo que te hace llegar antes a la pelota y recuperar el centro.",sub:[{n:"Movilidad de tobillo y cadera",m:8},{n:"Saltos a cajón / pliometría ligera",m:10},{n:"Desplazamientos en X con conos",m:12},{n:"Core anti-rotación con liga",m:10}]},
     {t:"Resistencia y core",x:"aguantar el tercer set",det:"Intervalos de carrera cortos con recuperación activa y trabajo de tronco. Construye la base para los partidos largos.",sub:[{n:"Trote + movilidad",m:8},{n:"Intervalos 30s fuerte / 30s suave (x8)",m:12},{n:"Circuito de core (plancha lateral, dead bug)",m:12},{n:"Estiramiento de cadena posterior",m:8}]},
+    {t:"Fuerza de tren inferior",x:"piernas que aguantan 3 sets",det:"Sentadillas, estocadas y peso muerto con el propio cuerpo o mancuernas ligeras. La fuerza de piernas es lo que sostiene el golpe en el tercer set.",sub:[{n:"Movilidad de cadera y tobillo",m:8},{n:"Sentadilla goblet (4x10)",m:12},{n:"Estocada caminando (3x12 por pierna)",m:12},{n:"Isométrico en pared + estiramiento",m:8}]},
+    {t:"Agilidad y reacción",x:"primer paso más rápido",det:"Ejercicios de reacción a señal (visual o auditiva), split step y primer paso explosivo. Lo que define llegar o no a la pelota.",sub:[{n:"Escalera de agilidad (patrones)",m:10},{n:"Split step + primer paso a señal",m:12},{n:"Sprints cortos con cambio de dirección",m:10},{n:"Core y estiramiento",m:10}]},
   ],
   [ // 3 · Revés
     {t:"Drills de revés y slice",x:"técnica y dirección",det:"Reveses cruzados y paralelos + slice de aproximación. Controla el plano de la raqueta y la profundidad.",sub:[{n:"Calentamiento dinámico",m:8},{n:"Revés cruzado con canasta",m:16},{n:"Revés paralelo + footwork",m:16},{n:"Slice de aproximación",m:10}]},
     {t:"Revés bajo presión",x:"defensa y contraataque",det:"Recibe pelotas rápidas y profundas al revés y aprende a neutralizar con bloqueo, slice bajo o contra cruzada.",sub:[{n:"Peloteo de activación",m:8},{n:"Bloqueo de revés ante pelota rápida",m:14},{n:"Slice bajo y profundo",m:14},{n:"Contra paralela desde defensa",m:12}]},
     {t:"Revés alto y cambio de ritmo",x:"topspin y variación",det:"Trabaja el revés ante pelota alta (por encima del hombro) y alterna con slice para cambiar el ritmo del punto.",sub:[{n:"Movilidad de hombros y tronco",m:8},{n:"Revés a pelota alta (canasta)",m:16},{n:"Alternar topspin / slice en el mismo rally",m:14},{n:"Rally de 15 reveses sin fallar",m:10}]},
+    {t:"Revés a dos manos: profundidad",x:"pelota pesada y profunda",det:"Peloteo de reveses con objetivo detrás de la línea de servicio. Carga de piernas, giro de hombros y terminación completa.",sub:[{n:"Peloteo suave de activación",m:8},{n:"Revés profundo a zona (conos)",m:16},{n:"Revés cruzado 15 seguidos sin fallar",m:14},{n:"Revés paralelo a la línea",m:10}]},
+    {t:"Slice y variación de revés",x:"romper el ritmo del rival",det:"Slice bajo que no bota, slice de aproximación y alternancia con topspin. Para jugadores que necesitan un plan B cuando el peloteo no sale.",sub:[{n:"Movilidad de hombros",m:8},{n:"Slice bajo y profundo (canasta)",m:14},{n:"Slice de aproximación + volea",m:14},{n:"Rally alternando slice / topspin",m:12}]},
   ],
   [ // 4 · Red
     {t:"Volea, remate y approach",x:"juego de red",det:"Voleas de derecha y revés, remates y subidas a la red. Trabaja reacción y punto de contacto adelante.",sub:[{n:"Calentamiento en la red",m:8},{n:"Voleas derecha y revés",m:16},{n:"Remates (smash)",m:12},{n:"Approach + volea",m:9}]},
     {t:"Reflejos en la red",x:"volea rápida y primera volea",det:"Peloteo de voleas a corta distancia, primera volea baja desde media cancha y remate tras globo.",sub:[{n:"Voleas a corta distancia (reflejos)",m:10},{n:"Primera volea baja desde media cancha",m:14},{n:"Globo + remate en movimiento",m:12},{n:"Punto: subida obligada",m:9}]},
     {t:"Dobles: red y cruce",x:"posicionamiento y volea de ataque",det:"Trabaja el cruce (poach), la volea de ataque al hueco y la comunicación con tu pareja. Ideal si juegas dobles.",sub:[{n:"Calentamiento de voleas",m:8},{n:"Cruce (poach) tras saque del compañero",m:14},{n:"Volea de ataque al hueco",m:12},{n:"Puntos de dobles solo desde la red",m:11}]},
+    {t:"Red: volea baja y media volea",x:"la pelota a los pies",det:"Voleas bajas, media volea y la temida pelota a los pies. Flexiona rodillas, raqueta adelante y sin backswing.",sub:[{n:"Calentamiento en la red",m:8},{n:"Volea baja desde línea de servicio",m:14},{n:"Media volea y pelota a los pies",m:14},{n:"Puntos desde media cancha",m:9}]},
+    {t:"Remate y globo",x:"cerrar el punto desde arriba",det:"Remates con desplazamiento hacia atrás, remate tras globo defensivo y globo ofensivo. Trabaja la lectura temprana y el posicionamiento bajo la pelota.",sub:[{n:"Movilidad de hombro",m:8},{n:"Remate estático (canasta)",m:12},{n:"Remate en movimiento tras globo",m:14},{n:"Globo ofensivo + subida",m:11}]},
   ],
   [ // 5 · Táctica
     {t:"Puntos y táctica",x:"sets de práctica o tu reta/torneo",det:"Juega puntos con un plan táctico (saque+1, construir con la derecha). Aplica lo entrenado bajo presión.",sub:[{n:"Peloteo de calentamiento",m:12},{n:"Puntos saque+1",m:24},{n:"Sets con plan táctico",m:24}]},
     {t:"Patrones de juego",x:"construir el punto",det:"Juega puntos con patrones fijos: cruzada-cruzada-paralela, o abrir con saque y cerrar al hueco. Después, sets libres aplicándolos.",sub:[{n:"Peloteo de calentamiento",m:10},{n:"Patrón: 2 cruzadas + paralela",m:18},{n:"Patrón: saque abierto + hueco",m:14},{n:"Set corto aplicando patrones",m:18}]},
     {t:"Presión y cierre de sets",x:"puntos importantes",det:"Simula situaciones: 30-40, tie-break, servir para el set. Entrena la cabeza tanto como los golpes.",sub:[{n:"Calentamiento con puntos cortos",m:10},{n:"Juegos desde 30-40 (sacando y restando)",m:18},{n:"Tie-breaks a 7",m:16},{n:"Servir para cerrar el set (simulación)",m:16}]},
+    {t:"Sets con objetivo",x:"jugar con una sola instrucción",det:"Juega un set con una regla fija: por ejemplo, solo puedes ganar el punto en la red, o solo se vale pegar cruzado. Obliga a construir.",sub:[{n:"Peloteo de calentamiento",m:10},{n:"Set: 'solo cruzado'",m:20},{n:"Set: 'punto gana solo en la red'",m:20},{n:"Análisis: 3 cosas que funcionaron",m:5}]},
+    {t:"Simulación de partido",x:"calentamiento, rutinas y partido",det:"Haz todo como en torneo: calentamiento de 10 min, rutina de saque, cambios de lado y partido a 1 set. Entrena la cabeza y el ritmo real.",sub:[{n:"Calentamiento de partido (10 min)",m:10},{n:"Set completo con reglas de torneo",m:35},{n:"Tie-break extra",m:10},{n:"Estiramiento y notas",m:5}]},
   ],
 ];
 // Número de semana estable (cambia cada lunes) para elegir la variante
-const _weekSeed=()=>{const d=new Date();const day=(d.getDay()+6)%7;const monday=new Date(d.getFullYear(),d.getMonth(),d.getDate()-day);return Math.floor(monday.getTime()/604800000);};
-const genRoutine=(ph,obj,gl)=>{ph=ph||{};const w=ph.weight||75;const exp=(ph.experience||"Intermedio");const lvl=/sin/i.test(exp)?0:/princip/i.test(exp)?1:/interm/i.test(exp)?2:/avanz/i.test(exp)?3:4;const adj=loadAdjFrom(gl);const bump=(1+lvl*0.13)*adj;const SUB={tecnica:[{n:"Calentamiento y movilidad de hombro",m:8},{n:"Servicios planos a esquinas (conos)",m:18},{n:"Segundo servicio: slice y kick",m:12},{n:"Estiramiento",m:7}],drills:[{n:"Calentamiento dinámico",m:8},{n:"Golpe cruzado con canasta",m:16},{n:"Golpe paralelo + footwork",m:16},{n:"De defensa a ataque",m:10}],cardio:[{n:"Escalera de agilidad",m:10},{n:"Sentadillas y estocadas",m:12},{n:"Core: plancha y giros",m:10},{n:"Cardio por intervalos",m:8}],volea:[{n:"Calentamiento en la red",m:8},{n:"Voleas derecha y revés",m:16},{n:"Remates (smash)",m:12},{n:"Approach + volea",m:9}],tactica:[{n:"Peloteo de calentamiento",m:12},{n:"Puntos saque+1",m:24},{n:"Sets con plan táctico",m:24}],descanso:[{n:"Movilidad ligera",m:8},{n:"Foam roller",m:7},{n:"Estiramiento completo",m:5}]};const base=[{d:"LUN",t:"Drills de servicio",x:"precisión, potencia y ritmo",min:45,kind:"tecnica",int:3,det:"Series de saques a objetivos (conos) en las esquinas. Trabaja primer y segundo servicio, lanzamiento y pronación."},{d:"MAR",t:"Drills de derecha",x:"cruzado, paralelo y footwork",min:50,kind:"drills",int:4,det:"Canasta de derechas cruzadas y paralelas con desplazamiento. Enfócate en carga de pierna y terminación por encima del hombro."},{d:"MIÉ",t:"Físico + movilidad de tenis",x:"piernas, core y agilidad",min:40,kind:"cardio",int:3,det:"Escalera de agilidad, sentadillas, planchas y desplazamientos laterales. Prepara el cuerpo para la carga de la semana."},{d:"JUE",t:"Drills de revés y slice",x:"técnica y dirección",min:50,kind:"drills",int:4,det:"Reveses cruzados y paralelos + slice de aproximación. Controla el plano de la raqueta y la profundidad."},{d:"VIE",t:"Volea, remate y approach",x:"juego de red",min:45,kind:"volea",int:4,det:"Voleas de derecha y revés, remates y subidas a la red. Trabaja reacción y punto de contacto adelante."},{d:"SÁB",t:"Puntos y táctica",x:"sets de práctica o tu reta/torneo",min:60,kind:"tactica",int:5,det:"Juega puntos con un plan táctico (saque+1, construir con la derecha). Aplica lo entrenado bajo presión."},{d:"DOM",t:"Recuperación activa",x:"estiramiento y descanso",min:20,kind:"descanso",int:1,det:"Estiramiento completo, foam roller y movilidad ligera. La recuperación es parte del progreso."}];const todayIdx=(new Date().getDay()+6)%7;
+const _weekSeed=(fecha)=>{const d=fecha?new Date(fecha):new Date();const day=(d.getDay()+6)%7;const monday=new Date(d.getFullYear(),d.getMonth(),d.getDate()-day);return Math.floor(monday.getTime()/604800000);};
+// PROGRESIÓN AUTOMÁTICA: mira las últimas 4 semanas antes de la fecha pedida.
+// Semana cumplida (≥75% de sesiones, sin dolor fuerte) sube la carga 3%; semana floja (<50%) la baja 3%.
+// Tope entre 85% y 125%. El nivel de experiencia NO cambia solo: la app lo propone y el usuario decide.
+const progresoDe=(gl,fecha)=>{try{
+  gl=gl||{};const done=new Set(gl.doneDates||[]);const rpe=gl.rpeLog||{};
+  const base=new Date(fecha||Date.now());const day=(base.getDay()+6)%7;const lunes=new Date(base.getFullYear(),base.getMonth(),base.getDate()-day);
+  const plan=Math.max(1,(gl.weekPlan||3));let f=1;
+  for(let k=4;k>=1;k--){
+    const ini=new Date(lunes);ini.setDate(lunes.getDate()-7*k);let hechas=0,dolor=false;
+    for(let i=0;i<7;i++){const dd=new Date(ini);dd.setDate(ini.getDate()+i);const ds=dd.toISOString().slice(0,10);if(done.has(ds))hechas++;const r=rpe[ds];if(r&&r.pain==="fuerte")dolor=true;}
+    if(dolor)f-=0.05;else if(hechas>=plan*0.75)f+=0.03;else if(hechas<plan*0.5&&hechas>0)f-=0.03;
+  }
+  return Math.max(0.85,Math.min(1.25,f));
+}catch(e){return 1;}};
+const EXP_LEVELS=["Sin experiencia","Principiante","Intermedio","Avanzado","Alto rendimiento"];
+const genRoutine=(ph,obj,gl,opts)=>{ph=ph||{};opts=opts||{};const w=ph.weight||75;const exp=(ph.experience||"Intermedio");const lvl=/sin/i.test(exp)?0:/princip/i.test(exp)?1:/interm/i.test(exp)?2:/avanz/i.test(exp)?3:4;const _plan=(Array.isArray(ph.trainDays)&&ph.trainDays.length)?ph.trainDays.length:Math.max(1,Math.min(7,parseInt(ph.freq)||3));const adj=loadAdjFrom(gl)*progresoDe(Object.assign({},gl||{},{weekPlan:_plan}),opts.date);const bump=(1+lvl*0.13)*adj;const SUB={tecnica:[{n:"Calentamiento y movilidad de hombro",m:8},{n:"Servicios planos a esquinas (conos)",m:18},{n:"Segundo servicio: slice y kick",m:12},{n:"Estiramiento",m:7}],drills:[{n:"Calentamiento dinámico",m:8},{n:"Golpe cruzado con canasta",m:16},{n:"Golpe paralelo + footwork",m:16},{n:"De defensa a ataque",m:10}],cardio:[{n:"Escalera de agilidad",m:10},{n:"Sentadillas y estocadas",m:12},{n:"Core: plancha y giros",m:10},{n:"Cardio por intervalos",m:8}],volea:[{n:"Calentamiento en la red",m:8},{n:"Voleas derecha y revés",m:16},{n:"Remates (smash)",m:12},{n:"Approach + volea",m:9}],tactica:[{n:"Peloteo de calentamiento",m:12},{n:"Puntos saque+1",m:24},{n:"Sets con plan táctico",m:24}],descanso:[{n:"Movilidad ligera",m:8},{n:"Foam roller",m:7},{n:"Estiramiento completo",m:5}]};const base=[{d:"LUN",t:"Drills de servicio",x:"precisión, potencia y ritmo",min:45,kind:"tecnica",int:3,det:"Series de saques a objetivos (conos) en las esquinas. Trabaja primer y segundo servicio, lanzamiento y pronación."},{d:"MAR",t:"Drills de derecha",x:"cruzado, paralelo y footwork",min:50,kind:"drills",int:4,det:"Canasta de derechas cruzadas y paralelas con desplazamiento. Enfócate en carga de pierna y terminación por encima del hombro."},{d:"MIÉ",t:"Físico + movilidad de tenis",x:"piernas, core y agilidad",min:40,kind:"cardio",int:3,det:"Escalera de agilidad, sentadillas, planchas y desplazamientos laterales. Prepara el cuerpo para la carga de la semana."},{d:"JUE",t:"Drills de revés y slice",x:"técnica y dirección",min:50,kind:"drills",int:4,det:"Reveses cruzados y paralelos + slice de aproximación. Controla el plano de la raqueta y la profundidad."},{d:"VIE",t:"Volea, remate y approach",x:"juego de red",min:45,kind:"volea",int:4,det:"Voleas de derecha y revés, remates y subidas a la red. Trabaja reacción y punto de contacto adelante."},{d:"SÁB",t:"Puntos y táctica",x:"sets de práctica o tu reta/torneo",min:60,kind:"tactica",int:5,det:"Juega puntos con un plan táctico (saque+1, construir con la derecha). Aplica lo entrenado bajo presión."},{d:"DOM",t:"Recuperación activa",x:"estiramiento y descanso",min:20,kind:"descanso",int:1,det:"Estiramiento completo, foam roller y movilidad ligera. La recuperación es parte del progreso."}];const todayIdx=((opts.date?new Date(opts.date):new Date()).getDay()+6)%7;
   const fq=Math.max(1,Math.min(7,parseInt(ph.freq)||3));const pick=(Array.isArray(ph.trainDays)&&ph.trainDays.length)?[...ph.trainDays].filter(x=>x>=0&&x<=6).sort((a,b)=>a-b):(FREQ_DAYS[fq]||FREQ_DAYS[3]);
-  const wk=_weekSeed();
+  const wk=_weekSeed(opts.date);
   // Cada semana rota el orden de las sesiones y usa una versión distinta de cada una
-  const prio=SESS_PRIO.slice(0,pick.length);const rot=prio.length?wk%prio.length:0;const chosen=[...prio.slice(rot),...prio.slice(0,rot)];
+  // Rota entre LOS 6 tipos de sesión (no solo los primeros): quien entrena 3 días también pasa por revés, red y físico
+  const rot=wk%SESS_PRIO.length;const rotado=[...SESS_PRIO.slice(rot),...SESS_PRIO.slice(0,rot)];const chosen=rotado.slice(0,pick.length);
   const week=base.map((dd,i)=>{
     const slot=pick.indexOf(i);
     if(slot<0)return {d:dd.d,t:"Descanso",x:"recuperación activa",min:0,kind:"descanso",int:1,det:"Día libre. Estiramiento ligero y movilidad si quieres. Descansar es parte del plan."};
     const bi=chosen[slot];const src=base[bi]||dd;const alts=SESS_ALT[bi];const v=alts?alts[(wk+bi)%alts.length]:null;
     return v?{...src,d:dd.d,t:v.t,x:v.x,det:v.det,_sub:v.sub}:{...src,d:dd.d};
   });
-  return week.map((dd,i)=>{const min=dd.min?Math.max(15,Math.round(dd.min*bump/5)*5):0;const sub=(dd._sub||SUB[dd.kind]||[]).map(s=>({...s,m:Math.max(3,Math.round(s.m*bump))}));return {...dd,i,today:i===todayIdx,min,sub,int:Math.max(1,Math.min(5,dd.int+(lvl>=3?1:0)-(adj<0.85?1:0))),kcal:min?_kcal(min,dd.kind,w):0};});};
+  return week.map((dd,i)=>{const min=dd.min?Math.max(15,Math.round(dd.min*bump/5)*5):0;const sub=(dd._sub||SUB[dd.kind]||[]).map(s=>({...s,m:Math.max(3,Math.round(s.m*bump))}));return {...dd,i,today:i===todayIdx,min,sub,prog:Math.round(adj*100),int:Math.max(1,Math.min(5,dd.int+(lvl>=3?1:0)-(adj<0.85?1:0))),kcal:min?_kcal(min,dd.kind,w):0};});};
 const genFisioPlan=(ph)=>{ph=ph||{};const inj=(ph.injury&&ph.injury!=="ninguna")?ph.injury:"general";const map={codo:["Estiramiento de antebrazo (30s x3)","Excéntricos de muñeca (3x12)","Masaje/foam en antebrazo"],hombro:["Círculos de hombro (2 min)","Rotadores externos con liga (3x15)","Estabilidad escapular (3x10)"],rodilla:["Cuádriceps isométrico (3x20s)","Sentadilla a banco (3x12)","Movilidad de cadera (2 min)"],tobillo:["Movilidad de tobillo (2 min)","Equilibrio en un pie (3x30s)","Fortalecer peroneos con liga (3x15)"],espalda:["Gato-camello (2 min)","Plancha (3x30s)","Movilidad torácica (3x10)"],"muñeca":["Estiramiento de muñeca (30s x3)","Fortalecimiento con liga (3x15)","Movilidad de dedos"],general:["Movilidad general (5 min)","Core y estabilidad (3x30s)","Estiramiento completo (5 min)"]};const ex=map[inj]||map.general;const freq=inj==="general"?"3 veces por semana":"Diario, 10-15 min";return {inj,ex,freq};};
 const nextCat=c=>{const i=CATS.indexOf(c);if(i<=0)return c;return CATS[i-1];};
 const CLUBS=["Club Campestre Monterrey","Club Sonoma","Club Industrial","Club San Agustín","Club Británico","Club Bosques","Casa Club del Valle","Otro"];
@@ -972,6 +1000,7 @@ export default function App(){
   const [fqData,setFqData]=useState({});
   const [editFisio,setEditFisio]=useState(false);
   const [dayModal,setDayModal]=useState(null);
+  const [calDay,setCalDay]=useState(null); // día tocado en el calendario de Mi Racha
   const [woT,setWoT]=useState(null);
   const audioRef=useRef(null);
   const [doneModal,setDoneModal]=useState(null);
@@ -1598,12 +1627,22 @@ export default function App(){
       }
     }
     if(editAsAdmin)updateAccount(u);else updateUser(u);
-    // Guardar cambios en Supabase
+    // Guardar cambios en Supabase — SOLO los campos que cambiaron en este formulario.
+    // Antes se mandaba el perfil COMPLETO (incluidos puntos, victorias, títulos) con los valores
+    // que el teléfono tenía al abrir el formulario; si estaban viejos, borraban el ranking real.
     (async()=>{try{
-      const row=playerToProfile(u,u.id);
-      delete row.created_at;
+      const nuevo=playerToProfile(u,u.id);
+      const previo=orig?playerToProfile(orig,orig.id):{};
+      // Campos que SÍ se editan desde aquí
+      const editables=["name","first_name","last_name","birthdate","sex","phone","category","category_locked","city","state","country","club","photo_url","avatar","hand","racket","objectives","objectives_set","physical","goals","blocked"];
+      // Competitivos: solo el admin puede escribirlos, y solo si de verdad los cambió
+      const competitivos=["points","wins","losses","titles","stats"];
+      const row={};
+      editables.forEach(k=>{if(JSON.stringify(nuevo[k])!==JSON.stringify(previo[k]))row[k]=nuevo[k];});
+      if(editAsAdmin)competitivos.forEach(k=>{if(JSON.stringify(nuevo[k])!==JSON.stringify(previo[k]))row[k]=nuevo[k];});
+      if(!Object.keys(row).length)return;
       const {error}=await supabase.from("profiles").update(row).eq("auth_id",u.id);
-      if(error)console.error("Error actualizando perfil:",error.message);
+      if(error){console.error("Error actualizando perfil:",error.message);setSaveError("⚠️ No se guardó el perfil: "+error.message);}
     }catch(e){console.error("Error actualizando perfil:",e);}})();
     setShowProfileEdit(false);setEditAsAdmin(false);
   };
@@ -3468,6 +3507,13 @@ export default function App(){
   if(screen==="plan"){
     const P0=user?.physical||{};const hasData=!!(P0.weight&&P0.height);
     const M=genPhysical(P0,user?.birthdate);const R=genRoutine(P0,user?.objectives,user?.goals);
+    // Propuesta de cambio de nivel: solo se sugiere, el usuario decide
+    const _prog=(R.find(d=>d.min)||{}).prog||100;
+    const _lvlIdx=Math.max(0,EXP_LEVELS.findIndex(x=>x.toLowerCase()===String(P0.experience||"Intermedio").toLowerCase()));
+    const _sugerido=(_prog>=118&&_lvlIdx<EXP_LEVELS.length-1)?EXP_LEVELS[_lvlIdx+1]:(_prog<=88&&_lvlIdx>0)?EXP_LEVELS[_lvlIdx-1]:null;
+    const _descartada=(user?.goals||{}).nivelDescartado===_sugerido;
+    const cambiarNivel=async(nivel)=>{const phys={...(user.physical||{}),experience:nivel};const g={...(user.goals||{}),nivelDescartado:null};updateUser({...user,physical:phys,goals:g});try{const {error}=await supabase.from("profiles").update({physical:phys,goals:g}).eq("auth_id",user.id);if(error)setSaveError("⚠️ No se guardó tu nivel: "+error.message);}catch(e){}};
+    const descartarNivel=async()=>{const g={...(user.goals||{}),nivelDescartado:_sugerido};updateUser({...user,goals:g});try{await supabase.from("profiles").update({goals:g}).eq("auth_id",user.id);}catch(e){}};
     const totKcal=R.reduce((a,d)=>a+d.kcal,0);const totMin=R.reduce((a,d)=>a+d.min,0);
     const imcPct=Math.max(6,Math.min(100,((M.imc-15)/(35-15))*100));
     const IB="#0A0F0C",IC="#141B14",IC2="#20291f",TX="#F2F5EA",MU="#95a08f";
@@ -3478,6 +3524,11 @@ export default function App(){
           <button onClick={()=>setScreen("metas")} className="btn-press" style={{width:34,height:34,borderRadius:"50%",background:IC,border:"none",color:TX,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="arrowLeft" s={16}/></button>
           <div style={{flex:1,fontFamily:F.bn,fontSize:24,letterSpacing:"0.02em"}}>ENTRENAMIENTO</div>
         </div>
+        {_sugerido&&!_descartada&&<div style={{margin:"0 18px 12px",background:"#141B14",border:`1px solid ${_prog>100?LIME:C.amber}66`,borderRadius:16,padding:"12px 14px"}}>
+          <div style={{fontFamily:F.bc,fontSize:10,letterSpacing:"0.18em",color:_prog>100?LIME:C.amber,fontWeight:700,marginBottom:4}}>{_prog>100?"VAS MUY BIEN":"VAMOS A CUIDARTE"}</div>
+          <div style={{fontFamily:F.ios,fontSize:13.5,color:"#F2F5EA",lineHeight:1.45,marginBottom:10}}>{_prog>100?`Llevas semanas cumpliendo tu plan y tu carga ya va al ${_prog}%. ¿Subimos tu nivel a ${_sugerido}?`:`Tus últimas semanas fueron pesadas o con molestias. ¿Bajamos tu nivel a ${_sugerido} por un tiempo?`}</div>
+          <div style={{display:"flex",gap:8}}><button onClick={()=>cambiarNivel(_sugerido)} className="btn-press" style={{flex:1,background:LIME,border:"none",color:LIMED,padding:"11px",fontFamily:F.ios,fontSize:13.5,fontWeight:800,cursor:"pointer",borderRadius:12}}>SÍ, CAMBIAR</button><button onClick={descartarNivel} className="btn-press" style={{flex:1,background:"transparent",border:"1px solid #20291f",color:"#95a08f",padding:"11px",fontFamily:F.ios,fontSize:13.5,fontWeight:700,cursor:"pointer",borderRadius:12}}>SEGUIR IGUAL</button></div>
+        </div>}
         <div style={{padding:"0 18px"}}>
           {!hasData&&<div onClick={()=>setScreen("fisio-q")} className="btn-press" style={{cursor:"pointer",background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}66`,borderRadius:13,padding:"11px 13px",marginBottom:13,display:"flex",alignItems:"center",gap:9}}><Ico n="info" s={16} c={LIME}/><div style={{flex:1,fontFamily:F.ios,fontSize:12.5,color:TX,lineHeight:1.35}}>Contesta 1 min y personalizamos tu plan a tu medida.</div><span style={{color:LIME,fontWeight:800,fontSize:12}}>Empezar</span></div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
@@ -3591,13 +3642,27 @@ export default function App(){
           <div style={{background:IC,borderRadius:18,padding:"16px 14px"}}>
             <div style={{fontFamily:F.bn,fontSize:18,marginBottom:12,textAlign:"center"}}>{monthName} {yy}</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,marginBottom:6}}>{["L","M","M","J","V","S","D"].map((d,i)=><div key={i} style={{textAlign:"center",fontFamily:F.bc,fontSize:9,color:MU,fontWeight:600}}>{d}</div>)}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6}}>{cells.map((d,i)=>{const ds=d?`${mp}-${String(d).padStart(2,"0")}`:null;const isDone=ds&&done.has(ds);const isTod=ds===todStr;const _mt=(user&&user.goals&&user.goals.doneMeta&&ds)?user.goals.doneMeta[ds]:null;const _bg=isDone?greenTone(_mt&&_mt.m,_mt&&_mt.i):(d?IC2:"transparent");const _tc=isDone?toneTxt(_mt&&_mt.m,_mt&&_mt.i):MU;return <div key={i} title={isDone&&_mt?`${_mt.m} min · intensidad ${_mt.i}/5`:""} style={{aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:_bg,border:isTod?`2px solid ${C.cyan}`:"none",animation:d?`statPop 0.4s ${i*0.012}s backwards`:"none"}}>{d&&<span style={{fontFamily:F.ios,fontSize:13,fontWeight:isDone?800:500,color:_tc}}>{d}</span>}</div>;})}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6}}>{cells.map((d,i)=>{const ds=d?`${mp}-${String(d).padStart(2,"0")}`:null;const isDone=ds&&done.has(ds);const isTod=ds===todStr;const _mt=(user&&user.goals&&user.goals.doneMeta&&ds)?user.goals.doneMeta[ds]:null;const _bg=isDone?greenTone(_mt&&_mt.m,_mt&&_mt.i):(d?IC2:"transparent");const _tc=isDone?toneTxt(_mt&&_mt.m,_mt&&_mt.i):MU;return <div key={i} onClick={()=>{if(!d)return;const fecha=new Date(yy,mm,d);const R=genRoutine(user?.physical||{},user?.objectives||[],user?.goals,{date:fecha});const dia=R.find(x=>x.today)||R[0];setCalDay({...dia,fecha:ds,hecho:isDone,meta:_mt,esHoy:isTod,pasado:fecha<new Date(now.getFullYear(),now.getMonth(),now.getDate())});}} className={d?"btn-press":""} title={isDone&&_mt?`${_mt.m} min · intensidad ${_mt.i}/5`:""} style={{aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:_bg,border:isTod?`2px solid ${C.cyan}`:"none",animation:d?`statPop 0.4s ${i*0.012}s backwards`:"none",cursor:d?"pointer":"default"}}>{d&&<span style={{fontFamily:F.ios,fontSize:13,fontWeight:isDone?800:500,color:_tc}}>{d}</span>}</div>;})}</div>
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:14}}><span style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:MU,fontWeight:700}}>SUAVE</span><div style={{display:"flex",gap:3}}>{[[20,1],[40,2],[60,3],[85,4],[110,5]].map(([m,i])=><div key={i} style={{width:20,height:9,borderRadius:3,background:greenTone(m,i)}}/>)}</div><span style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:MU,fontWeight:700}}>INTENSO</span></div><div style={{textAlign:"center",fontFamily:F.ios,fontSize:12,color:MU,marginTop:10}}>Entre más duro entrenes, más oscuro el verde</div>
         </div>
       </div>
       <TabSpacer/><ShowTabBar/>
-    </div>;
+    {calDay&&<Modal onClose={()=>setCalDay(null)} center>
+        {(()=>{const fe=new Date(calDay.fecha+"T12:00:00");const lbl=fe.toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long"});const descanso=!calDay.min;
+          return <>
+          <div style={{fontFamily:F.bc,fontSize:11,letterSpacing:"0.2em",color:calDay.hecho?LIME:calDay.esHoy?C.cyan:MU,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>{lbl}{calDay.hecho?" · COMPLETADO":calDay.esHoy?" · HOY":calDay.pasado?" · NO REGISTRADO":" · PROGRAMADO"}</div>
+          <T size={22} style={{marginBottom:6}}>{calDay.t}</T>
+          {!descanso&&<div style={{display:"flex",gap:14,marginBottom:10}}>{[[calDay.min+" MIN","Duración"],[calDay.kcal+" KCAL","Estimado"],[calDay.int+"/5","Intensidad"]].map(([v,l])=><div key={l}><div style={{fontFamily:F.bn,fontSize:20,color:LIME,lineHeight:1}}>{v}</div><div style={{fontFamily:F.bc,fontSize:9,letterSpacing:"0.14em",color:MU,fontWeight:700,marginTop:2}}>{l.toUpperCase()}</div></div>)}</div>}
+          {calDay.hecho&&calDay.meta&&<div style={{background:"rgba(199,249,78,0.10)",border:`1px solid ${LIME}44`,borderRadius:12,padding:"9px 12px",marginBottom:10,fontFamily:F.ios,fontSize:12.5,color:TX}}>Registraste <b>{calDay.meta.m} min</b> con intensidad <b>{calDay.meta.i}/5</b>.</div>}
+          <Sub style={{fontSize:13.5,lineHeight:1.55,marginBottom:12,color:C.text}}>{calDay.det}</Sub>
+          {calDay.sub&&calDay.sub.length>0&&<div style={{marginBottom:12}}>{calDay.sub.map((x,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<calDay.sub.length-1?`0.5px solid ${C.borderS}`:"none"}}><span style={{width:22,height:22,borderRadius:7,background:LIME,color:LIMED,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.bn,fontSize:12,flexShrink:0}}>{i+1}</span><span style={{flex:1,fontFamily:F.ios,fontSize:13,color:C.text,fontWeight:600}}>{x.n}</span><span style={{fontFamily:F.bc,fontSize:11,color:C.cyan,fontWeight:700}}>{x.m} MIN</span></div>)}</div>}
+          {!descanso&&calDay.prog&&calDay.prog!==100&&<Sub style={{fontSize:11.5,marginBottom:10}}>Carga ajustada al <b style={{color:TX}}>{calDay.prog}%</b> según tus últimas semanas.</Sub>}
+          {calDay.esHoy&&!descanso&&<button onClick={()=>{setCalDay(null);setScreen("plan");}} className="btn-press" style={{width:"100%",background:LIME,border:"none",color:LIMED,padding:"13px",fontFamily:F.ios,fontSize:14.5,fontWeight:800,cursor:"pointer",borderRadius:14,marginBottom:8}}>IR A ENTRENAR</button>}
+          <button onClick={()=>setCalDay(null)} className="btn-press" style={{width:"100%",background:"transparent",border:`1px solid ${IC2}`,color:TX,padding:"13px",fontFamily:F.ios,fontSize:14.5,fontWeight:600,cursor:"pointer",borderRadius:14}}>Cerrar</button>
+          </>;})()}
+      </Modal>}
+      </div>;
   }
   if(screen==="metas"){
     if(isAdmin){setTimeout(()=>setScreen("home"),0);return null;}
